@@ -137,6 +137,7 @@ public:
         m_size = 0;
     }
     virtual void    push_front(value_type value, Ref ref){
+        std::scoped_lock lock(m_mtx);
         Node *pNewNode = new Node(value, ref, m_pRoot);
         m_pRoot = pNewNode;
         if (!m_pTail) {
@@ -145,6 +146,7 @@ public:
         ++m_size;
     }
     virtual auto    pop_front() -> std::pair<value_type, Ref>{ 
+        std::scoped_lock lock(m_mtx);
         if( m_pRoot ){
             Node* pTemp = m_pRoot;
             m_pRoot = m_pRoot->getNext();
@@ -153,6 +155,7 @@ public:
             throw std::out_of_range("pop_front(): empty list");
     }
     virtual void    push_back(value_type value, Ref ref){
+        std::scoped_lock lock(m_mtx);
         Node *pNewNode = new Node(value, ref, nullptr);
         if (!m_pTail){
             m_pRoot = pNewNode;
@@ -164,6 +167,7 @@ public:
         ++m_size;
     }
     virtual auto    pop_back() -> std::pair<value_type, Ref>{
+        std::scoped_lock lock(m_mtx);
         if (!m_pRoot) {
             throw std::out_of_range("pop_back(): empty list");
         }
