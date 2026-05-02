@@ -24,6 +24,9 @@ void LinkedListDemo(){
     LinkedList<AscendingLinkedListTrait<TI>> list2_moved(std::move(list2)); // Move constructor
     cout << "Lista movida : " << list2_moved << endl;
     cout << "Lista original después de mover : " << list2 << endl;
+
+    list2.push_front(0, 5); //example of push front
+    cout << "Lista después de push_front: " << list2 << endl;
 }
 
 void ListsDemo(){

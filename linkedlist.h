@@ -125,7 +125,14 @@ public:
         m_pTail = nullptr;
         m_size = 0;
     }
-    virtual void    push_front(value_type value, Ref ref){}
+    virtual void    push_front(value_type value, Ref ref){
+        Node *pNewNode = new Node(value, ref, m_pRoot);
+        m_pRoot = pNewNode;
+        if (!m_pTail) {
+            m_pTail = pNewNode;
+        }
+        ++m_size;
+    }
     virtual auto    pop_front() -> std::pair<value_type, Ref>{ 
         if( m_pRoot ){
             Node* pTemp = m_pRoot;
