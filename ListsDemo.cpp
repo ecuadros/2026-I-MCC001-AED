@@ -39,6 +39,19 @@ void LinkedListDemo(){
 
     // example of [] operator
     cout << "Elemento en índice 0: " << list2[0] << endl;
+
+    // example of FirstThat
+    // Encontrar el primer nodo donde el valor sea mayor que 4
+    list2.insert(7, 55);
+    list2.insert(30, 40);
+    auto it = list2.FirstThat([](const LLNode<TI>& node) {
+        return node.getData() > 4;
+    });
+    if (it != list2.end()) {
+    cout << "Encontrado: " << *it << endl;  // Imprime (5,30)
+    } else {
+    cout << "No encontrado" << endl;
+    }
 }
 
 void ListsDemo(){

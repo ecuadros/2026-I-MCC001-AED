@@ -206,6 +206,13 @@ public:
         unique_lock<mutex> lock(m_mtx);
         ::ForEach(begin(), end(), func, std::forward<Args>(args)... );
     }
+
+    // Agregar FirstThat
+    template <typename Func, typename... Args>
+    forward_iterator FirstThat(Func func, Args &&... args){
+        unique_lock<mutex> lock(m_mtx);
+        return ::FirstThat(begin(), end(), func, std::forward<Args>(args)...);
+    }
 };
 
 template <typename Traits>
