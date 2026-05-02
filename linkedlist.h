@@ -123,6 +123,8 @@ public:
         }
         return *current;
     }
+
+
     
     virtual        ~LinkedList() {
         std::scoped_lock lock(m_mtx);
@@ -257,5 +259,16 @@ ostream& operator<<(ostream& os, LinkedList<Traits>& list){
     return os << list.toString();
 }
 
+template <typename Traits>
+std::istream& operator>>(std::istream &is, LinkedList<Traits> &list) {
+    typename LinkedList<Traits>::value_type value;
+    Ref ref;
+
+    while (is >> value >> ref) {
+        list.insert(value, ref);
+    }
+
+    return is;
+}
 
 #endif // __LINKEDLIST_H__

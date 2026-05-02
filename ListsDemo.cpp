@@ -52,6 +52,11 @@ void LinkedListDemo(){
     } else {
     cout << "No encontrado" << endl;
     }
+
+    // example  of >> operator
+    istringstream iss("8 75");
+    iss >> list2;
+    cout << "Lista después de >> operator: " << list2 << endl;
 }
 
 void ListsDemo(){
