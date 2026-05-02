@@ -20,6 +20,10 @@ void LinkedListDemo(){
 
     LinkedList<AscendingLinkedListTrait<TI>> list2_copy(list2); // Copy constructor
     cout << "Copia de lista ascendente : " << list2_copy << endl;
+
+    LinkedList<AscendingLinkedListTrait<TI>> list2_moved(std::move(list2)); // Move constructor
+    cout << "Lista movida : " << list2_moved << endl;
+    cout << "Lista original después de mover : " << list2 << endl;
 }
 
 void ListsDemo(){

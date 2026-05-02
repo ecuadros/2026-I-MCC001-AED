@@ -103,6 +103,10 @@ public:
     }
 
     LinkedList(LinkedList &&other){ // Move constructor
+        m_pRoot = std::exchange(other.m_pRoot, nullptr);
+        m_pTail = std::exchange(other.m_pTail, nullptr);
+        m_size  = std::exchange(other.m_size, 0);
+        m_comp  = std::move(other.m_comp);
     }
     LinkedList& operator=(const LinkedList &other){ // Copy assignment operator
     }
