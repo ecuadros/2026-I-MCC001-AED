@@ -141,7 +141,17 @@ public:
         }else
             throw std::out_of_range("pop_front(): empty list");
     }
-    virtual void    push_back(value_type value, Ref ref){}
+    virtual void    push_back(value_type value, Ref ref){
+        Node *pNewNode = new Node(value, ref, nullptr);
+        if (!m_pTail){
+            m_pRoot = pNewNode;
+            m_pTail = pNewNode;
+        }else{
+            m_pTail->setNext(pNewNode);
+            m_pTail = pNewNode;
+        }
+        ++m_size;
+    }
     virtual auto    pop_back() -> std::pair<value_type, Ref>{
         return std::pair<value_type, Ref>();
     }

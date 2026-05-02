@@ -27,6 +27,10 @@ void LinkedListDemo(){
 
     list2.push_front(0, 5); //example of push front
     cout << "Lista después de push_front: " << list2 << endl;
+
+    // example of push back
+    list2.push_back(10, 65);
+    cout << "Lista después de push_back: " << list2 << endl;
 }
 
 void ListsDemo(){
