@@ -113,7 +113,18 @@ public:
     LinkedList& operator=(LinkedList &&other){ // Move assignment operator
     }
     
-    virtual        ~LinkedList() {}
+    virtual        ~LinkedList() {
+        std::scoped_lock lock(m_mtx);
+        Node *current = m_pRoot;
+        while (current) {
+            Node *next = current->getNext();
+            delete current;
+            current = next;
+        }
+        m_pRoot = nullptr;
+        m_pTail = nullptr;
+        m_size = 0;
+    }
     virtual void    push_front(value_type value, Ref ref){}
     virtual auto    pop_front() -> std::pair<value_type, Ref>{ 
         if( m_pRoot ){
