@@ -112,6 +112,17 @@ public:
     }
     LinkedList& operator=(LinkedList &&other){ // Move assignment operator
     }
+
+    virtual Node& operator[](size_t index) {
+        if (index >= m_size) {
+            throw std::out_of_range("operator[]: index out of range");
+        }
+        Node *current = m_pRoot;
+        for (size_t i = 0; i < index; ++i) {
+            current = current->getNext();
+        }
+        return *current;
+    }
     
     virtual        ~LinkedList() {
         std::scoped_lock lock(m_mtx);

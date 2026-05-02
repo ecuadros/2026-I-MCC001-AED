@@ -36,6 +36,9 @@ void LinkedListDemo(){
     auto [value, ref] = list2.pop_back();
     cout << "Elemento pop_back: " << value << ", Ref: " << ref << endl;
     cout << "Lista después de pop_back: " << list2 << endl;
+
+    // example of [] operator
+    cout << "Elemento en índice 0: " << list2[0] << endl;
 }
 
 void ListsDemo(){
