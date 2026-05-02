@@ -94,8 +94,14 @@ private:
     mutex m_mtx;
 public:
     LinkedList() {}
-    LinkedList(const LinkedList &other){ // Copy constructor
+
+    LinkedList(const LinkedList &other) { // Copy constructor
+        m_comp = other.m_comp;
+        for (Node *src = other.m_pRoot; src; src = src->getNext()) {
+            internal_insert(m_pRoot, src->getData(), src->getRef());
+        }
     }
+
     LinkedList(LinkedList &&other){ // Move constructor
     }
     LinkedList& operator=(const LinkedList &other){ // Copy assignment operator

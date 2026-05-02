@@ -17,6 +17,9 @@ void LinkedListDemo(){
     list2.insert(1, 45);
     list2.insert(7, 55);
     cout << "Lista ascendente : " << list2 << endl;
+
+    LinkedList<AscendingLinkedListTrait<TI>> list2_copy(list2); // Copy constructor
+    cout << "Copia de lista ascendente : " << list2_copy << endl;
 }
 
 void ListsDemo(){
