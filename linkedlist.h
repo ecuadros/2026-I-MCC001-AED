@@ -153,7 +153,29 @@ public:
         ++m_size;
     }
     virtual auto    pop_back() -> std::pair<value_type, Ref>{
-        return std::pair<value_type, Ref>();
+        if (!m_pRoot) {
+            throw std::out_of_range("pop_back(): empty list");
+        }
+
+        if (m_pRoot == m_pTail) {
+            auto result = std::make_pair(m_pRoot->getData(), m_pRoot->getRef());
+            delete m_pRoot;
+            m_pRoot = m_pTail = nullptr;
+            m_size = 0;
+            return result;
+        }
+
+        Node *prev = m_pRoot;
+        while (prev->getNext() != m_pTail) {
+            prev = prev->getNext();
+        }
+
+        auto result = std::make_pair(m_pTail->getData(), m_pTail->getRef());
+        delete m_pTail;
+        m_pTail = prev;
+        m_pTail->setNext(nullptr);
+        --m_size;
+        return result;
     }
 private:
             void    internal_insert(Node* &pParent, const value_type &value, Ref ref);

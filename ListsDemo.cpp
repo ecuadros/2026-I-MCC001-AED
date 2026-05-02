@@ -31,6 +31,11 @@ void LinkedListDemo(){
     // example of push back
     list2.push_back(10, 65);
     cout << "Lista después de push_back: " << list2 << endl;
+
+    // example of pop back
+    auto [value, ref] = list2.pop_back();
+    cout << "Elemento pop_back: " << value << ", Ref: " << ref << endl;
+    cout << "Lista después de pop_back: " << list2 << endl;
 }
 
 void ListsDemo(){
