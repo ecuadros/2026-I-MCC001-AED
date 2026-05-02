@@ -7,4 +7,4 @@ struct BaseContainerTrait{
     using Node       = _Node;
 };
 
-#endif // __BASE_TRAIT_H__
+#endif // __BASE_TRAIT_H__ 

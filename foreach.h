@@ -14,7 +14,7 @@ void ForEach(Iterator begin, Iterator end, Func func, Args &&... args){
 template <typename Iterator, typename Func, typename... Args>
 Iterator FirstThat(Iterator begin, Iterator end, Func func, Args &&... args){
     for (auto it = begin; it != end; ++it)
-        if (func(*it, forward<Args>(args)...))
+        if (func(*it, forward<Args>(args)...)) //*it devuelve el nodo actual
             return it;
     return end;
 }
