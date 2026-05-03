@@ -261,10 +261,20 @@ ostream& operator<<(ostream& os, LinkedList<Traits>& list){
 
 template <typename Traits>
 std::istream& operator>>(std::istream &is, LinkedList<Traits> &list) {
+        char ch;
     typename LinkedList<Traits>::value_type value;
     Ref ref;
 
-    while (is >> value >> ref) {
+    while (is >> ch) {
+        if (ch != '(') {
+            is.putback(ch); // Devolver el carácter si no es '('
+            break;
+        }
+        if (!(is >> value)) break;
+        if (!(is >> ch) || ch != ',') break;
+        if (!(is >> ref)) break;
+        if (!(is >> ch) || ch != ')') break;
+
         list.insert(value, ref);
     }
 
