@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <mutex>     // mutex
+#include <utility>
 #include "general_iterator.h"
 #include "util.h"
 #include "types.h"
@@ -91,7 +92,10 @@ private:
     Node *m_pTail = nullptr;
     size_t m_size = 0;
     Comp   m_comp;
-    mutex m_mtx; // Mutex para sincronizar el acceso a la lista en operaciones concurrentes
+    mutable mutex m_mtx; // Mutex para sincronizar el acceso a la lista en operaciones concurrentes
+private:
+    void clear_unlocked();
+    void push_back_unlocked(value_type value, Ref ref);
 public:
     LinkedList() {}
     LinkedList(const LinkedList &other); // Copy constructor
@@ -104,15 +108,8 @@ public:
     // eliminando cada nodo y avanzando al siguiente hasta que se han eliminado todos los nodos. 
     // Finalmente, reinicia los punteros y el tamaño de la lista.
     virtual        ~LinkedList(){ // Destructor que libera la memoria de los nodos de la lista
-        Node* current = m_pRoot; // Comenzamos desde el nodo raíz
-        while(current != nullptr){
-            Node* next = current->getNext(); // Guardamos el siguiente nodo antes de eliminar el actual
-            delete current; // Liberamos la memoria del nodo actual
-            current = next; // Avanzamos al siguiente nodo
-        }
-        m_pRoot = nullptr; // Aseguramos que el puntero raíz apunte a nullptr después de liberar la memoria
-        m_pTail = nullptr; // Reiniciamos el puntero a la cola de la lista
-        m_size = 0; // Reiniciamos el tamaño de la lista a 0
+        scoped_lock<mutex> lock(m_mtx);
+        clear_unlocked();
     }
 
     // PUSH FRONT: El método push_front se encarga de insertar un nuevo nodo al inicio de la lista. 
@@ -131,6 +128,7 @@ public:
 
     //POP FRONT : El método pop_front se encarga de eliminar el primer nodo de la lista y devolver su valor y referencia.
     virtual auto    pop_front() -> std::pair<value_type, Ref>{
+        scoped_lock<mutex> lock(m_mtx);
         if(m_pRoot == nullptr)
             throw std::out_of_range("pop_front(): empty list");
 
@@ -157,21 +155,12 @@ public:
     // Toma un valor y una referencia como parámetros, crea un nuevo nodo con esos datos y lo inserta al final de la lista.
     virtual void    push_back(value_type value, Ref ref){
         scoped_lock<mutex> lock(m_mtx); // Bloqueamos el mutex para asegurar que solo un hilo pueda modificar la lista a la vez
-        Node* newNode = new Node(value, ref, nullptr); // Creamos un nuevo nodo con el valor y la referencia proporcionados, apuntando a nullptr ya que será el último nodo
-
-        if(m_size == 0){ // Si la lista está vacía, el nuevo nodo se convierte en el nodo raíz y también en la cola de la lista
-            m_pRoot = newNode;
-            m_pTail = newNode;
-        }else{ // Si la lista no está vacía, enlazamos el nuevo nodo al nodo actual de la cola y luego actualizamos el puntero de la cola para que apunte al nuevo nodo
-            m_pTail->setNext(newNode);
-            m_pTail = newNode;
-        }
-
-        m_size++; // Incrementamos el tamaño de la lista
+        push_back_unlocked(value, ref);
     }
 
     // POP BACK : El método pop_back se encarga de eliminar el último nodo de la lista y devolver su valor y referencia.
     virtual auto    pop_back() -> std::pair<value_type, Ref>{
+        scoped_lock<mutex> lock(m_mtx); // Bloqueamos el mutex para asegurar que solo un hilo pueda modificar la lista a la vez
         if(m_pRoot == nullptr) // Si la lista está vacía, lanzamos una excepción
             throw std::out_of_range("pop_back(): empty list");
 
@@ -217,7 +206,10 @@ public:
     virtual void    insert(const value_type &value, Ref ref);
     
     virtual Node& operator[](size_t index);
-    virtual size_t  size() const { return m_size; }
+    virtual size_t  size() const {
+        scoped_lock<mutex> lock(m_mtx);
+        return m_size;
+    }
     virtual string  toString();
 
     forward_iterator begin() { return forward_iterator(this, m_pRoot); } // Devuelve un iterador al primer nodo de la lista
@@ -230,6 +222,34 @@ public:
         ::ForEach(begin(), end(), func, std::forward<Args>(args)... );
     }
 };
+
+template <typename Traits>
+void LinkedList<Traits>::clear_unlocked(){
+    Node* current = m_pRoot;
+    while(current != nullptr){
+        Node* next = current->getNext();
+        delete current;
+        current = next;
+    }
+    m_pRoot = nullptr;
+    m_pTail = nullptr;
+    m_size = 0;
+}
+
+template <typename Traits>
+void LinkedList<Traits>::push_back_unlocked(value_type value, Ref ref){
+    Node* newNode = new Node(value, ref, nullptr);
+
+    if(m_size == 0){
+        m_pRoot = newNode;
+        m_pTail = newNode;
+    }else{
+        m_pTail->setNext(newNode);
+        m_pTail = newNode;
+    }
+
+    m_size++;
+}
 
 template <typename Traits>
 void LinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){ // Inserta un nuevo nodo en la posición correcta según el criterio de ordenamiento definido por Comp
@@ -255,13 +275,14 @@ void LinkedList<Traits>::insert(const value_type &value, Ref ref){ // inserta un
     //lista tendrá la misma estructura y contenido que la lista original.
     template <typename Traits>
     LinkedList<Traits>::LinkedList(const LinkedList &other){ // Copy constructor
+        scoped_lock<mutex> lock(other.m_mtx);
         m_pRoot = nullptr; // Inicializamos el puntero raíz de la nueva lista a nullptr
         m_pTail = nullptr; // Inicializamos el puntero a la cola de la nueva lista a nullptr
         m_size = 0;
 
         Node* current = other.m_pRoot; // Comenzamos desde el nodo raíz de la lista original
         while(current != nullptr){ // Recorremos la lista original hasta el final
-            push_back(current->getData(), current->getRef()); // Insertamos un nuevo nodo
+            push_back_unlocked(current->getData(), current->getRef()); // Insertamos un nuevo nodo
             current = current->getNext(); // Avanzamos al siguiente nodo en la lista original
         }
     }
@@ -274,13 +295,10 @@ void LinkedList<Traits>::insert(const value_type &value, Ref ref){ // inserta un
     // con sus punteros raíz y cola establecidos en nullptr y su tamaño en 0.
     template <typename Traits>
     LinkedList<Traits>::LinkedList(LinkedList &&other){
-        m_pRoot = other.m_pRoot; // Transferimos el puntero raíz de la lista original a la nueva instancia
-        m_pTail = other.m_pTail; // Transferimos el puntero a la cola de la lista original a la nueva instancia
-        m_size = other.m_size;
-
-        other.m_pRoot = nullptr;
-        other.m_pTail = nullptr;
-        other.m_size = 0;
+        scoped_lock<mutex> lock(other.m_mtx);
+        m_pRoot = std::exchange(other.m_pRoot, nullptr); // Transferimos el puntero raíz de la lista original a la nueva instancia
+        m_pTail = std::exchange(other.m_pTail, nullptr); // Transferimos el puntero a la cola de la lista original a la nueva instancia
+        m_size = std::exchange(other.m_size, 0);
     }
 
 template <typename Traits>
@@ -290,7 +308,7 @@ string  LinkedList<Traits>::toString() { // Devuelve una representación en form
     Node *pNode = m_pRoot;
     ss << "[";
     if( m_size > 0 ){
-        for( size_t i = 0 ; i < size()-1 ; ++i ){
+        for( size_t i = 0 ; i < m_size-1 ; ++i ){
             ss << *pNode << ",";
             pNode = pNode->getNext();
         }
@@ -310,12 +328,12 @@ LinkedList<Traits>& LinkedList<Traits>::operator=(const LinkedList &other){
     if (this == &other)
         return *this;
 
-    while (m_pRoot != nullptr)
-        pop_front();
+    scoped_lock<mutex, mutex> lock(m_mtx, other.m_mtx);
+    clear_unlocked();
 
     Node* current = other.m_pRoot;
     while (current != nullptr){
-        push_back(current->getData(), current->getRef());
+        push_back_unlocked(current->getData(), current->getRef());
         current = current->getNext();
     }
 
@@ -327,16 +345,12 @@ LinkedList<Traits>& LinkedList<Traits>::operator=(LinkedList &&other){
     if (this == &other)
         return *this;
 
-    while (m_pRoot != nullptr)
-        pop_front();
+    scoped_lock<mutex, mutex> lock(m_mtx, other.m_mtx);
+    clear_unlocked();
 
-    m_pRoot = other.m_pRoot;
-    m_pTail = other.m_pTail;
-    m_size = other.m_size;
-
-    other.m_pRoot = nullptr;
-    other.m_pTail = nullptr;
-    other.m_size = 0;
+    m_pRoot = std::exchange(other.m_pRoot, nullptr);
+    m_pTail = std::exchange(other.m_pTail, nullptr);
+    m_size = std::exchange(other.m_size, 0);
 
     return *this;
 }
@@ -360,6 +374,7 @@ istream& operator>>(istream& is, LinkedList<Traits>& list){
     }
 
     if(ch == ']'){ // Si el siguiente carácter es ']', significa que la lista está vacía, por lo que devolvemos el flujo de entrada sin modificar la lista
+        list = std::move(temp);
         return is;
     }
 
@@ -415,6 +430,7 @@ istream& operator>>(istream& is, LinkedList<Traits>& list){
 
 template <typename Traits>
 typename LinkedList<Traits>::Node& LinkedList<Traits>::operator[](size_t index){ // Sobrecarga del operador [] para acceder a los nodos de la lista por índice
+    scoped_lock<mutex> lock(m_mtx); // Bloqueamos el mutex para asegurar que solo un hilo pueda modificar la lista a la vez 
     if(index >= m_size) // Si el índice está fuera de rango, lanzamos una excepción
         throw std::out_of_range("operator[]: index out of range");
 
