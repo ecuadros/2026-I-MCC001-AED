@@ -1,4 +1,5 @@
 #include "containers/linkedlist.h"
+#include "containers/doublelinkedlist.h"
 #include <fstream>
 
 template <typename Node>
