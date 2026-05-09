@@ -98,8 +98,36 @@ public:
          
     void insert(value_type value, Ref ref){
     	scoped_lock<mutex> lock(m_mtx);
-        LinkedList<Traits>::insert(value, ref);
+    Node* pNew = new Node(value, ref);
+    if(m_pRoot == nullptr){
+        m_pRoot = pNew;
+        m_pTail = pNew;
     }
+    else if(m_comp(value, m_pRoot->getData())){
+        pNew->setNext(m_pRoot);
+        m_pRoot->setPrev(pNew);
+        m_pRoot = pNew;
+    }
+    else{
+        Node* pPrev = m_pRoot;
+        Node* pCurr = m_pRoot->getNext();
+        while(pCurr != nullptr &&
+              !m_comp(value, pCurr->getData())){
+            pPrev = pCurr;
+            pCurr = pCurr->getNext();
+        }
+        pNew->setNext(pCurr);
+        pNew->setPrev(pPrev);
+        pPrev->setNext(pNew);
+        if(pCurr != nullptr){
+            pCurr->setPrev(pNew);
+        }
+        else{
+            m_pTail = pNew;
+        }
+    }
+    ++m_size;
+}
     
     void push_back(value_type value, Ref ref){
         scoped_lock<mutex> lock(m_mtx);
