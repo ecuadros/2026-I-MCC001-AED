@@ -14,6 +14,45 @@ g++ -std=c++2b main.cpp vector.cpp macros.cpp -o main
 
 There is no test framework — demos are functions called directly from `main()`. To run a specific demo, uncomment the relevant call in `main.cpp` (e.g., `DemoVector()`, `DemoConcurrentVector()`, `DemoMacros()`).
 
+```mermaid
+graph TD
+    main["main.cpp"] --> DemoVector
+    main --> ListsDemo
+    main --> DemoMacros
+
+    DemoVector --> Vector["Vector.h"]
+    ListsDemo --> LinkedList["LinkedList.h"]
+    ListsDemo --> DoubleLinkedList["DoubleLinkedList.h (WIP)"]
+    DemoMacros --> Macros["macros.h"]
+
+    Vector --> VectorTraits
+    LinkedList --> LinkedListTraits
+    DoubleLinkedList --> DLLTraits
+
+    VectorTraits --> BaseTrait["BaseContainerTrait"]
+    LinkedListTraits --> BaseTrait
+    DLLTraits --> BaseTrait
+
+    Vector --> GenIter["general_iterator.h"]
+    LinkedList --> GenIter
+    DoubleLinkedList --> GenIter
+
+    Vector --> Foreach["foreach.h"]
+    LinkedList --> Foreach
+    DoubleLinkedList --> Foreach
+
+    GenIter --> Iterators["forward / backward iterators"]
+    Foreach --> ForEachFn["ForEach & FirstThat"]
+
+    classDef container fill:#e1f5fe,stroke:#01579b;
+    classDef trait fill:#fff9c4,stroke:#fbc02d;
+    classDef util fill:#f3e5f5,stroke:#7b1fa2;
+    class Vector,LinkedList,DoubleLinkedList container;
+    class VectorTraits,LinkedListTraits,DLLTraits,BaseTrait trait;
+    class GenIter,Foreach,Iterators,ForEachFn,Macros util;
+```
+
+
 ## Architecture
 
 This is a C++23 educational data structures project (MCC001-AED, 2026-I). The codebase incrementally builds generic, thread-safe containers following a Traits-based design pattern.

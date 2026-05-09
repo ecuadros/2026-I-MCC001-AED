@@ -7,7 +7,7 @@
 #include <sstream>
 #include <mutex>     // mutex
 #include "general_iterator.h"
-#include "util.h"
+//#include "util.h"
 #include "../types.h"
 #include "../foreach.h"
 #include "basetrait.h"
@@ -77,12 +77,12 @@ struct DescendingLinkedListTrait : public BaseLinkedListTrait<T>{
 };
 
 template <typename Traits>
-class LinkedList{
+class CLinkedList{
 public:
     using value_type = typename Traits::value_type;
     using Node       = typename Traits::Node;
     using Comp       = typename Traits::Comp;
-    using MySelf     = LinkedList<Traits>;
+    using MySelf     = CLinkedList<Traits>;
 
     using forward_iterator = LinkedListForwardIterator<MySelf>;
     // friend forward_iterator;
@@ -94,8 +94,8 @@ private:
     Comp   m_comp;
     mutex m_mtx;
 public:
-    LinkedList() {}
-    LinkedList(const LinkedList &other){ // Copy constructor
+    CLinkedList() {}
+    CLinkedList(const CLinkedList &other){ // Copy constructor
 
         Node* pTemp = other.m_pRoot;
 
@@ -105,7 +105,7 @@ public:
         }
             
     }
-    LinkedList(LinkedList &&other){ // Move constructor
+    CLinkedList(CLinkedList &&other){ // Move constructor
         
         scoped_lock<mutex> lock(m_mtx);
         m_pRoot = exchange(other.m_pRoot, nullptr);
@@ -113,12 +113,12 @@ public:
         m_size = exchange(other.m_size, 0);
 
     }
-    LinkedList& operator=(const LinkedList &other){ // Copy assignment operator
+    CLinkedList& operator=(const CLinkedList &other){ // Copy assignment operator
     }
-    LinkedList& operator=(LinkedList &&other){ // Move assignment operator
+    CLinkedList& operator=(CLinkedList &&other){ // Move assignment operator
     }
     
-    virtual        ~LinkedList() {
+    virtual ~CLinkedList() {
         
         scoped_lock<mutex> lock(m_mtx);
         Node* pTemp = m_pRoot;
@@ -238,7 +238,7 @@ public:
 };
 
 template <typename Traits>
-void LinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
+void CLinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
     if(!pPrev || m_comp(value, pPrev->getDataRef())){
         pPrev = new Node(value, ref, pPrev);
         m_size++;
@@ -250,12 +250,12 @@ void LinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, 
 }
 
 template <typename Traits>
-void LinkedList<Traits>::insert(const value_type &value, Ref ref){
+void CLinkedList<Traits>::insert(const value_type &value, Ref ref){
     internal_insert(m_pRoot, value, ref);
 }
 
 template <typename Traits>
-string  LinkedList<Traits>::toString() {
+string  CLinkedList<Traits>::toString() {
     stringstream ss;
     Node *pNode = m_pRoot;
     ss << "[";
@@ -271,13 +271,13 @@ string  LinkedList<Traits>::toString() {
 }
 
 template <typename Traits>
-ostream& operator<<(ostream& os, LinkedList<Traits>& list){
+ostream& operator<<(ostream& os, CLinkedList<Traits>& list){
     return os << list.toString();
 }
 
 template <typename Traits>
-istream& operator>>(istream& is, LinkedList<Traits>& list){
-    using value_type = typename LinkedList<Traits>::value_type;
+istream& operator>>(istream& is, CLinkedList<Traits>& list){
+    using value_type = typename CLinkedList<Traits>::value_type;
     string line;
 
     getline(is, line);
