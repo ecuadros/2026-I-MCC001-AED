@@ -101,8 +101,23 @@ public:
     bool isEmpty() const { return m_pRoot == nullptr; }
          
     void insert(value_type value, Ref ref){
-    	scoped_lock<mutex> lock(m_mtx);
-        CircularLinkedList<Traits>::insert(value, ref);
+        scoped_lock<mutex> lock(m_mtx);
+        Node* pNew = new Node(value, ref, nullptr, nullptr);
+        if(m_pRoot == nullptr){
+            pNew->setNext(pNew);
+            pNew->setPrev(pNew);
+
+            m_pRoot = pNew;
+            m_pTail = pNew;
+        }
+        else{
+            pNew->setNext(m_pRoot);
+            pNew->setPrev(m_pTail);
+            m_pTail->setNext(pNew);
+            m_pRoot->setPrev(pNew);
+            m_pTail = pNew;
+        }
+        ++m_size;
     }
     
     void push_back(value_type value, Ref ref){
