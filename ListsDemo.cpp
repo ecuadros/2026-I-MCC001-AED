@@ -1,4 +1,8 @@
 #include "containers/linkedlist.h"
+#include "containers/doublelinkedlist.h"
+#include "containers/circularlinkedlist.h"
+#include "containers/circulardoublelinkedlist.h"
+
 #include <fstream>
 
 template <typename Node>
@@ -79,12 +83,11 @@ void LinkedListDemo(){
 
     list3.push_back(5, 50);
     cout << "Prueba Move Constructor: " << endl;
-    LinkedList<AscendingLinkedListTrait<TI>> list5 = move(list3);
+    LinkedList<AscendingLinkedListTrait<TI>> list5 = std::move(list3);
     cout << "Lista ascendente 5: " << list5 << endl;
 
     cout << "Prueba del Destructor: " << endl;
-    list4.~LinkedList();
-    cout << "Lista ascendente 4: " << list4 << endl;
+    cout << "El destructor se prueba automaticamente al salir del scope." << endl;
 
     cout << "Prueba del operador >>: "<<endl;
     ofstream ofs;
@@ -99,6 +102,64 @@ void LinkedListDemo(){
 
     cout << "Prueba operador []: " << endl;
     cout << "Lista5 [2]: " << list5[2] << endl;
+
+    //DOUBLE LINKED LIST DEMO
+    
+    cout << endl << "2. DoubleLinkedList PushBack: " << endl;
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> dlist;
+    using DLL = DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>>::Node;
+
+    dlist.push_back(1, 10);
+    dlist.push_back(2, 20);
+    dlist.push_back(3, 30);
+
+    cout << "Recorrido forward: ";
+    dlist.ForEach(Print<DLL>, cout);
+
+    cout << "Recorrido backward: ";
+    dlist.ReverseForEach(Print<DLL>, cout);
+    cout << endl;
+
+    // Prueba del Copy Constructor
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> dlist2(dlist);
+    cout << "DoubleLinkedList Copy Constructor: " << dlist2 << endl;
+
+    dlist.insert(0, 5);
+    dlist.insert(4, 40);
+    dlist.insert(5, 50);
+    cout << "DoubleLinkedList Insert: " << dlist << endl;
+
+    // Prueba del operador >>
+    istringstream ss2("[(0, 5), (1, 10), (2, 20)]");
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> dlist3;
+    ss2 >> dlist3;
+    cout << "DoubleLinkedList operator>>: " << dlist3 << endl;
+
+    cout<< "Lectura forward: " << dlist3 << endl;
+
+    cout << "Lectura backward: ";
+    dlist3.ReverseForEach(Print<DLL>, cout);
+    cout << endl;
+
+    // CIRCULAR LINKED LIST
+    cout << endl << "3. CircularLinkedList: " << endl;
+    CircularLinkedList<AscendingLinkedListTrait<TI>> clist;
+    clist.insert(1, 10);
+    clist.insert(2, 20);
+    clist.insert(3, 30);
+
+    cout << "Recorrido circular: " << clist.toStringCircular() << endl;
+
+    // CIRCULAR DOUBLE LINKED LIST
+    cout << endl << "4. CircularDoubleLinkedList: " << endl;
+    CircularDoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> cdlist;
+    cdlist.insert(1, 10);
+    cdlist.insert(2, 20);
+    cdlist.insert(3, 30);
+
+    cout << "Recorrido circular hacia adelante: " << cdlist.toStringCircularDoubleNext() << endl;
+    cout << "Recorrido circular hacia atrás: " << cdlist.toStringCircularReverse() << endl;
+
 }
 
 void ListsDemo(){

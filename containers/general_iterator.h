@@ -19,8 +19,8 @@ public:
     general_iterator(Myself &other) 
           : m_pContainer(other.m_pContainer), m_pNode(other.m_pNode){}
     general_iterator(Myself &&other) // Move constructor
-          {   m_pContainer = move(other.m_pContainer);
-              m_pNode      = move(other.m_pNode);
+          {   m_pContainer = std::move(other.m_pContainer);
+              m_pNode      = std::move(other.m_pNode);
           }
     IteratorBase operator=(IteratorBase &iter)
           {   m_pContainer = move(iter.m_pContainer);

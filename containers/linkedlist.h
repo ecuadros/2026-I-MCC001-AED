@@ -87,12 +87,12 @@ public:
     using forward_iterator = LinkedListForwardIterator<MySelf>;
     // friend forward_iterator;
 
-private:
+protected:
     Node *m_pRoot = nullptr;
     Node *m_pTail = nullptr;
     size_t m_size = 0;
     Comp   m_comp;
-    mutex m_mtx;
+    mutable mutex m_mtx;
 public:
     LinkedList() {}
     LinkedList(const LinkedList &other){ // Copy constructor
