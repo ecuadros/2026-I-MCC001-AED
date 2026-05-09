@@ -1,4 +1,7 @@
 #include "containers/linkedlist.h"
+#include "containers/doublelinkedlist.h"
+#include "containers/circularlinkedlist.h"
+#include "containers/circulardoublelinkedlist.h"
 #include <fstream>
 
 template <typename Node>
@@ -22,7 +25,6 @@ bool IsGreaterThan(Node &node, T x){
 }
 
 void LinkedListDemo(){
-    // 
     LinkedList<DescendingLinkedListTrait<TI>> list1;
     list1.insert(6, 15);
     list1.insert(2, 25);
@@ -46,7 +48,7 @@ void LinkedListDemo(){
     list2.ForEach(AddY<LI>, 10, 11);
     cout << "Prueba ForEach + 10 + 11: " << endl;
     list2.ForEach(Print<LI>, cout);
-    
+
     cout << "Prueba First That: " << endl;
     auto it = list2.FirstThat(IsGreaterThan<LI, TI>, 6);
     if (it != list2.end())
@@ -55,11 +57,11 @@ void LinkedListDemo(){
 
     cout << "Prueba PushFront: " << endl;
     list1.push_front(5, 5);
-    cout << "Lista ascendente 1: " << list1 << endl;
+    cout << "Lista descendente 1: " << list1 << endl;
 
     cout << "Prueba PopFront: " << endl;
     list1.pop_front();
-    cout << "Lista ascendente 1: " << list1 << endl;
+    cout << "Lista descendente 1: " << list1 << endl;
 
     LinkedList<AscendingLinkedListTrait<TI>> list3;
     cout << "Prueba PushBack: " << endl;
@@ -82,14 +84,10 @@ void LinkedListDemo(){
     LinkedList<AscendingLinkedListTrait<TI>> list5 = move(list3);
     cout << "Lista ascendente 5: " << list5 << endl;
 
-    cout << "Prueba del Destructor: " << endl;
-    list4.~LinkedList();
-    cout << "Lista ascendente 4: " << list4 << endl;
-
-    cout << "Prueba del operador >>: "<<endl;
+    cout << "Prueba del operador >>: " << endl;
     ofstream ofs;
     ofs.open("lista1.txt");
-    ofs <<  list1 <<   endl;
+    ofs << list1 << endl;
     ofs.close();
 
     ifstream file("lista1.txt");
@@ -101,6 +99,85 @@ void LinkedListDemo(){
     cout << "Lista5 [2]: " << list5[2] << endl;
 }
 
+void DoubleLinkedListDemo(){
+    cout << "\n=========== DoubleLinkedList ===========" << endl;
+    using DLL  = DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>>;
+    using DNode = DLL::Node;
+
+    DLL dll;
+    dll.insert(6, 15);
+    dll.insert(2, 25);
+    dll.insert(9, 35);
+    dll.insert(1, 45);
+    dll.insert(7, 55);
+    cout << "DLL ascendente            : " << dll << endl;
+
+    cout << "Recorrido forward         : ";
+    dll.ForEach(Print<DNode>, cout);
+    cout << "Recorrido backward        : ";
+    dll.ReverseForEach(Print<DNode>, cout);
+
+    dll.push_front(0, 5);
+    dll.push_back(99, 999);
+    cout << "Tras push_front(0) y push_back(99): " << dll << endl;
+    cout << "Backward verificado       : ";
+    dll.ReverseForEach(Print<DNode>, cout);
+
+    cout << "Prueba Copy Constructor   : " << endl;
+    DLL dll_copy(dll);
+    cout << "DLL copia                 : " << dll_copy << endl;
+    cout << "DLL copia backward        : ";
+    dll_copy.ReverseForEach(Print<DNode>, cout);
+}
+
+void CircularLinkedListDemo(){
+    cout << "\n=========== CircularLinkedList ===========" << endl;
+    using CLL = CircularLinkedList<AscendingLinkedListTrait<TI>>;
+    using CNode = CLL::Node;
+
+    CLL cll;
+    cll.push_back(10, 1);
+    cll.push_back(20, 2);
+    cll.push_back(30, 3);
+    cll.push_back(40, 4);
+    cout << "CLL                       : " << cll << endl;
+
+    cout << "ForEach (1 vuelta)        : ";
+    cll.ForEach(Print<CNode>, cout);
+
+    cll.insert(25, 25);
+    cout << "Tras insert(25)           : " << cll << endl;
+    cout << "ForEach                   : ";
+    cll.ForEach(Print<CNode>, cout);
+}
+
+void CircularDoubleLinkedListDemo(){
+    cout << "\n=========== CircularDoubleLinkedList ===========" << endl;
+    using CDLL = CircularDoubleLinkedList<AscendingDoubleLinkedListTrait<TI>>;
+    using CDNode = CDLL::Node;
+
+    CDLL cdll;
+    cdll.push_back(100, 1);
+    cdll.push_back(200, 2);
+    cdll.push_back(300, 3);
+    cout << "CDLL                      : " << cdll << endl;
+
+    cout << "Forward (1 vuelta)        : ";
+    cdll.ForEach(Print<CDNode>, cout);
+    cout << "Backward (1 vuelta)       : ";
+    cdll.ReverseForEach(Print<CDNode>, cout);
+
+    cdll.insert(150, 150);
+    cout << "Tras insert(150)          : " << cdll << endl;
+    cout << "Forward                   : ";
+    cdll.ForEach(Print<CDNode>, cout);
+    cout << "Backward                  : ";
+    cdll.ReverseForEach(Print<CDNode>, cout);
+}
+
 void ListsDemo(){
     LinkedListDemo();
+    DoubleLinkedListDemo();
+    CircularLinkedListDemo();
+    CircularDoubleLinkedListDemo();
 }

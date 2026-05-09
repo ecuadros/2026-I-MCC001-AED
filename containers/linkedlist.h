@@ -87,7 +87,7 @@ public:
     using forward_iterator = LinkedListForwardIterator<MySelf>;
     // friend forward_iterator;
 
-private:
+protected:
     Node *m_pRoot = nullptr;
     Node *m_pTail = nullptr;
     size_t m_size = 0;
@@ -200,8 +200,11 @@ public:
         --m_size;
         return pDelete;
     }
-private:
-            void    internal_insert(Node* &pParent, const value_type &value, Ref ref);
+protected:
+    Node*   internal_insert(Node* &pCurr, Node* pPrev, const value_type &value, Ref ref);
+    // Hook for derived classes (e.g. DoubleLinkedList) to wire extra links
+    // (such as the prev pointer) without rewriting insert/internal_insert.
+    virtual void on_node_inserted(Node* /*pNew*/, Node* /*pPrev*/) {}
 public:
     virtual void    insert(const value_type &value, Ref ref);
     
@@ -238,20 +241,25 @@ public:
 };
 
 template <typename Traits>
-void LinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
-    if(!pPrev || m_comp(value, pPrev->getDataRef())){
-        pPrev = new Node(value, ref, pPrev);
+typename LinkedList<Traits>::Node*
+LinkedList<Traits>::internal_insert(Node* &pCurr, Node* pPrev, const value_type &value, Ref ref){
+    if(!pCurr || m_comp(value, pCurr->getDataRef())){
+        Node* pNew = new Node(value, ref, pCurr);
+        pCurr = pNew;
         m_size++;
-        if(pPrev == m_pRoot)
-            m_pTail = pPrev;
-        return;
+        // m_pTail is the last node by traversal: only update it when inserting
+        // at the very end (i.e. the new node has no successor).
+        if(pNew->getNext() == nullptr)
+            m_pTail = pNew;
+        on_node_inserted(pNew, pPrev);
+        return pNew;
     }
-    internal_insert(pPrev->getNextRef(), value, ref);
+    return internal_insert(pCurr->getNextRef(), pCurr, value, ref);
 }
 
 template <typename Traits>
 void LinkedList<Traits>::insert(const value_type &value, Ref ref){
-    internal_insert(m_pRoot, value, ref);
+    internal_insert(m_pRoot, nullptr, value, ref);
 }
 
 template <typename Traits>
