@@ -87,7 +87,7 @@ public:
     using forward_iterator = LinkedListForwardIterator<MySelf>;
     // friend forward_iterator;
 
-private:
+protected:
     Node *m_pRoot = nullptr;
     Node *m_pTail = nullptr;
     size_t m_size = 0;
@@ -101,7 +101,7 @@ public:
 
         while(pTemp != nullptr){
             push_back(pTemp -> getData(), pTemp -> getRef());
-            pTemp = pTemp->getNext();
+            pTemp = static_cast<Node*>(pTemp->getNext());
         }
             
     }
@@ -124,7 +124,7 @@ public:
         Node* pTemp = m_pRoot;
 
         while (pTemp){
-            Node* pNext = pTemp->getNext();
+            Node* pNext = static_cast<Node*>(pTemp->getNext());
             delete pTemp;
             pTemp = pNext;
         }
@@ -148,7 +148,7 @@ public:
         scoped_lock<mutex> lock(m_mtx);
         if( m_pRoot ){
             Node* pTemp = m_pRoot;
-            m_pRoot = m_pRoot->getNext();
+            m_pRoot = static_cast<Node*>(m_pRoot->getNext());
             --m_size;
             return make_pair(pTemp->getData(), pTemp->getRef());
         }else
@@ -189,7 +189,7 @@ public:
         Node *pTemp = m_pRoot;
 
         while (pTemp->getNext() != m_pTail)             //Recorrer toda la lista hasta el penultimo elemento
-            pTemp = pTemp->getNext();
+            pTemp = static_cast<Node*>(pTemp->getNext());
 
         auto pDelete = make_pair(m_pTail->getData(), m_pTail->getRef());
         
@@ -200,7 +200,7 @@ public:
         --m_size;
         return pDelete;
     }
-private:
+protected:
             void    internal_insert(Node* &pParent, const value_type &value, Ref ref);
 public:
     virtual void    insert(const value_type &value, Ref ref);
@@ -212,7 +212,7 @@ public:
 
         Node* pTemp = m_pRoot;
         for (size_t i = 0; i < index; ++i){
-            pTemp = pTemp -> getNext();
+            pTemp = static_cast<Node*>(pTemp->getNext());
         }
         return *pTemp;
     };
@@ -239,14 +239,16 @@ public:
 
 template <typename Traits>
 void LinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
-    if(!pPrev || m_comp(value, pPrev->getDataRef())){
+    if(!pPrev || this->m_comp(value, pPrev->getDataRef())){
         pPrev = new Node(value, ref, pPrev);
-        m_size++;
-        if(pPrev == m_pRoot)
-            m_pTail = pPrev;
+        this->m_size++;
+        if(pPrev == this->m_pRoot)
+            this->m_pTail = pPrev;
         return;
     }
-    internal_insert(pPrev->getNextRef(), value, ref);
+
+    Node* &pNext = reinterpret_cast<Node*&>(pPrev->getNextRef());
+    internal_insert(pNext, value, ref);
 }
 
 template <typename Traits>
@@ -262,7 +264,7 @@ string  LinkedList<Traits>::toString() {
     if( m_size > 0 ){
         for( size_t i = 0 ; i < size()-1 ; ++i ){
             ss << *pNode << ",";
-            pNode = pNode->getNext();
+            pNode = static_cast<Node*>(pNode->getNext());
         }
         ss << *pNode;
     }

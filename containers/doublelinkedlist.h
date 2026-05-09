@@ -71,30 +71,30 @@ public:
     using forward_iterator  = LinkedListForwardIterator<MySelf>;
     using backward_iterator = DoubleLinkedListBackwardIterator<MySelf>;
     
-    forward_iterator begin()   { return forward_iterator(this, m_pHead); }
+    forward_iterator begin()   { return forward_iterator(this, this->m_pRoot); }
     forward_iterator end()     { return forward_iterator(this, nullptr); }
-    backward_iterator rbegin() { return backward_iterator(this, m_pTail); }
+    backward_iterator rbegin() { return backward_iterator(this, this->m_pTail); }
     backward_iterator rend()   { return backward_iterator(this, nullptr); }
-    
-private:
-    Node *m_pHead;
-    Node *m_pTail;
-    size_t m_size;
-    mutex  m_mtx;
 
 private:
     void internal_insert(Node* &pCurrent, Node* pPrev, const value_type &value, Ref ref);
 
 
 public:
-    DoubleLinkedList() : m_pHead(nullptr), m_pTail(nullptr), m_size(0) {}
+    DoubleLinkedList(){
+        this->m_pRoot = nullptr;
+        this->m_pTail = nullptr;
+        this->m_size = 0;
+    }
+    
+    // Copy constructor
     DoubleLinkedList(DoubleLinkedList &other){
-        m_pHead = m_pTail = nullptr;
-        m_size = 0;
+        this->m_pRoot = this->m_pTail = nullptr;
+        this->m_size = 0;
 
         scoped_lock<mutex> lock(const_cast<mutex&>(other.m_mtx));
 
-        Node* pTemp = other.m_pHead; 
+        Node* pTemp = static_cast<Node*>(other.m_pRoot); 
         while (pTemp != nullptr) {
             this->push_back(pTemp->getData(), pTemp->getRef());
             pTemp = static_cast<Node*>(pTemp->getNext());
@@ -102,27 +102,27 @@ public:
     }
 
     DoubleLinkedList(DoubleLinkedList &&other){
-        scoped_lock<mutex> lock(m_mtx);
-        m_pHead = exchange(other.m_pHead, nullptr);
-        m_pTail = exchange(other.m_pTail, nullptr);
-        m_size = exchange(other.m_size, 0);
+        scoped_lock<mutex> lock(this->m_mtx);
+        this->m_pRoot = exchange(other.m_pRoot, nullptr);
+        this->m_pTail = exchange(other.m_pTail, nullptr);
+        this->m_size = exchange(other.m_size, 0);
     }
     
     virtual ~DoubleLinkedList() {
-        scoped_lock<mutex> lock(m_mtx);
-        Node* pCurrent = m_pHead;
+        scoped_lock<mutex> lock(this->m_mtx);
+        Node* pCurrent = static_cast<Node*>(this->m_pRoot);
         while (pCurrent != nullptr) {
             Node* pNext = static_cast<Node*>(pCurrent->getNext());
             delete pCurrent;
             pCurrent = pNext;
         }
-        m_pHead = nullptr;
-        m_pTail = nullptr;
-        m_size = 0;
+        this->m_pRoot = nullptr;
+        this->m_pTail = nullptr;
+        this->m_size = 0;
     }
     
-    size_t size () const { return m_size; }
-    bool isEmpty() const { return m_pHead == nullptr; }
+    size_t size () const { return this->m_size; }
+    bool isEmpty() const { return this->m_pRoot == nullptr; }
     
     void insert(value_type value, Ref ref);
         // TODO: insertar la el nodo hacia adelante (como en la LinkedList)
@@ -130,29 +130,29 @@ public:
         // usar internal insert pero debe devolver el nuevo nodo creado y 
         // el puntero al lnodo anterior
     void push_back(value_type value, Ref ref);
-    value_type pop_back();
+    //virtual auto pop_back() -> pair<value_type, Ref> override;
 
     template <typename Func, typename... Args>
     void ForEach(Func func, Args &&... args){
-        scoped_lock<mutex> lock(m_mtx);
+        scoped_lock<mutex> lock(this->m_mtx);
         ::ForEach(begin(), end(), func, forward<Args>(args)...);
     }
 
     template <typename Func, typename... Args>
     void ReverseForEach(Func func, Args &&... args){
-        scoped_lock<mutex> lock(m_mtx);
+        scoped_lock<mutex> lock(this->m_mtx);
         ::ForEach(rbegin(), rend(), func, forward<Args>(args)...);
     }
 
     template <typename Func, typename... Args>
     forward_iterator FirstThat(Func func, Args &&... args){
-        scoped_lock<mutex> lock(m_mtx);
+        scoped_lock<mutex> lock(this->m_mtx);
         return ::FirstThat(begin(), end(), func, forward<Args>(args)...);
     }
 
     template <typename Func, typename... Args>
     backward_iterator ReverseFirstThat(Func func, Args &&... args){
-        scoped_lock<mutex> lock(m_mtx);
+        scoped_lock<mutex> lock(this->m_mtx);
         return ::FirstThat(rbegin(), rend(), func, forward<Args>(args)...);
     }
 
@@ -167,7 +167,7 @@ public:
         if (this->m_size > 0) {
             while (pNode != nullptr) {
                 ss << *pNode; 
-                pNode = pNode->getNext();
+                pNode = static_cast<Node*>(pNode->getNext());
                 if (pNode != nullptr) ss << ",";
             }
         }
@@ -189,13 +189,15 @@ void DoubleLinkedList<Traits>::internal_insert(Node* &pCurrent, Node* pPrev, con
         this->m_size++;
         return;
     }
-    internal_insert(pCurrent->getNextRef(), pCurrent, value, ref);
+
+    Node* &pNext = reinterpret_cast<Node*&>(pCurrent->getNextRef());
+    internal_insert(pNext, pCurrent, value, ref);
 }
 
 template <typename Traits>
 void DoubleLinkedList<Traits>::insert(value_type value, Ref ref) {
     scoped_lock<mutex> lock(this->m_mtx);
-    internal_insert(this->m_pHead, nullptr, value, ref);
+    internal_insert(this->m_pRoot, nullptr, value, ref);
 }
 
 template <typename Traits>
@@ -222,20 +224,20 @@ istream& operator>>(istream& is, DoubleLinkedList<Traits>& list) {
 
 template <typename Traits>
 void DoubleLinkedList<Traits>::push_back(value_type value, Ref ref) {
-    scoped_lock<mutex> lock(m_mtx);
+    scoped_lock<mutex> lock(this->m_mtx);
     // Creamos el nuevo nodo. Su 'prev' será el actual m_pTail.
-    Node* pNew = new Node(value, ref, nullptr, m_pTail);
+    Node* pNew = new Node(value, ref, nullptr, static_cast<Node*>(this->m_pTail));
 
-    if (m_pTail == nullptr) {
+    if (this->m_pTail == nullptr) {
         // Si la lista estaba vacía
-        m_pHead = m_pTail = pNew;
+        this->m_pRoot = this->m_pTail = pNew;
     } else {
         // Conectamos el viejo tail con el nuevo nodo
-        m_pTail->setNext(pNew);
+        this->m_pTail->setNext(pNew);
         // Actualizamos el tail de la lista
-        m_pTail = pNew;
+        this->m_pTail = pNew;
     }
-    m_size++;
+    this->m_size++;
 }
 
 #endif // __DOUBLELINKEDLIST_H__

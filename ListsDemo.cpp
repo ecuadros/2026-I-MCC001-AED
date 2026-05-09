@@ -102,8 +102,41 @@ void LinkedListDemo(){
     cout << "Lista5 [2]: " << list5[2] << endl;
 }
 
+void DoubleLinkedListDemo() {
+    cout << "----- DOUBLE LINKED LIST ---" << endl;
+
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> dlist;
+    using DLI = DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>>::Node;
+
+    //Insert
+    dlist.insert(50, 1);
+    dlist.insert(20, 7);
+    dlist.insert(80, 3);
+    dlist.insert(10, 4);
+    cout << "Lista Doble Ascendente " << dlist << endl;
+
+    // ReverseForEach
+    cout << "Recorrido Inverso ";
+    dlist.ReverseForEach(Print<DLI>, cout);
+    cout << endl;
+
+    // ReverseFirstThat
+    auto it = dlist.ReverseFirstThat(IsGreaterThan<DLI, TI>, 40);
+    if (it != dlist.rend()) {
+        cout << "Primer mayor a 40 desde el final: " << *it << endl;
+    }
+
+    // Push back
+    dlist.push_back(100, 5);
+    cout << "Tras push_back(100): " << dlist << endl;
+
+    // Move Constructor
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> movedList = move(dlist);
+    cout << "Lista moved: " << movedList << endl;
+    cout << "Lista original: " << dlist.size() << endl;
+}
 
 void ListsDemo(){
-    LinkedListDemo();
-
+    //LinkedListDemo();
+    DoubleLinkedListDemo();
 }
