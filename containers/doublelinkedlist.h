@@ -89,19 +89,13 @@ private:
 public:
     DoubleLinkedList() : m_pHead(nullptr), m_pTail(nullptr), m_size(0) {}
     DoubleLinkedList(DoubleLinkedList &other){
-        // 1. Inicializamos la lista como vacía
         m_pHead = m_pTail = nullptr;
         m_size = 0;
 
-        // 2. Bloqueamos la lista origen por seguridad en entornos multihilo
-        // Usamos el mutex de 'other' porque estamos leyendo de ella
         scoped_lock<mutex> lock(const_cast<mutex&>(other.m_mtx));
 
-        // 3. Recorremos la lista original de principio a fin
         Node* pTemp = other.m_pHead; 
         while (pTemp != nullptr) {
-            // 4. Insertamos al final de la nueva lista. 
-            // El método push_back se encargará de crear el DLLNode y conectar el 'prev'
             this->push_back(pTemp->getData(), pTemp->getRef());
             pTemp = static_cast<Node*>(pTemp->getNext());
         }
@@ -115,24 +109,13 @@ public:
     }
     
     virtual ~DoubleLinkedList() {
-        // 1. Bloqueo de seguridad para evitar que otros hilos 
-        // accedan a la lista mientras se destruye.
         scoped_lock<mutex> lock(m_mtx);
-
-        // 2. Limpieza de nodos
         Node* pCurrent = m_pHead;
         while (pCurrent != nullptr) {
-           // Guardamos el puntero al siguiente antes de borrar el actual
             Node* pNext = static_cast<Node*>(pCurrent->getNext());
-        
-            // Liberamos la memoria del nodo actual
             delete pCurrent;
-        
-            // Avanzamos al siguiente
             pCurrent = pNext;
         }
-
-        // 3. Resetear punteros y tamaño a un estado neutro
         m_pHead = nullptr;
         m_pTail = nullptr;
         m_size = 0;
