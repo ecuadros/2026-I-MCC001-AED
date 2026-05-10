@@ -107,7 +107,7 @@ public:
         this->m_pTail = exchange(other.m_pTail, nullptr);
         this->m_size = exchange(other.m_size, 0);
     }
-    
+    /*
     virtual ~DoubleLinkedList() {
         scoped_lock<mutex> lock(this->m_mtx);
         Node* pCurrent = static_cast<Node*>(this->m_pRoot);
@@ -120,7 +120,7 @@ public:
         this->m_pTail = nullptr;
         this->m_size = 0;
     }
-    
+    */
     size_t size () const { return this->m_size; }
     bool isEmpty() const { return this->m_pRoot == nullptr; }
     
