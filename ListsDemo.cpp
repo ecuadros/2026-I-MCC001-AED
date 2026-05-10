@@ -1,4 +1,5 @@
 #include "containers/linkedlist.h"
+#include "containers/doublelinkedlist.h"
 #include <fstream>
 
 template <typename Node>
@@ -101,6 +102,20 @@ void LinkedListDemo(){
     cout << "Lista5 [2]: " << list5[2] << endl;
 }
 
-void ListsDemo(){
-    LinkedListDemo();
+void DoubleLinkedListDemo(){
+    DoubleLinkedList<DescendingDoubleLinkedListTrait<TI>> dll;
+
+    dll.insert(6, 15);
+    dll.insert(2, 25);
+    dll.insert(9, 35);
+    dll.insert(1, 45);
+    dll.insert(7, 55);
+
+    cout << "Lista descendente: " << dll << endl;
 }
+
+void ListsDemo(){
+    //LinkedListDemo();
+    DoubleLinkedListDemo();
+}
+
