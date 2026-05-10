@@ -76,11 +76,11 @@ public:
     //COPY CONSTRUCTOR
     DoubleLinkedList(const DoubleLinkedList &other){
         scoped_lock<mutex> lock(other.m_mtx);
-        Node* pTemp = other.m_pRoot;
+        Node* pTemp = other.m_pRoot; // Empezamos desde el nodo raíz de la lista original
 
-        while(pTemp != nullptr){
-            push_back(pTemp -> getData(), pTemp -> getRef());
-            pTemp = pTemp->getNext();
+        while(pTemp != nullptr){ // Recorremos la lista original hasta el final
+            push_back(pTemp -> getData(), pTemp -> getRef()); // Insertamos cada nodo al final de la nueva lista utilizando push_back para mantener el orden
+            pTemp = pTemp->getNext(); // Avanzamos al siguiente nodo en la lista original
         }
     }
 
@@ -100,27 +100,16 @@ public:
     
     //INSERT 
     void insert(const value_type &value, Ref ref) override{
-        // TODO: insertar el nodo hacia adelante (como en la LinkedList)
-        // adicionalmente conectar el nodo anterior con su nuevo siguiente
-        // usar internal insert pero debe devolver el nuevo nodo creado y 
-        // el puntero al lnodo anterior
-
         scoped_lock<mutex> lock(this->m_mtx);
-        Parent::insert(value, ref); // Reutilizamos la función de inserción de LinkedList
+        auto result = this->internal_insert(this->m_pRoot, nullptr, value, ref); // Insertamos el nuevo nodo utilizando la función de inserción interna y obtenemos el nodo insertado y su nodo anterior
+        Node* pPrevious = result.previous; // Obtenemos el nodo anterior al nodo insertado
+        Node* pInserted = result.inserted; // Obtenemos el nodo insertado
 
-        Node* current = this->m_pRoot; 
-        Node* prev= nullptr;
+        pInserted->setPrev(pPrevious); // Actualizamos el nodo anterior del nodo insertado para que apunte al nodo anterior
 
-        while(current != nullptr){ 
-            current->setPrev(prev);
-            prev = current; //
-
-            if(current->getNext() == nullptr)
-                this->m_pTail = current;
-
-            prev = current;
-            current = current->getNext();
-        }
+        Node* pNext = pInserted->getNext(); // Obtenemos el nodo siguiente al nodo insertado para actualizar su nodo anterior en caso de que exista
+        if (pNext != nullptr) // Si el nodo siguiente al nodo insertado no es nullptr, entonces actualizamos su nodo anterior para que apunte al nodo insertado
+            pNext->setPrev(pInserted); 
     }
 
     void push_back(value_type value, Ref ref) override{ // Insertar al final de la lista
@@ -128,16 +117,16 @@ public:
         
         Node* pTemp = new Node(value, ref, nullptr, this->m_pTail);  //Como es el ultimo nodo no apunta a nada
 
-        if (this->m_size == 0){
-            this->m_pRoot = pTemp;
-            this->m_pTail = pTemp; 
+        if (this->m_size == 0){ // Si la lista está vacía, el nuevo nodo es tanto el nodo raíz como el nodo tail
+            this->m_pRoot = pTemp; // Actualizamos el nodo raíz para que apunte al nuevo nodo
+            this->m_pTail = pTemp; // Actualizamos el nodo tail para que apunte al nuevo nodo
         } else {
-            this->m_pTail->setNext(pTemp);
-            pTemp->setPrev(this->m_pTail);
-            this->m_pTail = pTemp;
+            this->m_pTail->setNext(pTemp); // Actualizamos el siguiente nodo del nodo tail para que apunte al nuevo nodo
+            pTemp->setPrev(this->m_pTail); // Actualizamos el nodo anterior del nuevo nodo para que apunte al nodo tail
+            this->m_pTail = pTemp; // Actualizamos el nodo tail para que apunte al nuevo nodo
         }
 
-        ++this->m_size;
+        ++this->m_size; // Incrementamos el tamaño de la lista
     };
 
     auto pop_back() -> pair<value_type, Ref> override{
@@ -174,16 +163,5 @@ public:
     }
 
 };
-
-    //Operator<< para imprimir la lista
-    template <typename Traits>
-    ostream& operator<<(ostream& os, DoubleLinkedList<Traits>& list){
-        return os << static_cast<LinkedList<Traits>&>(list); // Reutilizamos el operador << de LinkedList para imprimir la parte común de la lista
-    }
-    //Operator>> para leer la lista
-    template <typename Traits>
-    istream& operator>>(istream& is, DoubleLinkedList<Traits>& list){
-        return is >> static_cast<LinkedList<Traits>&>(list); // Reutilizamos el operador >> de LinkedList para leer la parte común de la lista
-    }
 
 #endif

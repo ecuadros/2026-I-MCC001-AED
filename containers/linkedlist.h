@@ -83,6 +83,10 @@ public:
     using Node       = typename Traits::Node;
     using Comp       = typename Traits::Comp;
     using MySelf     = LinkedList<Traits>;
+    struct InsertResult{
+        Node* previous;
+        Node* inserted;
+    };
 
     using forward_iterator = LinkedListForwardIterator<MySelf>;
     // friend forward_iterator;
@@ -200,8 +204,8 @@ public:
         --m_size;
         return pDelete;
     }
-private:
-            void    internal_insert(Node* &pParent, const value_type &value, Ref ref);
+protected:
+            InsertResult internal_insert(Node* &pCurrent, Node* pPrevious, const value_type &value, Ref ref);
 public:
     virtual void    insert(const value_type &value, Ref ref);
     
@@ -238,20 +242,24 @@ public:
 };
 
 template <typename Traits>
-void LinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
-    if(!pPrev || m_comp(value, pPrev->getDataRef())){
-        pPrev = new Node(value, ref, pPrev);
-        m_size++;
-        if(pPrev == m_pRoot)
-            m_pTail = pPrev;
-        return;
+typename LinkedList<Traits>::InsertResult
+LinkedList<Traits>::internal_insert(Node* &pCurrent, Node* pPrevious, const value_type &value, Ref ref){
+    if(!pCurrent || m_comp(value, pCurrent->getDataRef())){
+        Node* pInserted = new Node(value, ref, pCurrent);
+        pCurrent = pInserted;
+        ++m_size;
+
+        if (m_size == 1 || pInserted->getNext() == nullptr)
+            m_pTail = pInserted;
+
+        return {pPrevious, pInserted};
     }
-    internal_insert(pPrev->getNextRef(), value, ref);
+    return internal_insert(pCurrent->getNextRef(), pCurrent, value, ref);
 }
 
 template <typename Traits>
 void LinkedList<Traits>::insert(const value_type &value, Ref ref){
-    internal_insert(m_pRoot, value, ref);
+    internal_insert(m_pRoot, nullptr, value, ref);
 }
 
 template <typename Traits>

@@ -148,17 +148,20 @@ void LinkedListDemo(){
     clist.insert(2, 20);
     clist.insert(3, 30);
 
-    cout << "Recorrido circular: " << clist.toStringCircular() << endl;
+    cout << "Recorrido circular: " << clist << endl;
 
     // CIRCULAR DOUBLE LINKED LIST
     cout << endl << "4. CircularDoubleLinkedList: " << endl;
     CircularDoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> cdlist;
+    using CDLL = CircularDoubleLinkedList<AscendingDoubleLinkedListTrait<TI>>::Node;
     cdlist.insert(1, 10);
     cdlist.insert(2, 20);
     cdlist.insert(3, 30);
 
-    cout << "Recorrido circular hacia adelante: " << cdlist.toStringCircularDoubleNext() << endl;
-    cout << "Recorrido circular hacia atrás: " << cdlist.toStringCircularReverse() << endl;
+    cout << "Recorrido circular hacia adelante: " << cdlist << endl;
+    cout << "Recorrido circular hacia atrás: ";
+    cdlist.ReverseForEach(Print<CDLL>, cout);
+    cout << endl;
 
 }
 
