@@ -176,14 +176,4 @@ public:
     }
 };
 
-template <typename Traits>
-ostream& operator<<(ostream& os, DoubleLinkedList<Traits>& list){
-    return operator<<(os, static_cast<LinkedList<Traits>&>(list));
-}
-
-template <typename Traits>
-istream& operator>>(istream& is, DoubleLinkedList<Traits>& list){
-    return operator>>(is, static_cast<LinkedList<Traits>&>(list));
-}
-
 #endif
