@@ -3,8 +3,9 @@ CXXFLAGS = -std=c++2b -Wall -g -pthread # Añadido -pthread
 LDFLAGS = -pthread # Añadido -pthread
 
 TARGET = main
-SRCS = main.cpp \
-	   ListsDemo.cpp
+SRCS = DemoHeap.cpp \
+#main.cpp \
+#	   ListsDemo.cpp
 # 	   DemoVector.cpp
 # macros.cpp vector.cpp
 

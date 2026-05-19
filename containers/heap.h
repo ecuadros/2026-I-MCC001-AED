@@ -1,18 +1,22 @@
 #ifndef __HEAP_H__
 #define __HEAP_H__
 #include <vector>
+#include <stdexcept>
+#include <utility>
 #include <mutex>
+#include <iostream>
 #include "vector.h"
-
-template <typename Traits>
+using namespace std;
+template <typename T>
 class HeapNode{
     private:
-        typename Traits::value_type m_data;
+        T m_data;
+        //typename Traits::value_type m_data;
         Ref m_ref;
     public:
-        HeapNode(typename Traits::value_type data, Ref ref) : m_data(data), m_ref(ref) {}
+        HeapNode(T data, Ref ref) : m_data(data), m_ref(ref) {}
         
-        typename Traits::value_type GetData() const { return m_data; }
+        T GetData()   const { return m_data; }
         Ref GetRef()  const { return m_ref;  }
 };
 
@@ -48,24 +52,29 @@ public:
     }
 
     // Revisar completamente
-    void extract() {
+    pair<value_type, Ref> extract() {
         if (m_heap.empty()) {
             throw std::out_of_range("Heap is empty");
         }
+        
+        auto top_element = make_pair(m_heap[0].GetData(), m_heap[0].GetRef());
+
         if (m_heap.size() == 1) {
             m_heap.pop_back();
-            return;
+            return top_element;
         }
         m_heap[0] = m_heap.back();
         m_heap.pop_back();
         heapify_down(0);
+
+        return top_element;
     }
 
-    T peek_min() const {
+    pair<value_type, Ref> peek_top() const {
         if (m_heap.empty()) {
             throw std::out_of_range("Heap is empty");
         }
-        return m_heap[0];
+        return make_pair(m_heap[0].GetData(), m_heap[0].GetRef());
     }
 
     bool empty() const {
@@ -80,7 +89,7 @@ private:
     void heapify_up(size_t index) {
         while (index > 0) {
             size_t parent = (index - 1) / 2;
-            if ( m_comp(m_heap[index], m_heap[parent]) ) {
+            if ( m_comp(m_heap[index].GetData(), m_heap[parent].GetData()) ) {
                 std::swap(m_heap[index], m_heap[parent]);
                 index = parent;
             } else {
@@ -94,10 +103,10 @@ private:
         size_t right = 2 * index + 2;
         size_t smallest = index;
 
-        if (left < m_heap.size() && m_comp(m_heap[left], m_heap[smallest]) ) {
+        if (left < m_heap.size() && m_comp(m_heap[left].GetData(), m_heap[smallest].GetData()) ) {
             smallest = left;
         }
-        if (right < m_heap.size() && m_comp(m_heap[right], m_heap[smallest]) ) {
+        if (right < m_heap.size() && m_comp(m_heap[right].GetData(), m_heap[smallest].GetData()) ) {
             smallest = right;
         }
 
