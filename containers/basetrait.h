@@ -6,18 +6,18 @@ using namespace std;
 
 template <typename _T, typename _Node>
 struct BaseContainerTrait{
-    using value_type = typename _T;
-    using Node       = typename _Node;
+    using value_type = _T;
+    using Node       = _Node;
 };
 
-template <typename _T>
+template <typename Node>
 struct AscendingTrait{
-    using Comp = less<_T>;
+    using Comp = less<Node>;
 };
 
-template <typename _T>
+template <typename Node>
 struct DescendingTrait{
-    using Comp = greater<_T>;
+    using Comp = greater<Node>;
 };
 
 #endif // __BASE_TRAIT_H__

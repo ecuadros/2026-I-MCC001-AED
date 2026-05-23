@@ -4,27 +4,36 @@
 #include <mutex>
 #include "vector.h"
 
-template <typename Traits>
+template <typename T>
 class HeapNode{
     private:
-        typename Traits::value_type m_data;
+        using value_type = T;
+        value_type m_data;
         Ref m_ref;
     public:
-        HeapNode(typename Traits::value_type data, Ref ref) : m_data(data), m_ref(ref) {}
+        HeapNode(value_type data, Ref ref) : m_data(data), m_ref(ref) {}
         
-        typename Traits::value_type GetData() const { return m_data; }
+        value_type GetData() const { return m_data; }
         Ref GetRef()  const { return m_ref;  }
+
+        bool operator<(const HeapNode& other) const {
+            return m_data < other.m_data;
+        }
+
+        bool operator>(const HeapNode& other) const {
+            return m_data > other.m_data;
+        }
 };
 
 template <typename T>
 struct AscendingHeapTrait : public BaseContainerTrait<T, HeapNode<T> >,
-                            public AscendingTrait<T>
+                            public AscendingTrait<HeapNode<T>>
 {
 };
 
 template <typename T>
 struct DescendingHeapTrait : public BaseContainerTrait<T, HeapNode<T> >,
-                            public DescendingTrait<T>
+                            public DescendingTrait<HeapNode<T>>
 {
 };
 
@@ -61,7 +70,7 @@ public:
         heapify_down(0);
     }
 
-    T peek_min() const {
+    Node peek() const {
         if (m_heap.empty()) {
             throw std::out_of_range("Heap is empty");
         }
