@@ -33,5 +33,6 @@ int main() {
     //DemoVector();
     // DemoConcurrentVector();
     // ListsDemo();
+    DemoHeap();
     return 0;
 }

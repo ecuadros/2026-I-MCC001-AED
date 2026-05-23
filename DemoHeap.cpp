@@ -1,30 +1,27 @@
 #include <iostream>
+#include <vector>
 #include "containers/heap.h"
-#include "types.h" // Aquí está definido TI (int) y Ref (long)
+#include "types.h"
 
 using namespace std;
 
-void DemoMinHeap() {
-    cout << "--- CREANDO MIN HEAP (Ascending Trait) ---" << endl;
+void DemoHeap() {
+    cout << "--- CREANDO HEAP ---" << endl;
     
-    // Inyectamos la configuración usando Traits
-    Heap<AscendingHeapTrait<TI>> minHeap;
+    Heap<AscendingHeapTrait<TI>> myHeap;
 
-    minHeap.insert(50, 1001);
-    minHeap.insert(15, 1002);
-    minHeap.insert(80, 1003);
-    minHeap.insert(5,  1004); // Este debería convertirse en la nueva raíz
+    myHeap.insert(50, 10);
+    myHeap.insert(15, 5);
+    myHeap.insert(80, 9);
+    myHeap.insert(5,  7);
 
-    cout << "El valor en la cima es: " << minHeap.peek_top().first << endl;
+    Heap<AscendingHeapTrait<TI>> myHeap2(myHeap);
+    cout << "Constructor copia" << endl;
+    cout << myHeap2 <<endl;
 
-    cout << "Extrayendo valores en orden de prioridad:" << endl;
-    while (!minHeap.empty()) {
-        auto elemento = minHeap.extract();
-        cout << "Valor: " << elemento.first << " | Ref: " << elemento.second << endl;
-    }
-}
+    Heap<AscendingHeapTrait<TI>> myHeap3 = move(myHeap2);
+    cout << "Move constructor" << endl;
+    cout << myHeap3 <<endl;
+    cout << myHeap2 <<endl;
 
-int main() {
-    DemoMinHeap();
-    return 0;
 }
