@@ -79,11 +79,11 @@ void LinkedListDemo(){
 
     list3.push_back(5, 50);
     cout << "Prueba Move Constructor: " << endl;
-    LinkedList<AscendingLinkedListTrait<TI>> list5 = move(list3);
+    LinkedList<AscendingLinkedListTrait<TI>> list5 = std::move(list3);
     cout << "Lista ascendente 5: " << list5 << endl;
 
     cout << "Prueba del Destructor: " << endl;
-    list4.~LinkedList();
+    // list4.~LinkedList();
     cout << "Lista ascendente 4: " << list4 << endl;
 
     cout << "Prueba del operador >>: "<<endl;
