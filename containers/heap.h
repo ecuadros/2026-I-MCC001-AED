@@ -67,6 +67,27 @@ public:
         m_comp = exchange(other.m_comp, nullptr);
     }
 
+    // Mejora: Copy assignment operator
+    Heap& operator=(const Heap& other) {
+        if (this != &other) {
+            std::scoped_lock lock(m_mtx, other.m_mtx);
+            m_heap = other.m_heap;
+            m_comp = other.m_comp;
+        }
+        return *this;
+    }
+
+    // Mejora: Move assignment operator
+    Heap& operator=(Heap&& other) {
+        if (this != &other) {
+            std::scoped_lock lock(m_mtx, other.m_mtx);
+            m_heap = std::move(other.m_heap);
+            m_comp = std::move(other.m_comp);
+        }
+
+        return *this;
+    }
+
     void insert(const value_type &value, Ref ref) {
         scoped_lock<mutex> lock(m_mtx);
         m_heap.push_back( Node(value, ref) );

@@ -1,4 +1,5 @@
 #include "containers/linkedlist.h"
+#include "containers/heap.h"
 #include <fstream>
 
 template <typename Node>
@@ -103,4 +104,25 @@ void LinkedListDemo(){
 
 void ListsDemo(){
     LinkedListDemo();
+}
+
+void HeapDemo(){
+   // Heap<DescendingLinkedListTrait<TI>> heap;
+    Heap<DescendingHeapTrait<TI>> heap;
+    
+    // Ejemplo de inserción
+    heap.insert(5, 10);
+    heap.insert(3, 20);
+    heap.insert(8, 30);
+    heap.insert(1, 40);
+    heap.insert(6, 50);
+    cout << "Heap después de inserciones: " << heap << endl;
+
+    // Ejemplo de >>
+    stringstream ss("[ 0,17, 7, 30, 1 ]");
+    ss >> heap;
+    cout << "Heap después de inserción desde stringstream: " << heap << endl;
+
+    //cin >> heap;
+    //cout << "Heap después de inserción desde cin: " << heap << endl;
 }
