@@ -49,15 +49,33 @@ public:
 private:
     vector<Node> m_heap;
     Comp         m_comp;
+    mutable mutex m_mtx;
 public:
 
+    Heap() = default;
+
+    // 1. Copy constructor
+    // Heap(const Heap&) = default;
+    Heap(const Heap& other): m_heap(other.m_heap), m_comp(other.m_comp) {
+    }
+
+    // 2. Move constructor
+    // Heap(Heap&&) = default;
+    Heap(Heap&& other) {
+        scoped_lock<mutex> lock(m_mtx);
+        m_heap = exchange(other.m_heap, nullptr);
+        m_comp = exchange(other.m_comp, nullptr);
+    }
+
     void insert(const value_type &value, Ref ref) {
+        scoped_lock<mutex> lock(m_mtx);
         m_heap.push_back( Node(value, ref) );
         heapify_up(m_heap.size() - 1);
     }
 
     // Revisar completamente
     void extract() {
+        scoped_lock<mutex> lock(m_mtx);
         if (m_heap.empty()) {
             throw std::out_of_range("Heap is empty");
         }
@@ -71,6 +89,7 @@ public:
     }
 
     Node peek() const {
+        scoped_lock<mutex> lock(m_mtx);
         if (m_heap.empty()) {
             throw std::out_of_range("Heap is empty");
         }
@@ -78,10 +97,12 @@ public:
     }
 
     bool empty() const {
+        scoped_lock<mutex> lock(m_mtx);
         return m_heap.empty();
     }
 
     size_t size() const {
+        scoped_lock<mutex> lock(m_mtx);
         return m_heap.size();
     }
 
@@ -116,5 +137,51 @@ private:
         }
     }
 };
+
+// 3. Operator<<
+template <typename Traits>
+ostream& operator<<(ostream& os, const Heap<Traits>& heap) {
+    Heap<Traits> temp(heap);
+    os << "[ ";
+
+    while (!temp.empty()) {
+        auto node = temp.peek();
+        os << node.GetData();
+        temp.extract();
+        if (!temp.empty()) {
+            os << ", ";
+        }
+    }
+
+    os << " ]";
+    return os;
+}
+
+// 4. Operator>>
+template <typename Traits>
+istream& operator>>(istream& is, Heap<Traits>& heap) {
+    char ch;
+    // Leer '['
+    is >> ch;
+    if (ch != '[') {
+        is.setstate(std::ios::failbit);
+        return is;
+    }
+
+    typename Traits::value_type value;
+    while (true) {
+        is >> value;
+        heap.insert(value, 0);
+        is >> ch;
+        if (ch == ']') {
+            break;
+        }
+        if (ch != ',') {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
+    }
+    return is;
+}
 
 #endif // __HEAP_H__
