@@ -125,4 +125,12 @@ void HeapDemo(){
 
     //cin >> heap;
     //cout << "Heap después de inserción desde cin: " << heap << endl;
+
+    // Ejemplo de emplace
+    heap.emplace(15, 10);
+    heap.emplace(4, 20);
+    heap.emplace(18, 30);
+    heap.emplace(11, 40);
+    heap.emplace(6, 50);
+    cout << "Heap después de emplace: " << heap << endl;
 }

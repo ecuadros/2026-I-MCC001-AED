@@ -56,15 +56,18 @@ public:
 
     // 1. Copy constructor
     // Heap(const Heap&) = default;
-    Heap(const Heap& other): m_heap(other.m_heap), m_comp(other.m_comp) {
+    Heap(const Heap& other) {
+        scoped_lock<mutex> lock(other.m_mtx);
+        m_heap = other.m_heap;
+        m_comp = other.m_comp;
     }
 
     // 2. Move constructor
     // Heap(Heap&&) = default;
     Heap(Heap&& other) {
-        scoped_lock<mutex> lock(m_mtx);
-        m_heap = exchange(other.m_heap, nullptr);
-        m_comp = exchange(other.m_comp, nullptr);
+        std::scoped_lock lock(other.m_mtx);
+        m_heap = std::exchange(other.m_heap, {});
+        m_comp = other.m_comp;
     }
 
     // Mejora: Copy assignment operator
@@ -86,6 +89,14 @@ public:
         }
 
         return *this;
+    }
+
+    // Mejora: Emplace, evitar la construcción de un nodo temporal
+    template <typename... Args>
+    void emplace(Args&&... args) {
+        scoped_lock lock(m_mtx);
+        m_heap.emplace_back(std::forward<Args>(args)...);
+        heapify_up(m_heap.size() - 1);
     }
 
     void insert(const value_type &value, Ref ref) {
