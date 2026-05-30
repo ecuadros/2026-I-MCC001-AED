@@ -4,7 +4,8 @@
 #include <cstddef>   // size_t
 #include <string>
 #include <sstream>
-#include <utility>
+#include <utility>  // exchange
+#include <mutex>    // mutex
 #include "general_iterator.h"
 #include "../types.h"
 
@@ -47,7 +48,11 @@ protected:
     Ref        m_ref;
     NodePtr    m_pChild[2] = {nullptr, nullptr};
     NodePtr    m_pParent = nullptr;
+private:
+    mutex m_mtx;
 public:
+    // NOTA: Sin lock. El objeto apenas está naciendo en este hilo y nadie más conoce
+    // su dirección de memoria todavía; es imposible que ocurra una condición de carrera.
     BinaryTreeNode(const value_type& data, const Ref& ref, 
         NodePtr left = nullptr, NodePtr right = nullptr)
         : m_data(data), m_ref(ref)
@@ -62,8 +67,12 @@ public:
     }
     
     BinaryTreeNode(const BinaryTreeNode& other)
-        : m_data(other.m_data), m_ref(other.m_ref), m_pParent(other.m_pParent)
     {
+        scoped_lock<mutex> lock(other.m_mtx);
+        m_data = other.m_data;
+        m_ref  = other.m_ref;
+        m_pParent = other.m_pParent;
+
         for(size_t i = 0; i < 2; ++i){
             if(other.m_pChild[i] != nullptr){
                 m_pChild[i] = new Node(*other.m_pChild[i]);
@@ -74,6 +83,8 @@ public:
         }
     }
     
+    // NOTA: Sin lock. Si otro hilo espera el mutex, despertará cuando el movimiento
+    // termine y leerá un objeto ya vacío (nullptr), causando fallos lógicos o crasheos.
     BinaryTreeNode(BinaryTreeNode&& other) noexcept
         : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref))
     {
@@ -81,6 +92,9 @@ public:
 
         m_pChild[1] = exchange(other.m_pChild[1], nullptr);
     }
+
+    // NOTA: Sin lock. Si otro hilo espera el mutex mientras este destructor
+    // destruye la clase, despertará en memoria vacía causando un crasheo (Use-After-Free).
     ~BinaryTreeNode() {
         delete m_pChild[0];
         delete m_pChild[1];
