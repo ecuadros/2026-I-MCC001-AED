@@ -4,6 +4,7 @@
 #include <cstddef>   // size_t
 #include <string>
 #include <sstream>
+#include <utility>
 #include "general_iterator.h"
 #include "../types.h"
 
@@ -45,8 +46,7 @@ protected:
     value_type m_data;
     Ref        m_ref;
     NodePtr    m_pChild[2] = {nullptr, nullptr};
-    NodePtr    m_pParent;   
-    NodePtr    m_right;
+    NodePtr    m_pParent = nullptr;
 public:
     BinaryTreeNode(const value_type& data, const Ref& ref, 
         NodePtr left = nullptr, NodePtr right = nullptr)
@@ -54,23 +54,32 @@ public:
     {
         m_pChild[0] = left;
         m_pChild[1] = right;
+
+        if (left != nullptr)
+            left->m_pParent = this;
+        if (right != nullptr)
+            right->m_pParent = this;
     }
-    // copy constructor ... tiene error
+    
     BinaryTreeNode(const BinaryTreeNode& other)
-        : m_data(other.m_data), m_ref(other.m_ref)
+        : m_data(other.m_data), m_ref(other.m_ref), m_pParent(other.m_pParent)
     {
-        m_pChild[0] = other.m_pChild[0];
-        m_pChild[1] = other.m_pChild[1];
+        for(size_t i = 0; i < 2; ++i){
+            if(other.m_pChild[i] != nullptr){
+                m_pChild[i] = new Node(*other.m_pChild[i]);
+                m_pChild[i]->m_pParent = this;
+            }else{
+                m_pChild[i] = nullptr;
+            }
+        }
     }
-    // Corregir con exchange
+    
     BinaryTreeNode(BinaryTreeNode&& other) noexcept
         : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref))
     {
-        m_pChild[0] = other.m_pChild[0];
-        other.m_pChild[0] = nullptr;
+        m_pChild[0] = exchange(other.m_pChild[0], nullptr);
 
-        m_pChild[1] = other.m_pChild[1];
-        other.m_pChild[1] = nullptr;
+        m_pChild[1] = exchange(other.m_pChild[1], nullptr);
     }
     ~BinaryTreeNode() {
         delete m_pChild[0];
