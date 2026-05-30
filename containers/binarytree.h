@@ -75,6 +75,105 @@ public:
     }
 };
 
+template <typename Container>
+class BinaryTreeForwardPreorderIterator : public general_iterator<Container, 
+                                        BinaryTreeForwardPreorderIterator<Container>>{
+    using MySelf = BinaryTreeForwardPreorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+
+public:
+
+    MySelf& operator++(){
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+
+        // Caso 1: hijo izquierdo
+        if(node->getChild(0)){
+            this->m_pNode = node->getChild(0);
+            return *this;
+        }
+
+        // Caso 2: hijo derecho
+        if(node->getChild(1)){
+            this->m_pNode = node->getChild(1);
+            return *this;
+        }
+
+        // Caso 3: subir
+        auto* parent = node->getParent();
+
+        while(parent){
+            // venimos del hijo izquierdo y existe hijo derecho sin visitar
+            if(parent->getChild(0) == node && parent->getChild(1) != nullptr){
+                this->m_pNode = parent->getChild(1);
+                return *this;
+            }
+
+            node = parent;
+            parent = parent->getParent();
+        }
+
+        this->m_pNode = nullptr;
+        return *this;
+    }
+};
+
+template <typename Container>
+class BinaryTreeBackwardPreorderIterator :
+    public general_iterator<
+        Container,
+        BinaryTreeBackwardPreorderIterator<Container>>
+{
+    using MySelf = BinaryTreeBackwardPreorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+
+public:
+
+    MySelf& operator++()
+    {
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+        auto* parent = node->getParent();
+
+        // raíz
+        if(parent == nullptr)
+        {
+            this->m_pNode = nullptr;
+            return *this;
+        }
+
+        // soy hijo derecho
+        if(parent->getChild(1) == node &&
+           parent->getChild(0) != nullptr)
+        {
+            node = parent->getChild(0);
+
+            while(true)
+            {
+                if(node->getChild(1))
+                    node = node->getChild(1);
+                else if(node->getChild(0))
+                    node = node->getChild(0);
+                else
+                    break;
+            }
+
+            this->m_pNode = node;
+            return *this;
+        }
+
+        // soy hijo izquierdo
+        this->m_pNode = parent;
+        return *this;
+    }
+};
+
 template <typename T>
 class BinaryTreeNode{
 public:
@@ -218,6 +317,8 @@ public:
 
     using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
     using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
+    using forward_preorder_iterator = BinaryTreeForwardPreorderIterator<MySelf>;
+    using backward_preorder_iterator = BinaryTreeBackwardPreorderIterator<MySelf>;
 
 protected:
     NodePtr m_pRoot = nullptr;
@@ -267,6 +368,36 @@ public:
 
     backward_inorder_iterator rend(){
         return backward_inorder_iterator(this, nullptr);
+    }
+
+    forward_preorder_iterator preorder_begin(){
+        return forward_preorder_iterator(this, m_pRoot);
+    }
+
+    forward_preorder_iterator preorder_end(){
+        return forward_preorder_iterator(this, nullptr);
+    }
+
+    backward_preorder_iterator preorder_rbegin(){
+        NodePtr p = m_pRoot;
+
+        if(!p)
+            return backward_preorder_iterator(this, nullptr);
+
+        while(true){
+            if(p->getChild(1))
+                p = p->getChild(1);
+            else if(p->getChild(0))
+                p = p->getChild(0);
+            else
+                break;
+        }
+
+        return backward_preorder_iterator(this, p);
+    }
+
+    backward_preorder_iterator preorder_rend(){
+        return backward_preorder_iterator(this, nullptr);
     }
 };
 
