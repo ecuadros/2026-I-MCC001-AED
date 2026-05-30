@@ -16,9 +16,28 @@ class BinaryTreeForwardInorderIterator : public general_iterator<Container,
     using Parent = general_iterator<Container, MySelf>;
     using Parent::Parent;
 public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        MySelf& operator++(){
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        // Caso 1: Existe subárbol derecho
+        auto* node = this->m_pNode;
+        if(node->getChild(1) != nullptr){
+            node = node->getChild(1);
+            while(node->getChild(0) != nullptr)
+                node = node->getChild(0);
+            this->m_pNode = node;
+            return *this;
+        }
+
+        // Caso 2: No existe subárbol derecho
+        auto* parent = node->getParent();
+        while(parent != nullptr && parent->getChild(1) == node){
+            node = parent;
+            parent = parent->getParent();
+        }
+
+        this->m_pNode = parent;
         return *this;
     }
 };
@@ -30,9 +49,28 @@ class BinaryTreeBackwardInorderIterator : public general_iterator<Container,
     using Parent = general_iterator<Container, MySelf>;
     using Parent::Parent;
 public:
-    // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        // Caso 1: existe subárbol izquierdo
+        auto* node = this->m_pNode;
+        if(node->getChild(0) != nullptr){
+            node = node->getChild(0);
+            while(node->getChild(1) != nullptr)
+                node = node->getChild(1);
+            this->m_pNode = node;
+            return *this;
+        }
+
+        // Caso 2: subir por los padres
+        auto* parent = node->getParent();
+        while(parent != nullptr && parent->getChild(0) == node){
+            node = parent;
+            parent = parent->getParent();
+        }
+
+        this->m_pNode = parent;
         return *this;
     }
 };
@@ -123,6 +161,9 @@ public:
     NodePtr&        getChildRef(size_t pos)    { return m_pChild[pos]; }
     void            setChild(size_t pos, NodePtr pChild) { m_pChild[pos] = pChild; }
 
+    NodePtr         getParent() const {return m_pParent; }
+    void            setParent(NodePtr parent){m_pParent = parent; }
+
     string to_string() const {
         stringstream ss;
         ss << "Node(data: " << m_data << ", ref: " << m_ref << ")";
@@ -173,12 +214,14 @@ public:
     using Node       = typename Traits::Node;
     using Comp       = typename Traits::Comp;
     using MySelf     = BinaryTree<Traits>;
+    using NodePtr    = typename Node::NodePtr; 
 
     using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
     using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
 
 protected:
     NodePtr m_pRoot = nullptr;
+    Comp    m_comp;
 public:
     BinaryTree() {}
     BinaryTree(const BinaryTree &other){ // Copy constructor
@@ -189,16 +232,41 @@ public:
     };
 
     void insert(const value_type &value, Ref ref){
-        internal_insert(m_pRoot, value, ref);
+        internal_insert(m_pRoot, value, ref, nullptr);
     }
 private:
-    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref){
+    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr pParent){
         if( !pNode ){
             pNode = new Node(value, ref);
+            pNode->setParent(pParent);
             return;
         }
+
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->m_pChild[pos], value, ref);
+        internal_insert(pNode->getChildRef(pos), value, ref, pNode);
+    }
+
+public:
+    forward_inorder_iterator begin(){
+        NodePtr p = m_pRoot;
+        while(p && p->getChild(0))
+            p = p->getChild(0);
+        return forward_inorder_iterator(this, p);
+    }
+
+    forward_inorder_iterator end(){
+        return forward_inorder_iterator(this, nullptr);
+    }
+
+    backward_inorder_iterator rbegin(){
+        NodePtr p = m_pRoot;
+        while(p && p->getChild(1))
+            p = p->getChild(1);
+        return backward_inorder_iterator(this, p);
+    }
+
+    backward_inorder_iterator rend(){
+        return backward_inorder_iterator(this, nullptr);
     }
 };
 
