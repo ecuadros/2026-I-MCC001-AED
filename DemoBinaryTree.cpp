@@ -5,33 +5,27 @@
 using namespace std;
 
 void DemoBinaryTree(){
-cout << "=== DEMO: ARBOL BINARIO ASCENDENTE ===" << endl;
+    cout << "\n=== DEMO: RECORRIDOS DEL ARBOL BINARIO ===" << endl;
     
-    // 1. Creamos un árbol que ordena de menor a mayor
     BinaryTree<AscendingBinaryTreeListTrait<TI>> miArbol;
 
-    // 2. Insertamos datos desordenados
-    // Insertaremos: 50, 20, 80, 10, 30, 90
-    cout << "Insertando: 50, 20, 80, 10, 30, 90..." << endl;
     miArbol.insert(50, 100);
-    miArbol.insert(20, 101);
-    miArbol.insert(80, 102);
-    miArbol.insert(10, 103);
-    miArbol.insert(30, 104);
-    miArbol.insert(90, 105);
+    miArbol.insert(30, 101);
+    miArbol.insert(70, 102);
+    miArbol.insert(20, 103);
+    miArbol.insert(40, 104);
+    miArbol.insert(60, 105);
+    miArbol.insert(80, 106);
 
-    // 3. Recorremos hacia ADELANTE (de menor a mayor)
-    cout << "\nRecorrido Inorder Forward (Menor a Mayor):" << endl;
-    for (auto it = miArbol.begin(); it != miArbol.end(); ++it) {
-        // Usamos el operador * sobrecargado en tu general_iterator
-        cout << (*it).getData() << " "; 
-    }
-    cout << endl;
+    // ¡Mira la elegancia de estas 3 líneas!
+    cout << "1. Recorrido InOrder: \n"
+         << miArbol << "\n\n";
 
-    // 4. Recorremos hacia ATRÁS (de mayor a menor)
-    cout << "\nRecorrido Inorder Backward (Mayor a Menor):" << endl;
-    for (auto it = miArbol.rbegin(); it != miArbol.rend(); ++it) {
-        cout << (*it).getData() << " "; 
-    }
-    cout << "\n======================================" << endl;
+    cout << "2. Recorrido PreOrder: \n"
+         << miArbol.print(TraversalMode::PreOrder) << "\n\n";
+
+    cout << "3. Recorrido PostOrder: \n"
+         << miArbol.print(TraversalMode::PostOrder) << "\n\n";
+
+    cout << "=========================================\n" << endl;
 }
