@@ -96,6 +96,18 @@ public:
     // NOTA: Sin lock. Si otro hilo espera el mutex mientras este destructor
     // destruye la clase, despertará en memoria vacía causando un crasheo (Use-After-Free).
     ~BinaryTreeNode() {
+        // Desconectar el padre del nodo
+        if(m_pParent != nullptr){
+            if(m_pParent->m_pChild[0] == this)
+                m_pParent->m_pChild[0] = nullptr;
+            else if(m_pParent->m_pChild[1] == this)
+                m_pParent->m_pChild[1] = nullptr;
+        }
+
+        // Desconectar los hijos del nodo
+        if (m_pChild[0] != nullptr) m_pChild[0]->m_pParent = nullptr;
+        if (m_pChild[1] != nullptr) m_pChild[1]->m_pParent = nullptr;
+        
         delete m_pChild[0];
         delete m_pChild[1];
     };
