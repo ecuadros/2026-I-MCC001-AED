@@ -399,6 +399,16 @@ public:
     backward_preorder_iterator preorder_rend(){
         return backward_preorder_iterator(this, nullptr);
     }
+
+    template <typename Func, typename... Args>
+    void ForEach(Func func, Args&&... args){
+        ::ForEach(begin(), end(), func, std::forward<Args>(args)...);
+    }
+
+    template <typename Func, typename... Args>
+    forward_inorder_iterator FirstThat(Func func, Args&&... args){
+        return ::FirstThat(begin(), end(), func, std::forward<Args>(args)...);
+    }
 };
 
 
