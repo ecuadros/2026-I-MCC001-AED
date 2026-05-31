@@ -1,4 +1,5 @@
 #include "containers/linkedlist.h"
+#include "containers/binarytree.h"
 #include <fstream>
 
 template <typename Node>
@@ -79,7 +80,7 @@ void LinkedListDemo(){
 
     list3.push_back(5, 50);
     cout << "Prueba Move Constructor: " << endl;
-    LinkedList<AscendingLinkedListTrait<TI>> list5 = move(list3);
+    LinkedList<AscendingLinkedListTrait<TI>> list5 = std::move(list3);
     cout << "Lista ascendente 5: " << list5 << endl;
 
     cout << "Prueba del Destructor: " << endl;
@@ -101,6 +102,87 @@ void LinkedListDemo(){
     cout << "Lista5 [2]: " << list5[2] << endl;
 }
 
+void BinaryTreeDemo(){
+    cout << "Binary Tree: " << endl;
+    BinaryTree<AscendingBinaryTreeListTrait<TI>> tree1;
+    using BT = BinaryTree<AscendingBinaryTreeListTrait<TI>>::Node;
+
+    tree1.insert(10, 100);
+    tree1.insert(5, 50);
+    tree1.insert(7, 70);
+    tree1.insert(6, 60);
+    cout << "Árbol ascendente: " << tree1.toString() << endl;
+
+    cout << endl << "ForEach Ascendente" << endl;
+    tree1.ForEach(Print<BT>, cout);
+    cout << endl;
+
+    auto found = tree1.FirstThat(IsGreaterThan<BT, TI>, 6);
+    if (found != nullptr)
+        cout << "Primer mayor a 6   : " << *found << endl;
+    else
+        cout << "No se encontró un nodo mayor a 6" << endl;
+
+    cout << endl << "Recorrido InOrder con iterador Forward: " << endl;
+    for (auto it = tree1.begin(); it != tree1.end(); ++it) {
+        cout << *it << ","; 
+    }
+    cout << endl;
+
+    cout << endl << "Recorrido InOrder con iterador Backward: " << endl;
+    for (auto it = tree1.rbegin(); it != tree1.rend(); ++it) {
+        cout << *it << ",";
+    }
+    cout << endl;
+
+    cout << endl << "Recorrido PreOrder con iterador Forward: " << endl;
+    for (auto it = tree1.preorder_begin(); it != tree1.preorder_end(); ++it) {
+        cout << *it << ",";
+    }
+    cout << endl;
+
+    cout << endl << "Recorrido PreOrder con iterador Backward: " << endl;
+    for (auto it = tree1.preorder_rbegin(); it != tree1.preorder_rend(); ++it) {
+        cout << *it << ",";
+    }
+    cout << endl;
+
+    cout << endl << "Recorrido PostOrder con iterador Forward: " << endl;
+    for (auto it = tree1.postorder_begin(); it != tree1.postorder_end(); ++it) {
+        cout << *it << ",";
+    }
+    cout << endl;
+
+    cout << endl << "Recorrido PostOrder con iterador Backward: " << endl;
+    for (auto it = tree1.postorder_rbegin(); it != tree1.postorder_rend(); ++it) {
+        cout << *it << ",";
+    }
+    cout << endl;
+
+    cout << endl << "Lectura desde archivo (operator>>):" << endl;
+
+    ofstream outTree("tree.txt");
+    // outTree << "6 15\n";
+    // outTree << "2 25\n";
+    // outTree << "9 35\n";
+    // outTree << "1 45\n";
+    // outTree << "7 55\n";
+    outTree << tree1;
+    outTree.close();
+
+    ifstream inTree("tree.txt");
+    BinaryTree<AscendingBinaryTreeListTrait<TI>> tree2;
+    inTree >> tree2;
+    inTree.close();
+
+    cout << "Árbol leído desde archivo: " << tree2.toString() << endl;
+
+    ofstream savedTree("treeOut.txt");
+    savedTree << tree1;
+    savedTree.close();
+}
+
 void ListsDemo(){
-    LinkedListDemo();
+    // LinkedListDemo();
+    BinaryTreeDemo();
 }
