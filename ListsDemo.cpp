@@ -1,4 +1,5 @@
 #include "containers/linkedlist.h"
+#include "containers/binarytree.h"
 #include <fstream>
 
 template <typename Node>
@@ -101,6 +102,67 @@ void LinkedListDemo(){
     cout << "Lista5 [2]: " << list5[2] << endl;
 }
 
+void binaryTreeDemo(){
+    BinaryTree<AscendingBinaryTreeListTrait<int>> tree;
+    tree.insert(5, 0);
+    tree.insert(3, 0);
+    tree.insert(7, 0);
+    tree.insert(1, 0);
+    tree.insert(4, 0);
+    tree.insert(6, 0);
+    tree.insert(9, 0);
+
+    cout << "Recorrido forward inorder: " << endl;
+    for (auto it = tree.begin(); it != tree.end(); ++it){
+        cout << *it << ",";
+    }
+    cout << endl;
+
+    cout << "\nRecorrido backward inorder: " << endl;
+    for(auto it = tree.rbegin(); it != tree.rend(); ++it){
+        cout << *it << ",";
+    }
+    cout << endl;
+
+    cout << "\nRecorrido forward preorder: " << endl;
+    for(auto it = tree.preorder_begin(); it != tree.preorder_end(); ++it){
+        cout << *it << " ";
+    }
+    cout << endl;
+
+    cout << "\nRecorrido Backward Preorder:" << endl;
+    for(auto it = tree.preorder_rbegin(); it != tree.preorder_rend(); ++it){
+        cout << *it << " ";
+    }
+    cout << endl;
+
+    cout << "\nRecorrido Forward Postorder:" << endl;
+    for(auto it = tree.postorder_begin(); it != tree.postorder_end(); ++it){
+        cout << *it << " ";
+    }
+    cout << endl;
+
+    // cout << "\nRecorrido Backward Postorder:" << endl;
+    // for(auto it = tree.postorder_backward_begin(); it != tree.postorder_backward_end(); ++it){
+    //     cout << *it << " ";
+    // }
+    // cout << endl;
+    
+    cout << "\nPrueba ForEach: " << endl;
+    tree.ForEach([](BinaryTreeNode<int>& node){
+        cout << node << endl;
+    });
+
+    cout << "\nPrueba FirstThat: " << endl;
+    auto it = tree.FirstThat([](BinaryTreeNode<int>& node){
+        return node.getData() == 7;
+    });
+    if (it != tree.end()){
+        cout << "Primer nodo con dato 7: " << *it << endl;
+    }
+}
+
 void ListsDemo(){
-    LinkedListDemo();
+    //LinkedListDemo();
+    binaryTreeDemo();
 }
