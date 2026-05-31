@@ -174,6 +174,65 @@ public:
     }
 };
 
+template <typename Container>
+class BinaryTreeForwardPostorderIterator :
+    public general_iterator<
+        Container,
+        BinaryTreeForwardPostorderIterator<Container>>
+{
+    using MySelf = BinaryTreeForwardPostorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+
+    using Parent::Parent;
+
+private:
+
+    static auto first_postorder(auto* node)
+    {
+        while(node)
+        {
+            if(node->getChild(0))
+                node = node->getChild(0);
+            else if(node->getChild(1))
+                node = node->getChild(1);
+            else
+                break;
+        }
+
+        return node;
+    }
+
+public:
+
+    MySelf& operator++()
+    {
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+        auto* parent = node->getParent();
+
+        if(parent == nullptr)
+        {
+            this->m_pNode = nullptr;
+            return *this;
+        }
+
+        if(parent->getChild(0) == node &&
+           parent->getChild(1) != nullptr)
+        {
+            this->m_pNode =
+                first_postorder(parent->getChild(1));
+        }
+        else
+        {
+            this->m_pNode = parent;
+        }
+
+        return *this;
+    }
+};
+
 template <typename T>
 class BinaryTreeNode{
 public:
@@ -319,6 +378,7 @@ public:
     using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
     using forward_preorder_iterator = BinaryTreeForwardPreorderIterator<MySelf>;
     using backward_preorder_iterator = BinaryTreeBackwardPreorderIterator<MySelf>;
+    using forward_postorder_iterator = BinaryTreeForwardPostorderIterator<MySelf>;
 
 protected:
     NodePtr m_pRoot = nullptr;
@@ -346,6 +406,19 @@ private:
         size_t pos = !m_comp(value, pNode->getDataRef());
         internal_insert(pNode->getChildRef(pos), value, ref, pNode);
     }
+
+    static Node* first_postorder(Node* node){
+    while(node){
+        if(node->getChild(0))
+            node = node->getChild(0);
+        else if(node->getChild(1))
+            node = node->getChild(1);
+        else
+            break;
+    }
+
+    return node;
+}
 
 public:
     forward_inorder_iterator begin(){
@@ -398,6 +471,14 @@ public:
 
     backward_preorder_iterator preorder_rend(){
         return backward_preorder_iterator(this, nullptr);
+    }
+
+    forward_postorder_iterator postorder_begin(){
+        return forward_postorder_iterator(this, first_postorder(m_pRoot));
+    }
+
+    forward_postorder_iterator postorder_end(){
+        return forward_postorder_iterator(this, nullptr);
     }
 
     template <typename Func, typename... Args>
