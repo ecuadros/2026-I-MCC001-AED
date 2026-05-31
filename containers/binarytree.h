@@ -408,19 +408,24 @@ private:
     }
 
     static Node* first_postorder(Node* node){
-    while(node){
-        if(node->getChild(0))
-            node = node->getChild(0);
-        else if(node->getChild(1))
-            node = node->getChild(1);
-        else
-            break;
+        while(node){
+            if(node->getChild(0))
+                node = node->getChild(0);
+            else if(node->getChild(1))
+                node = node->getChild(1);
+            else
+                break;
+        }
+
+        return node;
     }
 
-    return node;
-}
-
 public:
+    void clear(){
+        delete m_pRoot;   // destructor del nodo borra todo el subárbol
+        m_pRoot = nullptr;
+    }
+
     forward_inorder_iterator begin(){
         NodePtr p = m_pRoot;
         while(p && p->getChild(0))
@@ -492,7 +497,34 @@ public:
     }
 };
 
+template <typename Traits>
+ostream& operator<<(ostream& os, BinaryTree<Traits>& tree){
+    auto it = tree.begin(); // inorder
 
+    bool first = true;
+    for(; it != tree.end(); ++it){
+        if(!first) os << ", ";
+        first = false;
+        os << *it;
+    }
+
+    return os;
+}
+
+template <typename Traits>
+istream& operator>>(istream& is, BinaryTree<Traits>& tree){
+    tree.clear();
+
+    using value_type = typename Traits::value_type;
+    value_type value;
+    Ref ref;
+
+    while(is >> value >> ref){
+        tree.insert(value, ref);
+    }
+
+    return is;
+}
 
 
 #endif // __BINARY_TREE_H__

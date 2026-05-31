@@ -160,6 +160,15 @@ void binaryTreeDemo(){
     if (it != tree.end()){
         cout << "Primer nodo con dato 7: " << *it << endl;
     }
+
+    cout << "\nPrueba del operador <<: "<<endl;
+    cout << tree << endl << endl;
+
+    cout << "\nPrueba del operador >>: "<<endl;
+    stringstream ss("5 0 3 0 7 0 1 0 4 0 6 0 9 0");
+    BinaryTree<AscendingBinaryTreeListTrait<int>> tree2;
+    ss >> tree2;
+    cout << "Árbol 2 creado con datos del árbol 1: \n" << tree2 << endl;
 }
 
 void ListsDemo(){
