@@ -143,7 +143,8 @@ public:
     NodePtr         getChild(size_t pos) const { return m_pChild[pos]; }
     NodePtr&        getChildRef(size_t pos)    { return m_pChild[pos]; }
     void            setChild(size_t pos, NodePtr pChild) { m_pChild[pos] = pChild; }
-    NodePtr         getParent()          const { return m_pParent;}
+    NodePtr         getParent()          const { return m_pParent; }
+    void            setParent(NodePtr pParent) { m_pParent = pParent; };
 
     string to_string() const {
         stringstream ss;
@@ -213,7 +214,7 @@ public:
     };
 
     void insert(const value_type &value, Ref ref){
-        internal_insert(m_pRoot, value, ref);
+        internal_insert(m_pRoot, value, ref, nullptr);
     }
 
     forward_inorder_iterator begin() {
@@ -228,13 +229,14 @@ public:
         return forward_inorder_iterator(this, nullptr);
     }
 private:
-    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref){
+    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr pParent){
         if( !pNode ){
             pNode = new Node(value, ref);
+            pNode->setParent(pParent);
             return;
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->getChildRef(pos), value, ref);
+        internal_insert(pNode->getChildRef(pos), value, ref, pNode);
     }
 };
 

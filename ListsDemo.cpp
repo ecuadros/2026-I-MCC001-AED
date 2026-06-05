@@ -1,4 +1,5 @@
 #include "containers/linkedlist.h"
+#include "containers/binarytree.h"
 #include <fstream>
 
 template <typename Node>
@@ -101,6 +102,23 @@ void LinkedListDemo(){
     cout << "Lista5 [2]: " << list5[2] << endl;
 }
 
+void BinaryTreeDemo(){
+    BinaryTree<AscendingBinaryTreeListTrait<TI>> tree;
+    tree.insert(4, 0);
+    tree.insert(2, 0);
+    tree.insert(6, 0);
+    tree.insert(1, 0);
+    tree.insert(3, 0);
+    tree.insert(5, 0);
+    tree.insert(7, 0);
+
+    cout << "inorder tree walk:" << endl;
+    for(auto it = tree.begin(); it != tree.end(); ++it){
+        cout << it->getData() << " ";
+    }
+    cout << endl;
+}
+
 void ListsDemo(){
-    LinkedListDemo();
+    BinaryTreeDemo();
 }
