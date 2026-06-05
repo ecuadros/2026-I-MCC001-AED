@@ -9,6 +9,9 @@
 #include "general_iterator.h"
 #include "../types.h"
 
+#define L 0
+#define R 1
+
 template <typename Container>
 class BinaryTreeForwardInorderIterator : public general_iterator<Container, 
                                          BinaryTreeForwardInorderIterator<Container>>{
@@ -16,9 +19,27 @@ class BinaryTreeForwardInorderIterator : public general_iterator<Container,
     using Parent = general_iterator<Container, MySelf>;
     using Parent::Parent;
 public:
-    // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+        if(node->getChild(R) != nullptr){                           // node tiene un hijo a su derecha
+            node = node->getChild(R);
+            while(node->getChild(L) != nullptr){                    // node tiene un hijo a su izquierda
+                node = node->getChild(L);
+            }
+            this->m_pNode = node;
+            return *this;
+        }
+
+        auto* parent = this->m_pNode->getParent();
+        while(parent != nullptr && parent->getChild(R) == node){    // node es el hijo derecho de su padre
+            node = parent;
+            parent =  node->getParent();
+        }
+
+        this->m_pNode = parent;
         return *this;
     }
 };
@@ -122,6 +143,7 @@ public:
     NodePtr         getChild(size_t pos) const { return m_pChild[pos]; }
     NodePtr&        getChildRef(size_t pos)    { return m_pChild[pos]; }
     void            setChild(size_t pos, NodePtr pChild) { m_pChild[pos] = pChild; }
+    NodePtr         getParent()          const { return m_pParent;}
 
     string to_string() const {
         stringstream ss;
@@ -173,12 +195,14 @@ public:
     using Node       = typename Traits::Node;
     using Comp       = typename Traits::Comp;
     using MySelf     = BinaryTree<Traits>;
+    using NodePtr    = typename Node::NodePtr;
 
     using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
     using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
 
 protected:
     NodePtr m_pRoot = nullptr;
+    Comp    m_comp;
 public:
     BinaryTree() {}
     BinaryTree(const BinaryTree &other){ // Copy constructor
@@ -191,6 +215,18 @@ public:
     void insert(const value_type &value, Ref ref){
         internal_insert(m_pRoot, value, ref);
     }
+
+    forward_inorder_iterator begin() {
+        NodePtr p = m_pRoot;
+        while(p->getChild(L) != nullptr){
+            p = p->getChild(L);
+        }
+        return forward_inorder_iterator(this, p);
+    }
+
+    forward_inorder_iterator end(){
+        return forward_inorder_iterator(this, nullptr);
+    }
 private:
     void internal_insert(NodePtr &pNode, const value_type &value, Ref ref){
         if( !pNode ){
@@ -198,7 +234,7 @@ private:
             return;
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->m_pChild[pos], value, ref);
+        internal_insert(pNode->getChildRef(pos), value, ref);
     }
 };
 
