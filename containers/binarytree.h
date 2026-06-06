@@ -97,6 +97,11 @@ public:
         return ::FirstThat(begin(), end(), func, std::forward<Args>(args)...);
     }
 
+    void clear(){
+        delete m_pRoot;   // destructor del nodo borra todo el subárbol
+        m_pRoot = nullptr;
+    }
+
     forward_inorder_iterator begin() {
         NodePtr p = m_pRoot;
         while(p->getChild(L) != nullptr){
@@ -252,7 +257,28 @@ struct DescendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>,
 {
 };
 
+template <typename Traits>
+ostream& operator<<(ostream& os, BinaryTree<Traits>& tree){
+    tree.ForEach([&os](typename BinaryTree<Traits>::Node &node){
+        os << node << endl;
+    });
+    return os;
+}
 
+template <typename Traits>
+istream& operator>>(istream& is, BinaryTree<Traits>& tree){
+    tree.clear();
+
+    using value_type = typename Traits::value_type;
+    value_type value;
+    Ref ref;
+
+    while(is >> value >> ref){
+        tree.insert(value, ref);
+    }
+
+    return is;
+}
 
 
 #endif // __BINARY_TREE_H__

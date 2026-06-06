@@ -112,9 +112,14 @@ void BinaryTreeDemo(){
     tree.insert(5, 0);
     tree.insert(7, 0);
 
-    cout << "inorder tree walk:" << endl;
-    tree.ForEach(Print<typename BinaryTree<AscendingBinaryTreeListTrait<TI>>::Node>, cout);
-    cout << endl;
+    cout << "inorder tree walk: llenado con tree.insert" << endl;
+    cout << tree << endl;
+
+    cout << "inorder tree walk: llenado con tree.operator>>" << endl;
+    stringstream ss("4 0 2 0 6 0 1 0 3 0 5 0 7 0");
+    BinaryTree<AscendingBinaryTreeListTrait<int>> tree2;
+    ss >> tree2;
+    cout << tree2 << endl;
 }
 
 void ListsDemo(){
