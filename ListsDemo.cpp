@@ -128,6 +128,10 @@ void BinaryTreeDemo(){
     cout << "preorder tree walk: " << endl;
     for (auto it = tree.preorder_begin(); it != tree.preorder_end(); ++it)
         cout << *it << endl;
+
+    cout << "reverse preorder tree walk: " << endl;
+    for (auto it = tree.reverse_preorder_begin(); it != tree.reverse_preorder_end(); ++it)
+        cout << *it << endl;
 }
 
 void ListsDemo(){

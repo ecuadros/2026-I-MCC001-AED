@@ -112,6 +112,47 @@ public:
     }
 };
 
+template <typename Container>
+class BinaryTreeBackwardPreorderIterator : public general_iterator<Container, 
+                                         BinaryTreeBackwardPreorderIterator<Container>>{
+    using MySelf = BinaryTreeBackwardPreorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+public:
+    MySelf& operator++(){
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+        auto* parent = this->m_pNode->getParent();
+
+        if(parent == nullptr){
+            this->m_pNode = nullptr;
+            return *this;
+        }
+
+        if(parent->getChild(R) == node && parent->getChild(L) != nullptr){    // node es el hijo derecho y tiene un hermano a su izquierda
+            node = parent->getChild(L);
+
+            while(true)
+            {
+                if(node->getChild(R))
+                    node = node->getChild(R);
+                else if(node->getChild(L))
+                    node = node->getChild(L);
+                else
+                    break;
+            }
+
+            this->m_pNode = node;
+            return *this;
+        }
+
+        this->m_pNode = parent;
+        return *this;
+    }
+};
+
 template <typename Traits>
 class BinaryTree{
 public:
@@ -125,7 +166,7 @@ public:
     using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
     using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
     using forward_preorder_iterator = BinaryTreeForwardPreorderIterator<MySelf>;
-
+    using backward_preorder_iterator = BinaryTreeBackwardPreorderIterator<MySelf>;
 protected:
     NodePtr m_pRoot = nullptr;
     Comp    m_comp;
@@ -187,6 +228,18 @@ public:
 
     forward_preorder_iterator preorder_end(){
         return forward_preorder_iterator(this, nullptr);
+    }
+
+    backward_preorder_iterator reverse_preorder_begin() {
+        NodePtr p = m_pRoot;
+        while(p!= nullptr && p->getChild(R) != nullptr){
+            p = p->getChild(R);
+        }
+        return backward_preorder_iterator(this, p);
+    }
+
+    backward_preorder_iterator reverse_preorder_end(){
+        return backward_preorder_iterator(this, nullptr);
     }
 
 private:
