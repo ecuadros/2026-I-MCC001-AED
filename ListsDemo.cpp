@@ -1,5 +1,7 @@
 #include "containers/linkedlist.h"
+
 #include "containers/binarytree.h"
+#include "containers/avltree.h"
 #include <fstream>
 
 template <typename Node>
@@ -182,7 +184,37 @@ void BinaryTreeDemo(){
     savedTree.close();
 }
 
+void AVLTreeDemo() {
+    cout << "\nAVL Tree:\n";
+
+    AVLTree<AscendingAVLTreeListTrait<TI>> avl1;
+    using AVLNodeT = AVLTree<AscendingAVLTreeListTrait<TI>>::Node;
+
+    // Caso LR: 10, 5, 7, 6
+    avl1.insert(10, 100);
+    avl1.insert(5, 50);
+    avl1.insert(7, 70);
+    avl1.insert(6, 60);
+
+    cout << "AVL ascendente: " << avl1.toString() << endl;
+
+    cout << "InOrder AVL: ";
+    for (auto it = avl1.begin(); it != avl1.end(); ++it)
+        cout << *it << ",";
+    cout << endl;
+
+    cout << "PreOrder AVL: ";
+    for (auto it = avl1.preorder_begin(); it != avl1.preorder_end(); ++it)
+        cout << *it << ",";
+    cout << endl;
+
+    auto found = avl1.FirstThat(IsGreaterThan<AVLNodeT, TI>, 6);
+    if (found != nullptr)
+        cout << "Primer mayor a 6 en AVL: " << *found << endl;
+}
+
 void ListsDemo(){
     // LinkedListDemo();
     BinaryTreeDemo();
+    AVLTreeDemo();
 }

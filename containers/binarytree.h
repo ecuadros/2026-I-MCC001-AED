@@ -4,7 +4,10 @@
 #include <cstddef>   // size_t
 #include <string>
 #include <sstream>
+#include <mutex>
 #include "general_iterator.h"
+#include "basetrait.h"
+#include "../foreach.h"
 #include "../types.h"
 
 template <typename Container>
@@ -115,7 +118,7 @@ protected:
     //NodePtr    m_right;
 
 private:
-    static NodePtr cloneSubtree(NodePtr pNode, NodePtr pParent = nullptr) {
+    static NodePtr cloneSubtree(NodePtr pNode, NodePtr pParent = nullptr) { // Clona un subárbol dado un nodo raíz y establece el padre de los nodos clonados
         if (pNode == nullptr) return nullptr;
 
         NodePtr newNode = new Node(pNode->getData(), pNode->getRef()); // Clona el nodo actual
@@ -138,7 +141,7 @@ public:
         if (m_pChild[1] != nullptr) m_pChild[1]->setParent(this);
     }
 
-    //Copy constructor ... tiene error
+    //Copy Constructor
     BinaryTreeNode(const BinaryTreeNode& other)
         : m_data(other.m_data), m_ref(other.m_ref), m_pParent(nullptr)
     {
@@ -146,7 +149,7 @@ public:
         m_pChild[1] = cloneSubtree(other.m_pChild[1], this);
     }
     
-    // Move Constructor - Corregir con exchange
+    //Move Constructor
     BinaryTreeNode(BinaryTreeNode&& other) noexcept
         : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref)), m_pParent(nullptr)
     {
@@ -162,6 +165,7 @@ public:
 
     // Destructor
     ~BinaryTreeNode() {
+
         delete m_pChild[0];
         delete m_pChild[1];
     };
@@ -205,7 +209,7 @@ public:
     NodePtr&        getParentRef()    { return m_pParent; }
     void            setParent(NodePtr pParent) { m_pParent = pParent; }
 
-    string to_string() const {
+    TS to_string() const {
         stringstream ss;
         ss << "Node(data: " << m_data << ", ref: " << m_ref << ")";
         return ss.str();
@@ -223,7 +227,7 @@ public:
     //          en memoria hay punteros
     friend istream& operator>>(istream& is, 
         BinaryTreeNode& node) {
-        string line;
+        TS line;
         if (getline(is, line)) {
             stringstream ss(line);
             ss >> node.m_data >> node.m_ref;
@@ -292,16 +296,16 @@ public:
         m_pRoot = nullptr;
     }
 
-    void insert(const value_type &value, Ref ref){
+    virtual void insert(const value_type &value, Ref ref){
         scoped_lock lock(m_mutex);
         internal_insert(m_pRoot, nullptr, value, ref);
     }
 
-    string toString() const {
+    TS toString() const {
         scoped_lock<mutex> lock(m_mutex);
         
         stringstream ss;
-        bool first = true;
+        TB first = true;
         ss << "[";
         ToStringInOrder(m_pRoot, ss, first);
         ss << "]";
@@ -325,7 +329,7 @@ public:
         if (pNode == nullptr) return nullptr;
         
         while (pNode->getLeftChild() != nullptr) {
-            pNode = pNode->getLeftChild();
+            pNode = asNodePtr(pNode->getLeftChild());
         }
         return pNode;
     }
@@ -334,7 +338,7 @@ public:
         if (pNode == nullptr) return nullptr;
         
         while (pNode->getRightChild() != nullptr) {
-            pNode = pNode->getRightChild();
+            pNode = asNodePtr(pNode->getRightChild());
         }
         return pNode;
     }
@@ -344,14 +348,14 @@ public:
 
         // 1. Si el nodo tiene un hijo derecho, el sucesor es el nodo más a la izquierda del subárbol derecho
         if (pNode->getRightChild() != nullptr) {
-            return leftmost(pNode->getRightChild());
+            return leftmost(asNodePtr(pNode->getRightChild()));
         }
 
         // 2. Si no tiene hijo derecho, el sucesor es el primer ancestro para el cual el nodo es un descendiente izquierdo
-        NodePtr pParent = pNode->getParent();
+        NodePtr pParent = asNodePtr(pNode->getParent());
         while (pParent != nullptr && pNode == pParent->getRightChild()) {
             pNode = pParent;
-            pParent = pParent->getParent();
+            pParent = asNodePtr(pParent->getParent());
         }
         return pParent;
     }
@@ -361,14 +365,14 @@ public:
 
         // 1. Si el nodo tiene un hijo izquierdo, el predecesor es el nodo más a la derecha del subárbol izquierdo
         if (pNode->getLeftChild() != nullptr) {
-            return rightmost(pNode->getLeftChild());
+            return rightmost(asNodePtr(pNode->getLeftChild()));
         }
 
         // 2. Si no tiene hijo izquierdo, el predecesor es el primer ancestro para el cual el nodo es un descendiente derecho
-        NodePtr pParent = pNode->getParent();
+        NodePtr pParent = asNodePtr(pNode->getParent());
         while (pParent != nullptr && pNode == pParent->getLeftChild()) {
             pNode = pParent;
-            pParent = pParent->getParent();
+            pParent = asNodePtr(pParent->getParent());
         }
         return pParent;
     }
@@ -382,9 +386,9 @@ public:
 
         while (true) {
             if (pNode->getRightChild() != nullptr) {
-                pNode = pNode->getRightChild();
+                pNode = asNodePtr(pNode->getRightChild());
             } else if (pNode->getLeftChild() != nullptr) {
-                pNode = pNode->getLeftChild();
+                pNode = asNodePtr(pNode->getLeftChild());
             } else {
                 break;
             }
@@ -396,19 +400,19 @@ public:
         if (pNode == nullptr) return nullptr;
 
         if (pNode->getLeftChild() != nullptr) 
-            return pNode->getLeftChild();
+            return asNodePtr(pNode->getLeftChild());
 
         if (pNode->getRightChild() != nullptr) 
-            return pNode->getRightChild();
+            return asNodePtr(pNode->getRightChild());
 
-        NodePtr pParent = pNode->getParent();
+        NodePtr pParent = asNodePtr(pNode->getParent());
         while (pParent != nullptr) {
             if (pNode == pParent->getLeftChild() && pParent->getRightChild() != nullptr) {
-                return pParent->getRightChild();    
+                return asNodePtr(pParent->getRightChild());    
             }
 
             pNode = pParent;
-            pParent = pParent->getParent();
+            pParent = asNodePtr(pParent->getParent());
         }
         return nullptr;
     }
@@ -416,7 +420,7 @@ public:
     NodePtr preOrderPredecessor(NodePtr pNode) const {
         if (pNode == nullptr) return nullptr;
 
-        NodePtr pParent = pNode->getParent();
+        NodePtr pParent = asNodePtr(pNode->getParent());
         if (pParent == nullptr) return nullptr; // El nodo es la raíz, no tiene predecesor
 
         //Si el nodo es el hijo izquierdo de su padre, el predecesor es el padre mismo
@@ -427,7 +431,7 @@ public:
         //Si el nodo es el hijo derecho de su padre, el predecesor es el hijo izquierdo del padre (si existe), o el padre mismo si no tiene hijo izquierdo
         if (pNode == pParent->getRightChild()) {
             if (pParent->getLeftChild() != nullptr) {
-                return preOrderLast(pParent->getLeftChild());
+                return preOrderLast(asNodePtr(pParent->getLeftChild()));
             }
             return pParent;
         }
@@ -440,9 +444,9 @@ public:
 
         while (true) {
             if (pNode->getLeftChild() != nullptr) {
-                pNode = pNode->getLeftChild();
+                pNode = asNodePtr(pNode->getLeftChild());
             } else if (pNode->getRightChild() != nullptr) {
-                pNode = pNode->getRightChild();
+                pNode = asNodePtr(pNode->getRightChild());
             } else {
                 break;
             }
@@ -457,7 +461,7 @@ public:
     NodePtr postOrderSuccessor(NodePtr pNode) const {
         if (pNode == nullptr) return nullptr;
 
-        NodePtr pParent = pNode->getParent();
+        NodePtr pParent = asNodePtr(pNode->getParent());
         if (pParent == nullptr) return nullptr; // El nodo es la raíz, no tiene sucesor
 
         // Si el nodo es el hijo derecho de su padre, el sucesor es el padre mismo
@@ -466,7 +470,7 @@ public:
         }
 
         // Si el nodo es el hijo izquierdo de su padre, el sucesor es el hijo derecho del padre (si existe), o el padre mismo si no tiene hijo derecho
-        return postOrderFirst(pParent->getRightChild());
+        return postOrderFirst(asNodePtr(pParent->getRightChild()));
     }
 
     NodePtr postOrderPredecessor(NodePtr pNode) const {
@@ -474,20 +478,20 @@ public:
 
         // Si el nodo tiene un hijo derecho, el predecesor es el último nodo visitado en el subárbol derecho
         if (pNode->getRightChild() != nullptr) 
-            return pNode->getRightChild();
+            return asNodePtr(pNode->getRightChild());
 
         // Si no tiene hijo derecho pero tiene un hijo izquierdo, el predecesor es el último nodo visitado en el subárbol izquierdo
         if (pNode->getLeftChild() != nullptr)
-            return pNode->getLeftChild();
+            return asNodePtr(pNode->getLeftChild());
 
         // Si no tiene hijos, el predecesor es el primer ancestro para el cual el nodo es un descendiente derecho
-        NodePtr pParent = pNode->getParent();
+        NodePtr pParent = asNodePtr(pNode->getParent());
         while (pParent != nullptr) {
             if (pNode == pParent->getRightChild() && pParent->getLeftChild() != nullptr)
-                return pParent->getLeftChild();
+                return asNodePtr(pParent->getLeftChild());
 
             pNode = pParent;
-            pParent = pParent->getParent();
+            pParent = asNodePtr(pParent->getParent());
         }
         return nullptr;
     }
@@ -547,59 +551,64 @@ public:
     template <typename TTraits>
     friend istream& operator>>(istream& is, BinaryTree<TTraits>& tree);
 
-private:
-    void internal_insert(NodePtr &pNode, NodePtr pParent, const value_type &value, Ref ref){
+protected:
+    NodePtr internal_insert(NodePtr &pNode, NodePtr pParent, const value_type &value, Ref ref){
         if( !pNode ){
             pNode = new Node(value, ref);
             pNode->setParent(pParent);
-            return;
+            return pNode;
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->getChildRef(pos), pNode, value, ref);
+        return internal_insert(reinterpret_cast<NodePtr&>(pNode->getChildRef(pos)), pNode, value, ref);
     }
 
-    void ToStringInOrder(NodePtr pNode, stringstream &ss, bool &first) const {
+private:
+    static NodePtr asNodePtr(BinaryTreeNode<value_type>* pNode) { // Helper para convertir un puntero de tipo BinaryTreeNode a NodePtr (que es un puntero a BinaryTreeNode en este caso)
+        return static_cast<NodePtr>(pNode);
+    }
+
+    void ToStringInOrder(NodePtr pNode, stringstream &ss, TB &first) const { // Función recursiva para generar la representación en cadena del árbol en orden
         if (pNode == nullptr) return;
-        ToStringInOrder(pNode->getLeftChild(), ss, first);
+        ToStringInOrder(asNodePtr(pNode->getLeftChild()), ss, first);
 
         if (!first) ss << ",";
         ss << *pNode;
         first = false;
-        ToStringInOrder(pNode->getRightChild(), ss, first);
+        ToStringInOrder(asNodePtr(pNode->getRightChild()), ss, first);
     }
 
     template <typename Func, typename... Args>
     void ForEachInOrder(NodePtr pNode, Func func, Args &&...  args){
         if (pNode == nullptr) return;
-        ForEachInOrder(pNode->getLeftChild(), func, std::forward<Args>(args)...);
+        ForEachInOrder(asNodePtr(pNode->getLeftChild()), func, std::forward<Args>(args)...);
         func(*pNode, std::forward<Args>(args)...);
-        ForEachInOrder(pNode->getRightChild(), func, std::forward<Args>(args)...);
+        ForEachInOrder(asNodePtr(pNode->getRightChild()), func, std::forward<Args>(args)...);
     }   
 
     template <typename Func, typename... Args>
     NodePtr FirstThatInOrder(NodePtr pNode, Func func, Args &&...  args){
         if (pNode == nullptr) return nullptr;
 
-        NodePtr left = FirstThatInOrder(pNode->getLeftChild(), func, std::forward<Args>(args)...);
+        NodePtr left = FirstThatInOrder(asNodePtr(pNode->getLeftChild()), func, std::forward<Args>(args)...);
         if (left != nullptr) return left;
 
         if (func(*pNode, std::forward<Args>(args)...)) return pNode;
 
-        return FirstThatInOrder(pNode->getRightChild(), func, std::forward<Args>(args)...);
+        return FirstThatInOrder(asNodePtr(pNode->getRightChild()), func, std::forward<Args>(args)...);
     }
 
-    void WritePreOrderWithNulls(NodePtr pNode, ostream &os) const {
+    void WritePreOrderWithNulls(NodePtr pNode, ostream &os) const { // Funcion recursiva, escribe el nodo actual, luego el hijo izquierdo y luego el derecho. Si un nodo es nullptr, escribe "#" para indicar un nodo nulo
         if (pNode == nullptr) {
             os << "#\n";
             return;
         }
         os << pNode->getData() << " " << pNode->getRef() << "\n";
-        WritePreOrderWithNulls(pNode->getLeftChild(), os);
-        WritePreOrderWithNulls(pNode->getRightChild(), os);
+        WritePreOrderWithNulls(asNodePtr(pNode->getLeftChild()), os);
+        WritePreOrderWithNulls(asNodePtr(pNode->getRightChild()), os);
     } 
 
-    NodePtr ReadPreOrderWithNulls(istream &is, NodePtr pParent = nullptr) {
-        string line;
+    NodePtr ReadPreOrderWithNulls(istream &is, NodePtr pParent = nullptr) { // Función recursiva, lee un nodo de la entrada, si el nodo es "#", retorna nullptr. Si no, crea un nuevo nodo con los datos leídos y luego llama recursivamente para leer el hijo izquierdo y derecho
+        TS line;
         if (!getline(is, line)) return nullptr;
 
         if (line == "#") return nullptr;
