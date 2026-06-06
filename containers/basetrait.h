@@ -11,6 +11,11 @@ struct BaseContainerTrait{
 };
 
 template <typename _T>
+struct LightBaseContainerTrait{
+    using value_type = _T;
+};
+
+template <typename _T>
 struct AscendingTrait{
     using Comp = less<_T>;
 };

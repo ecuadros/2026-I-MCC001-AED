@@ -61,11 +61,12 @@ public:
 template <typename Traits>
 class BinaryTree{
 public:
+    class BinaryTreeNode;
     using value_type = typename Traits::value_type;
-    using Node       = typename Traits::Node;
     using Comp       = typename Traits::Comp;
+    using Node       = BinaryTreeNode;
+    using NodePtr    = Node*;
     using MySelf     = BinaryTree<Traits>;
-    using NodePtr    = typename Node::NodePtr;
 
     using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
     using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
@@ -98,10 +99,6 @@ public:
         return forward_inorder_iterator(this, nullptr);
     }
 
-    // 1. Declaración de la clase anidada
-    template <typename T>
-    class BinaryTreeNode;
-
 private:
     void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr pParent){
         if( !pNode ){
@@ -114,13 +111,11 @@ private:
     }
 };
 
-// 2. Definición de la clase anidada fuera de la clase Externa
-template <typename Traits>  // 1. Template de la clase externa
-template <typename T>       // 2. Template de la clase interna
+template <typename Traits>
 class BinaryTree<Traits>::BinaryTreeNode{
 public:
-    using value_type = T;
-    using Node       = BinaryTreeNode<T>;
+    using value_type = typename Traits::value_type;
+    using Node       = BinaryTreeNode;
     using NodePtr    = Node*;
 protected:
     value_type m_data;
@@ -231,7 +226,7 @@ public:
 };
 
 template <typename T>
-struct BaseBinaryTreeListTrait : public BaseContainerTrait<T, BinaryTreeNode<T>>{
+struct BaseBinaryTreeListTrait : public LightBaseContainerTrait<T>{
 
 };
 
