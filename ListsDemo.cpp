@@ -103,7 +103,7 @@ void LinkedListDemo(){
 }
 
 void BinaryTreeDemo(){
-    BinaryTree<AscendingBinaryTreeListTrait<TI>> tree;
+    BinaryTree<AscendingTrait<TI>> tree;
     tree.insert(4, 0);
     tree.insert(2, 0);
     tree.insert(6, 0);
@@ -117,7 +117,7 @@ void BinaryTreeDemo(){
 
     cout << "inorder tree walk: llenado con tree.operator>>" << endl;
     stringstream ss("4 0 2 0 6 0 1 0 3 0 5 0 7 0");
-    BinaryTree<AscendingBinaryTreeListTrait<int>> tree2;
+    BinaryTree<AscendingTrait<int>> tree2;
     ss >> tree2;
     cout << tree2 << endl;
 }

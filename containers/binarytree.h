@@ -240,23 +240,6 @@ public:
     }
 };
 
-template <typename T>
-struct BaseBinaryTreeListTrait : public LightBaseContainerTrait<T>{
-
-};
-
-template <typename T>
-struct AscendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>,
-                                      public AscendingTrait<T>
-{
-};
-
-template <typename T>
-struct DescendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>,
-                                       public DescendingTrait<T>
-{
-};
-
 template <typename Traits>
 ostream& operator<<(ostream& os, BinaryTree<Traits>& tree){
     tree.ForEach([&os](typename BinaryTree<Traits>::Node &node){

@@ -62,19 +62,12 @@ ostream &operator<<(ostream &os, const LLNode<T> &node){
 }
 
 template <typename T>
-struct BaseLinkedListTrait : public BaseContainerTrait<T, LLNode<T>>{
-
-};
-
-template <typename T>
-struct AscendingLinkedListTrait : public BaseLinkedListTrait<T>,
-                                  public AscendingTrait<T>
+struct AscendingLinkedListTrait : public AscendingContainerTrait<LLNode<T>>
 {
 };
 
 template <typename T>
-struct DescendingLinkedListTrait : public BaseLinkedListTrait<T>,
-                                   public DescendingTrait<T>
+struct DescendingLinkedListTrait : public DescendingContainerTrait<LLNode<T>>
 {
 };
 
