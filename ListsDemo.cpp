@@ -113,9 +113,7 @@ void BinaryTreeDemo(){
     tree.insert(7, 0);
 
     cout << "inorder tree walk:" << endl;
-    for(auto it = tree.begin(); it != tree.end(); ++it){
-        cout << it->getData() << " ";
-    }
+    tree.ForEach(Print<typename BinaryTree<AscendingBinaryTreeListTrait<TI>>::Node>, cout);
     cout << endl;
 }
 

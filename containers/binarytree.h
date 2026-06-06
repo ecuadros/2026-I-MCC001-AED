@@ -87,6 +87,16 @@ public:
         internal_insert(m_pRoot, value, ref, nullptr);
     }
 
+    template <typename Func, typename... Args>
+    void ForEach(Func func, Args&&... args){
+        ::ForEach(begin(), end(), func, std::forward<Args>(args)...);
+    }
+
+    template <typename Func, typename... Args>
+    forward_inorder_iterator FirstThat(Func func, Args&&... args){
+        return ::FirstThat(begin(), end(), func, std::forward<Args>(args)...);
+    }
+
     forward_inorder_iterator begin() {
         NodePtr p = m_pRoot;
         while(p->getChild(L) != nullptr){
