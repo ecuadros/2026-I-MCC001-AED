@@ -76,6 +76,42 @@ public:
     }
 };
 
+template <typename Container>
+class BinaryTreeForwardPreorderIterator : public general_iterator<Container, 
+                                         BinaryTreeForwardPreorderIterator<Container>>{
+    using MySelf = BinaryTreeForwardPreorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+public:
+    MySelf& operator++(){
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+        if(node->getChild(L) != nullptr){                           // node tiene un hijo a su izquierda
+            this->m_pNode = node->getChild(L);
+            return *this;
+        }
+        if(node->getChild(R) != nullptr){                           // node tiene un hijo a su derecha
+            this->m_pNode = node->getChild(R);
+            return *this;
+        }
+
+        auto* parent = this->m_pNode->getParent();
+        while(parent){
+            if(parent->getChild(L) == node && parent->getChild(R) != nullptr){    // node es el hijo izquierdo y tiene un hermano a su derecha
+                this->m_pNode = parent->getChild(R);
+                return *this;
+            }
+            node = parent;
+            parent =  node->getParent();
+        }
+
+        this->m_pNode = nullptr;
+        return *this;
+    }
+};
+
 template <typename Traits>
 class BinaryTree{
 public:
@@ -88,6 +124,7 @@ public:
 
     using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
     using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
+    using forward_preorder_iterator = BinaryTreeForwardPreorderIterator<MySelf>;
 
 protected:
     NodePtr m_pRoot = nullptr;
@@ -142,6 +179,14 @@ public:
 
     backward_inorder_iterator reverse_inorder_end(){
         return backward_inorder_iterator(this, nullptr);   
+    }
+
+    forward_preorder_iterator preorder_begin() {
+        return forward_preorder_iterator(this, m_pRoot);
+    }
+
+    forward_preorder_iterator preorder_end(){
+        return forward_preorder_iterator(this, nullptr);
     }
 
 private:
