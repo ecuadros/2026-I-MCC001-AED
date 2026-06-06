@@ -1,5 +1,6 @@
 #include "containers/linkedlist.h"
 #include "containers/binarytree.h"
+#include "containers/avltree.h"
 #include <fstream>
 
 template <typename Node>
@@ -134,6 +135,20 @@ void BinaryTreeDemo(){
         cout << *it << endl;
 }
 
+void AVLTreeDemo(){
+    AVLTree<AscendingTrait<TI>> avlTree;
+    avlTree.insert(4, 0);
+    avlTree.insert(2, 0);
+    avlTree.insert(6, 0);
+    avlTree.insert(1, 0);
+    avlTree.insert(3, 0);
+    avlTree.insert(5, 0);
+    avlTree.insert(7, 0);
+
+    cout << "inorder tree walk: llenado con avlTree.insert" << endl;
+    cout << avlTree << endl;
+}
+
 void ListsDemo(){
-    BinaryTreeDemo();
+    AVLTreeDemo();
 }

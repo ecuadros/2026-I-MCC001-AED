@@ -170,6 +170,10 @@ public:
 protected:
     NodePtr m_pRoot = nullptr;
     Comp    m_comp;
+
+    virtual NodePtr CreateNode(const value_type &value, const Ref ref){
+        return new Node(value, ref);
+    }
 public:
     BinaryTree() {}
     BinaryTree(const BinaryTree &other){ // Copy constructor
@@ -245,7 +249,7 @@ public:
 private:
     void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr pParent){
         if( !pNode ){
-            pNode = new Node(value, ref);
+            pNode = CreateNode(value, ref);
             pNode->setParent(pParent);
             return;
         }
