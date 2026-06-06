@@ -171,7 +171,7 @@ protected:
     NodePtr m_pRoot = nullptr;
     Comp    m_comp;
 
-    virtual NodePtr CreateNode(const value_type &value, const Ref ref){
+    virtual NodePtr createNode(const value_type &value, const Ref ref){
         return new Node(value, ref);
     }
 public:
@@ -246,15 +246,16 @@ public:
         return backward_preorder_iterator(this, nullptr);
     }
 
-private:
-    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr pParent){
+protected:
+    virtual NodePtr internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr pParent){
         if( !pNode ){
-            pNode = CreateNode(value, ref);
+            pNode = createNode(value, ref);
             pNode->setParent(pParent);
-            return;
+            return pNode;
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->getChildRef(pos), value, ref, pNode);
+        pNode->setChild(pos, internal_insert(pNode->getChildRef(pos), value, ref, pNode));
+        return pNode;
     }
 };
 

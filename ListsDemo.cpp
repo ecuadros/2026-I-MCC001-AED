@@ -137,16 +137,19 @@ void BinaryTreeDemo(){
 
 void AVLTreeDemo(){
     AVLTree<AscendingTrait<TI>> avlTree;
-    avlTree.insert(4, 0);
-    avlTree.insert(2, 0);
-    avlTree.insert(6, 0);
     avlTree.insert(1, 0);
+    avlTree.insert(2, 0);
     avlTree.insert(3, 0);
+    avlTree.insert(4, 0);
     avlTree.insert(5, 0);
+    avlTree.insert(6, 0);
     avlTree.insert(7, 0);
 
     cout << "inorder tree walk: llenado con avlTree.insert" << endl;
-    cout << avlTree << endl;
+    //cout << avlTree << endl;
+    avlTree.ForEach([](auto &node){
+        cout << node << " - Height: " << static_cast<AVLTree<AscendingTrait<TI>>::AVLTreeNode&>(node).getHeight() << endl;
+    });
 }
 
 void ListsDemo(){
