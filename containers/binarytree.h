@@ -58,8 +58,66 @@ public:
     }
 };
 
-template <typename T>
-class BinaryTreeNode{
+template <typename Traits>
+class BinaryTree{
+public:
+    using value_type = typename Traits::value_type;
+    using Node       = typename Traits::Node;
+    using Comp       = typename Traits::Comp;
+    using MySelf     = BinaryTree<Traits>;
+    using NodePtr    = typename Node::NodePtr;
+
+    using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
+    using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
+
+protected:
+    NodePtr m_pRoot = nullptr;
+    Comp    m_comp;
+public:
+    BinaryTree() {}
+    BinaryTree(const BinaryTree &other){ // Copy constructor
+
+    };
+    BinaryTree(BinaryTree &&other){ // Move constructor
+
+    };
+
+    void insert(const value_type &value, Ref ref){
+        internal_insert(m_pRoot, value, ref, nullptr);
+    }
+
+    forward_inorder_iterator begin() {
+        NodePtr p = m_pRoot;
+        while(p->getChild(L) != nullptr){
+            p = p->getChild(L);
+        }
+        return forward_inorder_iterator(this, p);
+    }
+
+    forward_inorder_iterator end(){
+        return forward_inorder_iterator(this, nullptr);
+    }
+
+    // 1. Declaración de la clase anidada
+    template <typename T>
+    class BinaryTreeNode;
+
+private:
+    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr pParent){
+        if( !pNode ){
+            pNode = new Node(value, ref);
+            pNode->setParent(pParent);
+            return;
+        }
+        size_t pos = !m_comp(value, pNode->getDataRef());
+        internal_insert(pNode->getChildRef(pos), value, ref, pNode);
+    }
+};
+
+// 2. Definición de la clase anidada fuera de la clase Externa
+template <typename Traits>  // 1. Template de la clase externa
+template <typename T>       // 2. Template de la clase interna
+class BinaryTree<Traits>::BinaryTreeNode{
 public:
     using value_type = T;
     using Node       = BinaryTreeNode<T>;
@@ -187,57 +245,6 @@ template <typename T>
 struct DescendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>,
                                        public DescendingTrait<T>
 {
-};
-
-template <typename Traits>
-class BinaryTree{
-public:
-    using value_type = typename Traits::value_type;
-    using Node       = typename Traits::Node;
-    using Comp       = typename Traits::Comp;
-    using MySelf     = BinaryTree<Traits>;
-    using NodePtr    = typename Node::NodePtr;
-
-    using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
-    using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
-
-protected:
-    NodePtr m_pRoot = nullptr;
-    Comp    m_comp;
-public:
-    BinaryTree() {}
-    BinaryTree(const BinaryTree &other){ // Copy constructor
-
-    };
-    BinaryTree(BinaryTree &&other){ // Move constructor
-
-    };
-
-    void insert(const value_type &value, Ref ref){
-        internal_insert(m_pRoot, value, ref, nullptr);
-    }
-
-    forward_inorder_iterator begin() {
-        NodePtr p = m_pRoot;
-        while(p->getChild(L) != nullptr){
-            p = p->getChild(L);
-        }
-        return forward_inorder_iterator(this, p);
-    }
-
-    forward_inorder_iterator end(){
-        return forward_inorder_iterator(this, nullptr);
-    }
-private:
-    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr pParent){
-        if( !pNode ){
-            pNode = new Node(value, ref);
-            pNode->setParent(pParent);
-            return;
-        }
-        size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->getChildRef(pos), value, ref, pNode);
-    }
 };
 
 
