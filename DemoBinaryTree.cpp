@@ -5,7 +5,7 @@
 using namespace std;
 
 void DemoBinaryTree(){
-    cout << "\n=== DEMO: RECORRIDOS DEL ARBOL BINARIO ===" << endl;
+    cout << "Demo Arbol Binario" << endl;
     
     BinaryTree<AscendingBinaryTreeListTrait<TI>> miArbol;
 
@@ -17,15 +17,13 @@ void DemoBinaryTree(){
     miArbol.insert(60, 105);
     miArbol.insert(80, 106);
 
-    // ¡Mira la elegancia de estas 3 líneas!
-    cout << "1. Recorrido InOrder: \n"
-         << miArbol << "\n\n";
+    cout << "Recorrido InOrder: " << endl;
+    cout << miArbol << endl;;
 
-    cout << "2. Recorrido PreOrder: \n"
-         << miArbol.print(TraversalMode::PreOrder) << "\n\n";
+    cout << "Recorrido PreOrder: " << endl;
+    cout << miArbol.print(TraversalMode::PreOrder) << endl;
 
-    cout << "3. Recorrido PostOrder: \n"
-         << miArbol.print(TraversalMode::PostOrder) << "\n\n";
+    cout << "Recorrido PostOrder: " << endl;
+    cout << miArbol.print(TraversalMode::PostOrder) << endl;
 
-    cout << "=========================================\n" << endl;
 }
