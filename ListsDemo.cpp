@@ -120,6 +120,10 @@ void BinaryTreeDemo(){
     BinaryTree<AscendingTrait<int>> tree2;
     ss >> tree2;
     cout << tree2 << endl;
+
+    cout << "reverse inorder tree walk: " << endl;
+    for (auto it = tree.reverse_inorder_begin(); it != tree.reverse_inorder_end(); ++it)
+        cout << *it << endl;  
 }
 
 void ListsDemo(){

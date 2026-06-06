@@ -51,9 +51,27 @@ class BinaryTreeBackwardInorderIterator : public general_iterator<Container,
     using Parent = general_iterator<Container, MySelf>;
     using Parent::Parent;
 public:
-    // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+        if(node->getChild(L) != nullptr){                           // node tiene un hijo a su izquierda
+            node = node->getChild(L);
+            while(node->getChild(R) != nullptr){                    // node tiene un hijo a su derecha
+                node = node->getChild(R);
+            }
+            this->m_pNode = node;
+            return *this;
+        }
+
+        auto* parent = this->m_pNode->getParent();
+        while(parent != nullptr && parent->getChild(L) == node){    // node es el hijo izquierdo de su padre
+            node = parent;
+            parent =  node->getParent();
+        }
+
+        this->m_pNode = parent;
         return *this;
     }
 };
@@ -89,12 +107,12 @@ public:
 
     template <typename Func, typename... Args>
     void ForEach(Func func, Args&&... args){
-        ::ForEach(begin(), end(), func, std::forward<Args>(args)...);
+        ::ForEach(inorder_begin(), inorder_end(), func, std::forward<Args>(args)...);
     }
 
     template <typename Func, typename... Args>
     forward_inorder_iterator FirstThat(Func func, Args&&... args){
-        return ::FirstThat(begin(), end(), func, std::forward<Args>(args)...);
+        return ::FirstThat(inorder_begin(), inorder_end(), func, std::forward<Args>(args)...);
     }
 
     void clear(){
@@ -102,7 +120,7 @@ public:
         m_pRoot = nullptr;
     }
 
-    forward_inorder_iterator begin() {
+    forward_inorder_iterator inorder_begin() {
         NodePtr p = m_pRoot;
         while(p->getChild(L) != nullptr){
             p = p->getChild(L);
@@ -110,8 +128,20 @@ public:
         return forward_inorder_iterator(this, p);
     }
 
-    forward_inorder_iterator end(){
+    forward_inorder_iterator inorder_end(){
         return forward_inorder_iterator(this, nullptr);
+    }
+
+    backward_inorder_iterator reverse_inorder_begin() {
+        NodePtr p = m_pRoot;
+        while(p!= nullptr && p->getChild(R) != nullptr){
+            p = p->getChild(R);
+        }
+        return backward_inorder_iterator(this, p);
+    }
+
+    backward_inorder_iterator reverse_inorder_end(){
+        return backward_inorder_iterator(this, nullptr);   
     }
 
 private:
