@@ -27,17 +27,16 @@ public:
         if(!this->m_pNode)
             return *this;
         if(this->m_pNode->getChild(1)){
-            this->m_pNode = this->m_pNode->getChild(1);
+            this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(1));
             while(this->m_pNode->getChild(0))
-                this->m_pNode = this->m_pNode->getChild(0);
+    			this->m_pNode =static_cast<typename Container::Node*>(this->m_pNode->getChild(0));
             return *this;
     	}
-        auto pParent = this->m_pNode->m_pParent;
-        while(pParent &&
-              this->m_pNode == pParent->getChild(1))
+        auto pParent = static_cast<typename Container::Node*>(this->m_pNode->m_pParent);
+        while(pParent && this->m_pNode == pParent->getChild(1))
         {
             this->m_pNode = pParent;
-            pParent = pParent->m_pParent;
+            pParent = static_cast<typename Container::Node*>(pParent->m_pParent);
         }
         this->m_pNode = pParent;
         return *this;
@@ -58,10 +57,9 @@ public:
         if(!this->m_pNode)
         	return *this;
     	if(this->m_pNode->getChild(0)){
-        	this->m_pNode = this->m_pNode->getChild(0);
+        	this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(0));
         	while(this->m_pNode->getChild(1))
-            	this->m_pNode = this->m_pNode->getChild(1);
-
+            	this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(1));
         	return *this;
     	}
     	auto pParent = this->m_pNode->m_pParent;
@@ -90,11 +88,11 @@ public:
         if(!this->m_pNode)
             return *this;
         if(this->m_pNode->getChild(0)){
-            this->m_pNode = this->m_pNode->getChild(0);
+            this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(0));
     		return *this;
         }
         if(this->m_pNode->getChild(1)){
-            this->m_pNode = this->m_pNode->getChild(1);
+            this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(1));
     		return *this;
         }
         auto pParent = this->m_pNode->m_pParent;
@@ -166,10 +164,10 @@ public:
             this->m_pNode = pParent->getChild(1);
             while(true){
                 if(this->m_pNode->getChild(0)){
-                    this->m_pNode = this->m_pNode->getChild(0);
+                    this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(0));
                 }
                 else if(this->m_pNode->getChild(1)){
-                    this->m_pNode = this->m_pNode->getChild(1);
+                    this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(1));
                 }
                 else{
                     break;
@@ -239,17 +237,17 @@ public:
     BinaryTreeNode(const BinaryTreeNode& other)
         : m_data(other.m_data), m_ref(other.m_ref), m_pParent(nullptr)
     {
-        m_pChild[0] = other.m_pChild[0];
-        m_pChild[1] = other.m_pChild[1];
+        m_pChild[0] = nullptr;
+        m_pChild[1] = nullptr;
         if(other.m_pChild[0]){
-            m_pChild[0] = new Node(*other.m_pChild[0]);
-            m_pChild[0]->m_pParent = this;
-        }
+    		m_pChild[0] = other.m_pChild[0]->clone();
+    		m_pChild[0]->m_pParent = this;
+		}
 
-        if(other.m_pChild[1]){
-            m_pChild[1] = new Node(*other.m_pChild[1]);
-            m_pChild[1]->m_pParent = this;
-        }
+		if(other.m_pChild[1]){
+    		m_pChild[1] = other.m_pChild[1]->clone();
+    		m_pChild[1]->m_pParent = this;
+		}
     }
     // Corregir con exchange, Move onstructor
     BinaryTreeNode(BinaryTreeNode&& other) noexcept
@@ -272,13 +270,14 @@ public:
     	m_pChild[1] = nullptr;
     	m_pParent   = nullptr;
     	if(other.m_pChild[0]){
-        	m_pChild[0] = new Node(*other.m_pChild[0]);
-        	m_pChild[0]->m_pParent = this;
-    	}
-    	if(other.m_pChild[1]){
-        	m_pChild[1] = new Node(*other.m_pChild[1]);
-        	m_pChild[1]->m_pParent = this;
-    	}
+    		m_pChild[0] = other.m_pChild[0]->clone();
+   	 		m_pChild[0]->m_pParent = this;
+		}
+
+		if(other.m_pChild[1]){
+   			m_pChild[1] = other.m_pChild[1]->clone();
+    		m_pChild[1]->m_pParent = this;
+		}
     	return *this;
 	}
 	BinaryTreeNode& operator=(BinaryTreeNode&& other) noexcept{
@@ -299,7 +298,7 @@ public:
 	}
     
     // Destructor
-    ~BinaryTreeNode() {
+    virtual ~BinaryTreeNode() {
         delete m_pChild[0];
         delete m_pChild[1];
     };
@@ -311,16 +310,20 @@ public:
     Ref&            getRefRef()     { return m_ref; }
     void            setRef(Ref ref) { m_ref = ref; }
 
-    NodePtr         getChild(size_t pos) const { return m_pChild[pos]; }
-    NodePtr&        getChildRef(size_t pos)    { return m_pChild[pos]; }
-    void            setChild(size_t pos, NodePtr pChild) { m_pChild[pos] = pChild; if(pChild)
-            pChild->m_pParent = this;}
+    NodePtr         getChild(size_t pos) const {return m_pChild[pos];}
+    bool isLeaf() const {return !m_pChild[0] && !m_pChild[1];}
+    NodePtr&        getChildRef(size_t pos) {return m_pChild[pos];}
+    size_t childPosition() const { return m_pParent && m_pParent->getChild(1) == this; }
+    void            setChild(size_t pos, NodePtr pChild) { m_pChild[pos] = pChild; if(pChild) pChild->m_pParent = this;}
 
     string to_string() const {
         stringstream ss;
         ss << "Node(data: " << m_data << ", ref: " << m_ref << ")";
         return ss.str();
     }
+    virtual NodePtr clone() const{
+    	return new Node(*this);
+	}
     // Cuidado: en el disco hay posiciones dentro del archivo,
     //          en memoria hay punteros
     friend ostream& operator<<(ostream& os, 
@@ -328,7 +331,7 @@ public:
         os << node.to_string();
         return os;
     }
-
+	
     // Cuidado: en el disco hay posiciones dentro del archivo,
     //          en memoria hay punteros
     friend istream& operator>>(istream& is, 
@@ -387,11 +390,11 @@ protected:
     void internal_print(NodePtr pNode, int depth) const{
         if(!pNode)
             return;
-        internal_print(pNode->getChild(1), depth + 1);
+        internal_print(reinterpret_cast<NodePtr>(pNode->getChild(1)), depth + 1);
         for(int i = 0; i < depth; i++)
             cout << "        ";
         cout << pNode->getData() << "(" << pNode->getRef() << ")" << endl;
-        internal_print(pNode->getChild(0), depth + 1);
+        internal_print(reinterpret_cast<NodePtr>(pNode->getChild(0)), depth + 1);
     }
     void build_postorder(NodePtr pNode, vector<NodePtr>& nodes) const{
         if(!pNode)
@@ -441,25 +444,52 @@ public:
 	}
 
 	// Destructor
-    ~BinaryTree(){
+    virtual ~BinaryTree(){
         scoped_lock<mutex> lock(m_mtx);
         delete m_pRoot;
         m_pRoot = nullptr;
     }
     
+	protected:
+    	virtual NodePtr minimum(NodePtr pNode) const{
+        	while(pNode && pNode->getChild(0))
+            	pNode = static_cast<NodePtr>(pNode->getChild(0));
+        	return pNode;
+    	}
+    	virtual NodePtr maximum(NodePtr pNode) const{
+        	while(pNode && pNode->getChild(1))
+            	pNode = static_cast<NodePtr>(pNode->getChild(1));
+        	return pNode;
+    	}
+    	NodePtr& rootRef(){
+        	return m_pRoot;
+    	}
+    	virtual NodePtr findNode(const value_type& value) const{
+        	NodePtr pNode = m_pRoot;
+        	while(pNode){
+            	if(pNode->getData() == value)
+                	return pNode;
+            	size_t pos =
+                	!m_comp(value, pNode->getDataRef());
+            	pNode = static_cast<NodePtr>(pNode->getChild(pos));
+        	}
+        	return nullptr;
+    	}
+    
     // Insert
-    void insert(const value_type &value, Ref ref){
+    virtual void insert(const value_type &value, Ref ref){
     	scoped_lock<mutex> lock(m_mtx);
         internal_insert(m_pRoot, value, ref);
     }
-private:
-    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref){
+protected:
+    void internal_insert(NodePtr& pNode, const value_type& value, Ref ref){
         if( !pNode ){
             pNode = new Node(value, ref);
             return;
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->getChildRef(pos), value, ref);
+        auto& child = reinterpret_cast<NodePtr&>(pNode->getChildRef(pos));
+        internal_insert(reinterpret_cast<NodePtr&>(pNode->getChildRef(pos)), value, ref);
         pNode->getChild(pos)->m_pParent = pNode;
     }
     
@@ -470,11 +500,11 @@ public:
     }
     // Inorder
     forward_inorder_iterator begin(){
-        NodePtr pNode = m_pRoot;
+        Node* pNode = m_pRoot;
         if(!pNode)
             return forward_inorder_iterator(this, nullptr);
         while(pNode->getChild(0))
-            pNode = pNode->getChild(0);
+            pNode = reinterpret_cast<NodePtr>(pNode->getChild(0));
         return forward_inorder_iterator(this, pNode);
     }
     forward_inorder_iterator end(){
@@ -487,7 +517,7 @@ public:
         if(!pNode)
             return backward_inorder_iterator(this, nullptr);
         while(pNode->getChild(1))
-            pNode = pNode->getChild(1);
+            pNode = static_cast<Node*>(pNode->getChild(1));
         return backward_inorder_iterator(this, pNode);
     }
     backward_inorder_iterator rend(){
@@ -533,9 +563,9 @@ public:
             return forward_postorder_iterator(this, nullptr);
         while(true){
             if(pNode->getChild(0))
-                pNode = pNode->getChild(0);
+                pNode = static_cast<Node*>(pNode->getChild(0));
             else if(pNode->getChild(1))
-                pNode = pNode->getChild(1);
+                pNode = static_cast<Node*>(pNode->getChild(1));
             else
                 break;
         }
