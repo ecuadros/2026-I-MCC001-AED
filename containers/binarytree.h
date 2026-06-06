@@ -153,6 +153,47 @@ public:
     }
 };
 
+template <typename Container>
+class BinaryTreeForwardPostorderIterator : public general_iterator<Container, 
+                                         BinaryTreeForwardPostorderIterator<Container>>{
+    using MySelf = BinaryTreeForwardPostorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+public:
+    MySelf& operator++(){
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+        auto* parent = this->m_pNode->getParent();
+
+        if(parent == nullptr){
+            this->m_pNode = nullptr;
+            return *this;
+        }
+
+        if(parent->getChild(L) == node && parent->getChild(R) != nullptr){    // node es el hijo izquierdo y tiene un hermano a su derecha
+            node = parent->getChild(R);
+
+            while(true)
+            {
+                if(node->getChild(L))
+                    node = node->getChild(L);
+                else if(node->getChild(R))
+                    node = node->getChild(R);
+                else
+                    break;
+            }
+
+            this->m_pNode = node;
+            return *this;
+        }
+
+        this->m_pNode = parent;
+        return *this;
+    }
+};
+
 template <typename Traits>
 class BinaryTree{
 public:
@@ -167,6 +208,7 @@ public:
     using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
     using forward_preorder_iterator = BinaryTreeForwardPreorderIterator<MySelf>;
     using backward_preorder_iterator = BinaryTreeBackwardPreorderIterator<MySelf>;
+    using forward_postorder_iterator = BinaryTreeForwardPostorderIterator<MySelf>;
 protected:
     NodePtr m_pRoot = nullptr;
     Comp    m_comp;
@@ -244,6 +286,21 @@ public:
 
     backward_preorder_iterator reverse_preorder_end(){
         return backward_preorder_iterator(this, nullptr);
+    }
+
+    forward_postorder_iterator postorder_begin() {
+        NodePtr p = m_pRoot;
+        while(p!= nullptr && (p->getChild(L) != nullptr || p->getChild(R) != nullptr)){
+            if(p->getChild(L) != nullptr)
+                p = p->getChild(L);
+            else
+                p = p->getChild(R);
+        }
+        return forward_postorder_iterator(this, p);
+    }
+
+    forward_postorder_iterator postorder_end(){
+        return forward_postorder_iterator(this, nullptr);
     }
 
 protected:
