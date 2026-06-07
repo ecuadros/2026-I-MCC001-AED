@@ -11,6 +11,7 @@ using namespace std;
 using TI = int;
 using TD = double;
 using TS = string;
+using TB = bool;
 
 // XT must be 32bit integer in Windows and 64bit in Linux
 #if defined(_WIN32) || defined(_WIN64)

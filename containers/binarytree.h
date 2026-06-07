@@ -9,68 +9,7 @@
 #include "basetrait.h"
 #include "../types.h"
 
-/*
-template <typename Container>
-class BinaryTreeForwardInorderIterator : public general_iterator<Container, 
-                                         BinaryTreeForwardInorderIterator<Container>>{
-    using MySelf = BinaryTreeForwardInorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
-    using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
-        if (!this->m_pNode) return *this;
-
-        if (this->m_pNode->getChild(1) != nullptr) {
-            this->m_pNode = this->m_pNode->getChild(1);
-            while (this->m_pNode->getChild(0) != nullptr) {
-                this->m_pNode = this->m_pNode->getChild(0);
-            }
-        }
-        else {
-            auto parent = this->m_pNode->getParent();
-            while (parent != nullptr && this->m_pNode == parent->getChild(1)) {
-                this->m_pNode = parent;
-                parent = parent->getParent();
-            }
-            this->m_pNode = parent;
-        }
-        return *this;
-    }
-};
-
-template <typename Container>
-class BinaryTreeBackwardInorderIterator : public general_iterator<Container, 
-                                         BinaryTreeBackwardInorderIterator<Container>>{
-    using MySelf = BinaryTreeBackwardInorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
-    using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
-        if (!this->m_pNode) return *this;
-
-        if (this->m_pNode->getChild(0) != nullptr) {
-            this->m_pNode = this->m_pNode->getChild(0);
-            while (this->m_pNode->getChild(1) != nullptr) {
-                this->m_pNode = this->m_pNode->getChild(1);
-            }
-        }
-        else {
-            auto parent = this->m_pNode->getParent();
-            while (parent != nullptr && this->m_pNode == parent->getChild(0)) {
-                this->m_pNode = parent;
-                parent = parent->getParent();
-            }
-            this->m_pNode = parent;
-        }
-        return *this;
-    }
-};
-*/
-template <typename Container, bool Reverse>
+template <typename Container, TB Reverse> // InOrder: Izquireda - Raiz - Derecha
 class BinaryTreeInorderIterator : public general_iterator<Container, 
                                          BinaryTreeInorderIterator<Container, Reverse>>{
     using MySelf = BinaryTreeInorderIterator<Container, Reverse>;
@@ -79,13 +18,13 @@ class BinaryTreeInorderIterator : public general_iterator<Container,
 public:
     MySelf& operator++(){
         if (!this->m_pNode) return *this;
-
-        size_t left_idx = Reverse ? 1 : 0;
+        // Reverse ---- True (Backward), False (Forward)
+        size_t left_idx = Reverse ? 1 : 0; 
         size_t right_idx = Reverse ? 0 : 1;
 
-        if (this->m_pNode->getChild(right_idx) != nullptr) {
+        if (this->m_pNode->getChild(right_idx) != nullptr) { // tiene hijo a la derecha?
             this->m_pNode = this->m_pNode->getChild(right_idx);
-            while (this->m_pNode->getChild(left_idx) != nullptr) {
+            while (this->m_pNode->getChild(left_idx) != nullptr) { // recursion a la izquierda
                 this->m_pNode = this->m_pNode->getChild(left_idx);
             }
         }
@@ -100,16 +39,16 @@ public:
         }
         return *this;
     }
-
 };  
 
+// Recorrido Forward y Backward con el argumento reverse
 template <typename Container>
 using BinaryTreeForwardInorderIterator = BinaryTreeInorderIterator<Container, false>;
 
 template <typename Container>
 using BinaryTreeBackwardInorderIterator = BinaryTreeInorderIterator<Container, true>;
 
-template <typename Container, bool Reverse> // Preorder: Raiz - Izquierda - Derecha
+template <typename Container, TB Reverse> // Preorder: Raiz - Izquierda - Derecha
 class BinaryTreePreorderIterator : public general_iterator<Container, BinaryTreePreorderIterator<Container, Reverse>> {
     using MySelf = BinaryTreePreorderIterator<Container, Reverse>;
     using Parent = general_iterator<Container, MySelf>;
@@ -121,23 +60,22 @@ public:
         size_t left_idx = Reverse ? 1 : 0;
         size_t right_idx = Reverse ? 0 : 1;
 
-        if (this->m_pNode->getChild(left_idx) != nullptr) {
+        if (this->m_pNode->getChild(left_idx) != nullptr)
             this->m_pNode = this->m_pNode->getChild(left_idx);
-        } 
-        else if (this->m_pNode->getChild(right_idx) != nullptr) {
+         
+        else if (this->m_pNode->getChild(right_idx) != nullptr) 
             this->m_pNode = this->m_pNode->getChild(right_idx);
-        } 
+         
         else {
             auto parent = this->m_pNode->getParent();
             while (parent != nullptr && (this->m_pNode == parent->getChild(right_idx) || parent->getChild(right_idx) == nullptr)) {
                 this->m_pNode = parent;
                 parent = parent->getParent();
             }
-            if (parent != nullptr) {
+            if (parent != nullptr)
                 this->m_pNode = parent->getChild(right_idx);
-            } else {
+            else 
                 this->m_pNode = nullptr;
-            }
         }
         return *this;
     }
@@ -149,7 +87,7 @@ using BinaryTreeForwardPreorderIterator = BinaryTreePreorderIterator<Container, 
 template <typename Container>
 using BinaryTreeBackwardPreorderIterator = BinaryTreePreorderIterator<Container, true>;
 
-template <typename Container, bool Reverse> //PosOrder: Izquierda - Derecha - Raiz
+template <typename Container, TB Reverse> //PosOrder: Izquierda - Derecha - Raiz
 class BinaryTreePostorderIterator : public general_iterator<Container, BinaryTreePostorderIterator<Container, Reverse>> {
     using MySelf = BinaryTreePostorderIterator<Container, Reverse>;
     using Parent = general_iterator<Container, MySelf>;
@@ -163,12 +101,12 @@ public:
 
         auto parent = this->m_pNode->getParent();
         
-        if (parent == nullptr) {
+        if (parent == nullptr) 
             this->m_pNode = nullptr; 
-        } 
-        else if (this->m_pNode == parent->getChild(right_idx) || parent->getChild(right_idx) == nullptr) {
+
+        else if (this->m_pNode == parent->getChild(right_idx) || parent->getChild(right_idx) == nullptr) 
             this->m_pNode = parent;
-        } 
+         
         else {
             auto curr = parent->getChild(right_idx);
             while (curr->getChild(left_idx) != nullptr || curr->getChild(right_idx) != nullptr) {
@@ -186,93 +124,6 @@ using BinaryTreeForwardPostorderIterator = BinaryTreePostorderIterator<Container
 
 template <typename Container>
 using BinaryTreeBackwardPostorderIterator = BinaryTreePostorderIterator<Container, true>;
-
-/*
-template <typename T>
-class BinaryTreeNode{
-public:
-    using value_type = T;
-    using Node       = BinaryTreeNode<T>;
-    using NodePtr    = Node*;
-protected:
-    value_type m_data;
-    Ref        m_ref;
-    NodePtr    m_pChild[2] = {nullptr, nullptr};
-    NodePtr    m_pParent;   
-    //NodePtr    m_right; // Ya estamos usando m_pChild[2]
-public:
-    BinaryTreeNode(const value_type& data, const Ref& ref, 
-        NodePtr left = nullptr, NodePtr right = nullptr, NodePtr parent = nullptr)
-        : m_data(data), m_ref(ref), m_pParent(parent)
-    {
-        m_pChild[0] = left;
-        m_pChild[1] = right;
-    }
-    // copy constructor ... tiene error
-    
-    BinaryTreeNode(const BinaryTreeNode& other)
-        : m_data(other.m_data), m_ref(other.m_ref)
-    {
-        m_pChild[0] = other.m_pChild[0];
-        m_pChild[1] = other.m_pChild[1];
-    }
-    // Corregir con exchange
-    BinaryTreeNode(BinaryTreeNode&& other) noexcept
-        : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref))
-    {
-        m_pChild[0] = other.m_pChild[0];
-        other.m_pChild[0] = nullptr;
-
-        m_pChild[1] = other.m_pChild[1];
-        other.m_pChild[1] = nullptr;
-    }
-    
-    ~BinaryTreeNode() {
-        delete m_pChild[0];
-        delete m_pChild[1];
-    };
-
-    value_type      getData() const { return m_data; }
-    value_type&     getDataRef()    { return m_data; }
-    void            setData(value_type data) { m_data = data; }
-    Ref             getRef() const  { return m_ref; }
-    Ref&            getRefRef()     { return m_ref; }
-    void            setRef(Ref ref) { m_ref = ref; }
-
-    NodePtr         getChild(size_t pos) const { return m_pChild[pos]; }
-    NodePtr&        getChildRef(size_t pos)    { return m_pChild[pos]; }
-    void            setChild(size_t pos, NodePtr pChild) { m_pChild[pos] = pChild; }
-    NodePtr         getParent() const { return m_pParent; }
-    void            setParent(NodePtr pParent) { m_pParent = pParent; }
-
-
-
-    string to_string() const {
-        stringstream ss;
-        ss << "Node(data: " << m_data << ", ref: " << m_ref << ")";
-        return ss.str();
-    }
-    // Cuidado: en el disco hay posiciones dentro del archivo,
-    //          en memoria hay punteros
-    friend ostream& operator<<(ostream& os, 
-        const BinaryTreeNode& node) {
-        os << node.to_string();
-        return os;
-    }
-
-    // Cuidado: en el disco hay posiciones dentro del archivo,
-    //          en memoria hay punteros
-    friend istream& operator>>(istream& is, 
-        BinaryTreeNode& node) {
-        string line;
-        if (getline(is, line)) {
-            stringstream ss(line);
-            ss >> node.m_data >> node.m_ref;
-        }
-        return is;
-    }
-};
-*/
 
 template <typename T>
 //struct BaseBinaryTreeListTrait : public BaseContainerTrait<T, BinaryTreeNode<T>>{
@@ -346,7 +197,7 @@ public:
 
         string to_string() const {
             stringstream ss;
-            ss << "Node(data: " << m_data << ", ref: " << m_ref << ")";
+            ss << "(" << m_data << ", " << m_ref << ")";
             return ss.str();
         }
 
@@ -417,7 +268,6 @@ private:
 
     NodePtr clone_tree(NodePtr pOtherNode, NodePtr pMyParent) {
         if (!pOtherNode) return nullptr;
-
 
         NodePtr newNode = new Node(pOtherNode->getData(), pOtherNode->getRef(), nullptr, nullptr, pMyParent);
 
