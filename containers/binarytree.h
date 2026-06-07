@@ -276,6 +276,7 @@ public:
 protected:
     NodePtr m_pRoot = nullptr;
     Comp    m_comp;
+    mutable mutex    m_mtx;
 
     virtual NodePtr createNode(const value_type &value, const Ref ref){
         return new Node(value, ref);
@@ -291,6 +292,12 @@ public:
         scoped_lock<mutex> lock(other.m_mtx);
         m_pRoot = exchange(other.m_pRoot, nullptr);
     };
+
+    ~BinaryTree() {
+        scoped_lock<mutex> lock(m_mtx);
+        delete m_pRoot;   // destructor del nodo borra todo el subárbol
+        m_pRoot = nullptr;
+    }
 
     void insert(const value_type &value, Ref ref){
         internal_insert(m_pRoot, value, ref, nullptr);
