@@ -237,6 +237,7 @@ public:
     BinaryTreeNode(const BinaryTreeNode& other)
         : m_data(other.m_data), m_ref(other.m_ref), m_pParent(nullptr)
     {
+		scoped_lock<mutex> lock(other.m_mtx);
         m_pChild[0] = nullptr;
         m_pChild[1] = nullptr;
         if(other.m_pChild[0]){
@@ -253,7 +254,8 @@ public:
     BinaryTreeNode(BinaryTreeNode&& other) noexcept
         : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref)), m_pParent(nullptr)
     {
-        m_pChild[0] = std::exchange(other.m_pChild[0], nullptr);
+        scoped_lock<mutex> lock(other.m_mtx);
+		m_pChild[0] = std::exchange(other.m_pChild[0], nullptr);
         m_pChild[1] = std::exchange(other.m_pChild[1], nullptr);
         if (m_pChild[0]) m_pChild[0]->m_pParent = this;
         if (m_pChild[1]) m_pChild[1]->m_pParent = this;
