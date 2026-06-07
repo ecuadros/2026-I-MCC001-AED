@@ -236,13 +236,9 @@ public:
     // copy constructor
     BinaryTreeNode(const BinaryTreeNode& other) : m_data(), m_ref(), m_pParent(nullptr)
     {
-        scoped_lock<mutex> lock(other.m_mtx);
+        //scoped_lock<mutex> lock(other.m_mtx);
         m_data = other.m_data;
     	m_ref  = other.m_ref;
-		m_pChild[0] = other.m_pChild[0];
-        m_pChild[1] = other.m_pChild[1];
-        m_pChild[0] = nullptr;
-        m_pChild[1] = nullptr;
         if(other.m_pChild[0]){
     		m_pChild[0] = other.m_pChild[0]->clone();
     		m_pChild[0]->m_pParent = this;
@@ -259,7 +255,7 @@ public:
         scoped_lock<mutex> lock(other.m_mtx);
         m_data = std::move(other.m_data);
 		m_ref  = std::move(other.m_ref);
-		m_pChild[0] = std::exchange(other.m_pChild[0], nullptr);
+        m_pChild[0] = std::exchange(other.m_pChild[0], nullptr);
         m_pChild[1] = std::exchange(other.m_pChild[1], nullptr);
         if (m_pChild[0]) m_pChild[0]->m_pParent = this;
         if (m_pChild[1]) m_pChild[1]->m_pParent = this;
@@ -305,8 +301,8 @@ public:
     
     // Destructor
     virtual ~BinaryTreeNode() {
-        scoped_lock<mutex> lock(m_mtx);
-		delete m_pChild[0];
+    	scoped_lock<mutex> lock(m_mtx);
+        delete m_pChild[0];
         delete m_pChild[1];
     };
 
