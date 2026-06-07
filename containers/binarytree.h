@@ -283,10 +283,13 @@ protected:
 public:
     BinaryTree() {}
     BinaryTree(const BinaryTree &other){ // Copy constructor
-
+        scoped_lock<mutex> lock(other.m_mtx);
+        if(other.m_pRoot != nullptr)
+            m_pRoot = new Node(*other.m_pRoot);
     };
     BinaryTree(BinaryTree &&other){ // Move constructor
-
+        scoped_lock<mutex> lock(other.m_mtx);
+        m_pRoot = exchange(other.m_pRoot, nullptr);
     };
 
     void insert(const value_type &value, Ref ref){
