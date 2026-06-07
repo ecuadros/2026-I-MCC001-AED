@@ -305,7 +305,8 @@ public:
     
     // Destructor
     virtual ~BinaryTreeNode() {
-        delete m_pChild[0];
+        scoped_lock<mutex> lock(m_mtx);
+		delete m_pChild[0];
         delete m_pChild[1];
     };
 
