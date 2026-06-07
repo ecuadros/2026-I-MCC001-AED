@@ -39,7 +39,7 @@ public:
         rebalance(pNode);
     }
 protected:
-    static T height(NodePtr pNode) const{
+    value_type height(NodePtr pNode) const{
         return pNode ? pNode->getHeight() : 0;
     }
     void updateHeight(NodePtr pNode){
@@ -47,7 +47,7 @@ protected:
             return;
         pNode->setHeight(1 + std::max(height(static_cast<NodePtr>(pNode->getChild(0))),height(static_cast<NodePtr>(pNode->getChild(1)))));
     }
-    static T balanceFactor(NodePtr pNode) const{
+    value_type balanceFactor(NodePtr pNode) const{
         if(!pNode)
             return 0;
         return
@@ -86,7 +86,7 @@ protected:
     void rebalance(NodePtr pNode){
         while(pNode){
             updateHeight(pNode);
-            T bf = balanceFactor(pNode);
+            value_type bf = balanceFactor(pNode);
             if(bf > 1){
                 NodePtr left = static_cast<NodePtr>(pNode->getChild(0));
                 if(balanceFactor(left) < 0)
