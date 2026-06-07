@@ -449,10 +449,9 @@ public:
     // NOTA: Sin lock. Si otro hilo espera el mutex, despertará cuando el movimiento
     // termine y leerá un objeto ya vacío (nullptr), causando fallos lógicos o crasheos.
     BinaryTreeNode(BinaryTreeNode&& other) noexcept
-        : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref))
+        : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref)), m_pParent(std::move(other.m_pParent))
     {
         m_pChild[0] = exchange(other.m_pChild[0], nullptr);
-
         m_pChild[1] = exchange(other.m_pChild[1], nullptr);
     }
 
