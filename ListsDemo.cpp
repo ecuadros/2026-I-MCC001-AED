@@ -137,6 +137,10 @@ void BinaryTreeDemo(){
     cout << "postorder tree walk: " << endl;
     for (auto it = tree.postorder_begin(); it != tree.postorder_end(); ++it)
         cout << *it << endl;
+
+    cout << "reverse postorder tree walk: " << endl;
+    for (auto it = tree.reverse_postorder_begin(); it != tree.reverse_postorder_end(); ++it)
+        cout << *it << endl;
 }
 
 void AVLTreeDemo(){

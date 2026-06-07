@@ -194,6 +194,69 @@ public:
     }
 };
 
+template <typename Container>
+class BinaryTreeBackwardPostorderIterator :
+    public general_iterator<
+        Container,
+        BinaryTreeBackwardPostorderIterator<Container>>
+{
+    using MySelf = BinaryTreeBackwardPostorderIterator<Container>;
+    using Parent =
+        general_iterator<Container, MySelf>;
+
+    using Parent::Parent;
+
+public:
+
+    MySelf& operator++()
+    {
+        if(this->m_pNode == nullptr)
+            return *this;
+
+        auto* node = this->m_pNode;
+
+        if(node->getChild(R) != nullptr){
+            this->m_pNode = node->getChild(R);
+            return *this;
+        }
+
+        if(node->getChild(L) != nullptr){
+            this->m_pNode = node->getChild(L);
+            return *this;
+        }
+
+        auto* parent = node->getParent();
+
+        while(parent != nullptr)
+        {
+            if(parent->getChild(R) == node &&
+               parent->getChild(L) != nullptr)
+            {
+                node = parent->getChild(L);
+
+                while(true)
+                {
+                    if(node->getChild(R))
+                        node = node->getChild(R);
+                    else if(node->getChild(L))
+                        node = node->getChild(L);
+                    else
+                        break;
+                }
+
+                this->m_pNode = node;
+                return *this;
+            }
+
+            node = parent;
+            parent = parent->getParent();
+        }
+
+        this->m_pNode = nullptr;
+        return *this;
+    }
+};
+
 template <typename Traits>
 class BinaryTree{
 public:
@@ -209,6 +272,7 @@ public:
     using forward_preorder_iterator = BinaryTreeForwardPreorderIterator<MySelf>;
     using backward_preorder_iterator = BinaryTreeBackwardPreorderIterator<MySelf>;
     using forward_postorder_iterator = BinaryTreeForwardPostorderIterator<MySelf>;
+    using backward_postorder_iterator = BinaryTreeBackwardPostorderIterator<MySelf>;
 protected:
     NodePtr m_pRoot = nullptr;
     Comp    m_comp;
@@ -301,6 +365,16 @@ public:
 
     forward_postorder_iterator postorder_end(){
         return forward_postorder_iterator(this, nullptr);
+    }
+
+    backward_postorder_iterator reverse_postorder_begin()
+    {
+        return backward_postorder_iterator(this, m_pRoot);
+    }
+
+    backward_postorder_iterator reverse_postorder_end()
+    {
+        return backward_postorder_iterator(this, nullptr);
     }
 
 protected:

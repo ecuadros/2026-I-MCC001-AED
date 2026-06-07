@@ -33,7 +33,7 @@ protected:
     }
 
     void rotateRight(BaseNodePtr &pNode) {
-        cout << "Rotación derecha en nodo: " << pNode->to_string() << endl;
+
         BaseNodePtr pLeftChild = pNode->getChild(L);
         BaseNodePtr pGrandChildR = pLeftChild->getChild(R);
 
@@ -52,7 +52,6 @@ protected:
     }
 
     void rotateLeft(BaseNodePtr &pNode) {
-        cout << "Rotación izquierda en nodo: " << pNode->to_string() << endl;
         BaseNodePtr pRightChild = pNode->getChild(R);
         BaseNodePtr pGrandChildL = pRightChild->getChild(L);
 
@@ -71,7 +70,6 @@ protected:
     }
 
     void balance(BaseNodePtr &pNode) {
-        cout << "Balanceando nodo: " << pNode->to_string() << endl;
         if (pNode == nullptr)
             return;
 
@@ -93,7 +91,6 @@ protected:
 
 private:
     BaseNodePtr internal_insert(BaseNodePtr &pNode, const value_type &value, Ref ref, BaseNodePtr pParent) override {
-        cout << "AVL insert: " << value << endl;
         pNode = BinaryTree<Traits>::internal_insert(pNode, value, ref, pParent);
         balance(pNode);
         return pNode;
