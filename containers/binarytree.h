@@ -479,7 +479,8 @@ public:
         	}
         	return nullptr;
     	}
-    
+
+public:
     // Insert
     virtual void insert(const value_type &value, Ref ref){
     	scoped_lock<mutex> lock(m_mtx);
