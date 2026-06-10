@@ -220,7 +220,8 @@ protected:
     Ref        m_ref;
     NodePtr    m_pChild[2] = {nullptr, nullptr};
 public:
-    NodePtr    m_pParent; 
+    NodePtr    m_pParent;
+	mutable mutex m_mtx;
 public:
     BinaryTreeNode(const value_type& data, const Ref& ref, 
         NodePtr left = nullptr, NodePtr right = nullptr)
