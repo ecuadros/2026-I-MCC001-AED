@@ -237,7 +237,7 @@ public:
     // copy constructor
     BinaryTreeNode(const BinaryTreeNode& other) : m_data(), m_ref(), m_pParent(nullptr)
     {
-        //scoped_lock<mutex> lock(other.m_mtx);
+        scoped_lock<mutex> lock(other.m_mtx);
         m_data = other.m_data;
     	m_ref  = other.m_ref;
         if(other.m_pChild[0]){
