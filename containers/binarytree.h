@@ -391,11 +391,11 @@ protected:
     mutable mutex   m_mtx;
 protected:
     // Funcion de impresion
-    void internal_print(NodePtr pNode, int depth) const{
+    void internal_print(NodePtr pNode, TI depth) const{
         if(!pNode)
             return;
         internal_print(reinterpret_cast<NodePtr>(pNode->getChild(1)), depth + 1);
-        for(int i = 0; i < depth; i++)
+        for(TI i = 0; i < depth; i++)
             cout << "        ";
         cout << pNode->getData() << "(" << pNode->getRef() << ")" << endl;
         internal_print(reinterpret_cast<NodePtr>(pNode->getChild(0)), depth + 1);
