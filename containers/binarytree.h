@@ -124,7 +124,7 @@ public:
 
     Iterator preorder_begin() {
         if (m_pRoot == nullptr) return preorder_end();
-        return Iterator(this, m_pRoot, &Node::nextPreorder, L);
+        return Iterator(this, m_pRoot, &Node::nextPreorderForward, L);
     }
     Iterator preorder_end() {
         return Iterator(this, nullptr, nullptr, L);
@@ -133,8 +133,11 @@ public:
     Iterator reverse_preorder_begin() {
         NodePtr p = m_pRoot;
         if (p == nullptr) return reverse_preorder_end();
-        while(p->getChild(R) != nullptr) p = p->getChild(R);
-        return Iterator(this, p, &Node::nextPreorder, R);
+        while(p->getChild(R) != nullptr || p->getChild(L) != nullptr) {
+            if (p->getChild(R) != nullptr) p = p->getChild(R);
+            else                           p = p->getChild(L);
+        }
+        return Iterator(this, p, &Node::nextPreorderBackward, R);
     }
     Iterator reverse_preorder_end() {
         return Iterator(this, nullptr, nullptr, R);
@@ -147,7 +150,7 @@ public:
             if(p->getChild(L) != nullptr) p = p->getChild(L);
             else                          p = p->getChild(R);
         }
-        return Iterator(this, p, &Node::nextPostorder, L);
+        return Iterator(this, p, &Node::nextPostorderForward, L);
     }
     Iterator postorder_end() {
         return Iterator(this, nullptr, nullptr, L);
@@ -155,7 +158,7 @@ public:
 
     Iterator reverse_postorder_begin() {
         if (m_pRoot == nullptr) return reverse_postorder_end();
-        return Iterator(this, m_pRoot, &Node::nextPostorder, R);
+        return Iterator(this, m_pRoot, &Node::nextPostorderBackward, R);
     }
     Iterator reverse_postorder_end() {
         return Iterator(this, nullptr, nullptr, R);
@@ -341,16 +344,15 @@ public:
         return parent;
     }
 
-    NodePtr nextPreorder(size_t side) {
-        size_t opposite = 1 - side;
-        if (m_pChild[side] != nullptr) return m_pChild[side];
-        if (m_pChild[opposite] != nullptr) return m_pChild[opposite];
+    NodePtr nextPreorderForward(size_t side) {
+        if (m_pChild[L] != nullptr) return m_pChild[L];
+        if (m_pChild[R] != nullptr) return m_pChild[R];
 
         NodePtr node = this;
         NodePtr parent = m_pParent;
         while (parent != nullptr) {
-            if (parent->m_pChild[side] == node && parent->m_pChild[opposite] != nullptr) {
-                return parent->m_pChild[opposite];
+            if (parent->m_pChild[L] == node && parent->m_pChild[R] != nullptr) {
+                return parent->m_pChild[R];
             }
             node = parent;
             parent = node->m_pParent;
@@ -358,21 +360,56 @@ public:
         return nullptr;
     }
 
-    NodePtr nextPostorder(size_t side) {
-        size_t opposite = 1 - side;
+    NodePtr nextPreorderBackward(size_t) {
+        // Para ser el inverso del preorder, si tenemos hijo izquierdo vamos ahí, si no al derecho
+        // Y al subir, buscamos el hermano izquierdo.
         NodePtr parent = m_pParent;
         if (parent == nullptr) return nullptr;
 
-        if (parent->m_pChild[side] == this && parent->m_pChild[opposite] != nullptr) {
-            NodePtr node = parent->m_pChild[opposite];
+        if (parent->m_pChild[R] == this && parent->m_pChild[L] != nullptr) {
+            NodePtr node = parent->m_pChild[L];
             while (true) {
-                if (node->m_pChild[side])          node = node->m_pChild[side];
-                else if (node->m_pChild[opposite]) node = node->m_pChild[opposite];
+                if (node->m_pChild[R])      node = node->m_pChild[R];
+                else if (node->m_pChild[L]) node = node->m_pChild[L];
                 else break;
             }
             return node;
         }
         return parent;
+    }
+
+    NodePtr nextPostorderForward(size_t side) {
+        NodePtr parent = m_pParent;
+        if (parent == nullptr) return nullptr; // La raíz es el último nodo en Forward
+
+        if (parent->m_pChild[L] == this && parent->m_pChild[R] != nullptr) {
+            NodePtr node = parent->m_pChild[R];
+            while (true) {
+                if (node->m_pChild[L])      node = node->m_pChild[L];
+                else if (node->m_pChild[R]) node = node->m_pChild[R];
+                else break;
+            }
+            return node;
+        }
+        return parent;
+    }
+
+    NodePtr nextPostorderBackward(size_t side) {
+        // Reverse Postorder baja desde la raíz hacia las hojas (Derecha -> Izquierda)
+        if (m_pChild[R] != nullptr) return m_pChild[R];
+        if (m_pChild[L] != nullptr) return m_pChild[L];
+
+        NodePtr node = this;
+        NodePtr parent = m_pParent;
+        while (parent != nullptr) {
+            // Si subimos desde el hijo derecho, intentamos ir al hijo izquierdo del padre
+            if (parent->m_pChild[R] == node && parent->m_pChild[L] != nullptr) {
+                return parent->m_pChild[L];
+            }
+            node = parent;
+            parent = node->m_pParent;
+        }
+        return nullptr;
     }
 };
 
