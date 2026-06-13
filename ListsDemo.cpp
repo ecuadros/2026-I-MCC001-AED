@@ -131,6 +131,12 @@ void BinaryTreeDemo(){
     }
     cout << endl;
 
+    cout << endl << "Recorrido InOrder con bucle nativo: " << endl;
+    for (auto &node : tree1.inorder()) {
+        cout << node << ",";
+    }
+    cout << endl;
+
     cout << endl << "Recorrido InOrder con iterador Backward: " << endl;
     for (auto it = tree1.rbegin(); it != tree1.rend(); ++it) {
         cout << *it << ",";
@@ -206,6 +212,11 @@ void AVLTreeDemo() {
     cout << "PreOrder AVL: ";
     for (auto it = avl1.preorder_begin(); it != avl1.preorder_end(); ++it)
         cout << *it << ",";
+    cout << endl;
+
+    cout << "InOrder AVL con bucle nativo: ";
+    for (auto &node : avl1.inorder())
+        cout << node << ",";
     cout << endl;
 
     auto found = avl1.FirstThat(IsGreaterThan<AVLNodeT, TI>, 6);

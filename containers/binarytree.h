@@ -10,98 +10,90 @@
 #include "../foreach.h"
 #include "../types.h"
 
-template <typename Container>
-class BinaryTreeForwardInorderIterator : public general_iterator<Container, 
-                                         BinaryTreeForwardInorderIterator<Container>>{
-    using MySelf = BinaryTreeForwardInorderIterator<Container>;
+struct ForwardInorderIterator {
+    template <typename Container>
+    static auto next(Container* pContainer, typename Container::Node* pNode) {
+        return pContainer->inOrderSuccessor(pNode);
+    }
+};
+
+struct BackwardInorderIterator {
+    template <typename Container>
+    static auto next(Container* pContainer, typename Container::Node* pNode) {
+        return pContainer->inOrderPredecessor(pNode);
+    }
+};
+
+struct ForwardPreOrderIterator {
+    template <typename Container>
+    static auto next(Container* pContainer, typename Container::Node* pNode) {
+        return pContainer->preOrderSuccessor(pNode);
+    }
+};
+
+struct BackwardPreOrderIterator {
+    template <typename Container>
+    static auto next(Container* pContainer, typename Container::Node* pNode) {
+        return pContainer->preOrderPredecessor(pNode);
+    }
+};
+
+struct ForwardPostOrderIterator {
+    template <typename Container>
+    static auto next(Container* pContainer, typename Container::Node* pNode) {
+        return pContainer->postOrderSuccessor(pNode);
+    }
+};
+
+struct BackwardPostOrderIterator {
+    template <typename Container>
+    static auto next(Container* pContainer, typename Container::Node* pNode) {
+        return pContainer->postOrderPredecessor(pNode);
+    }
+};
+
+// La clase BinaryTreeWalkIterator es un iterador genérico para recorrer un árbol binario utilizando una política de avance 
+// específica (in-order, pre-order, post-order). Hereda de general_iterator y define el operador de incremento para avanzar 
+// al siguiente nodo según la política (AdvancePolicy) de avance proporcionada.
+template <typename Container, typename AdvancePolicy>
+class BinaryTreeWalkIterator : public general_iterator<Container,
+                                 BinaryTreeWalkIterator<Container, AdvancePolicy>>{
+    using MySelf = BinaryTreeWalkIterator<Container, AdvancePolicy>;
     using Parent = general_iterator<Container, MySelf>;
     using Parent::Parent;
 public:
-    // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
-        if(this->m_pNode != nullptr)
-            this->m_pNode = this->m_pContainer->inOrderSuccessor(this->m_pNode);
+        if (this->m_pNode != nullptr)
+            this->m_pNode = AdvancePolicy::template next<Container>(this->m_pContainer, this->m_pNode);
         return *this;
     }
 };
 
 template <typename Container>
-class BinaryTreeBackwardInorderIterator : public general_iterator<Container, 
-                                         BinaryTreeBackwardInorderIterator<Container>>{
-    using MySelf = BinaryTreeBackwardInorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
-    using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
-        if(this->m_pNode != nullptr)
-            this->m_pNode = this->m_pContainer->inOrderPredecessor(this->m_pNode);
-        return *this;
-    }
-};
+using BinaryTreeForwardInorderIterator = BinaryTreeWalkIterator<Container, ForwardInorderIterator>;
 
 template <typename Container>
-class BinaryTreeForwardPreOrderIterator : public general_iterator<Container, 
-                                         BinaryTreeForwardPreOrderIterator<Container>>{
-    using MySelf = BinaryTreeForwardPreOrderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
-    using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
-        if(this->m_pNode != nullptr)
-            this->m_pNode = this->m_pContainer->preOrderSuccessor(this->m_pNode);
-        return *this;
-    }
-};
+using BinaryTreeBackwardInorderIterator = BinaryTreeWalkIterator<Container, BackwardInorderIterator>;
 
 template <typename Container>
-class BinaryTreeBackwardPreOrderIterator : public general_iterator<Container, 
-                                         BinaryTreeBackwardPreOrderIterator<Container>>{
-    using MySelf = BinaryTreeBackwardPreOrderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
-    using Parent::Parent;
-public: 
-    MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
-        if(this->m_pNode != nullptr)
-            this->m_pNode = this->m_pContainer->preOrderPredecessor(this->m_pNode);
-        return *this;
-    }
-};
-
+using BinaryTreeForwardPreOrderIterator = BinaryTreeWalkIterator<Container, ForwardPreOrderIterator>;
 
 template <typename Container>
-class BinaryTreeForwardPostOrderIterator : public general_iterator<Container, 
-                                         BinaryTreeForwardPostOrderIterator<Container>>{
-    using MySelf = BinaryTreeForwardPostOrderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
-    using Parent::Parent;
-public:
-    MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
-        if(this->m_pNode != nullptr) 
-            this->m_pNode = this->m_pContainer->postOrderSuccessor(this->m_pNode);
-        return *this;
-    }
-};
+using BinaryTreeBackwardPreOrderIterator = BinaryTreeWalkIterator<Container, BackwardPreOrderIterator>;
 
 template <typename Container>
-class BinaryTreeBackwardPostOrderIterator : public general_iterator<Container, 
-                                         BinaryTreeBackwardPostOrderIterator<Container>>{
-    using MySelf = BinaryTreeBackwardPostOrderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
-    using Parent::Parent;
-public:
-    MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
-        if(this->m_pNode != nullptr)           
-            this->m_pNode = this->m_pContainer->postOrderPredecessor(this->m_pNode);
-        return *this;
-    }
+using BinaryTreeForwardPostOrderIterator = BinaryTreeWalkIterator<Container, ForwardPostOrderIterator>;
+
+template <typename Container>
+using BinaryTreeBackwardPostOrderIterator = BinaryTreeWalkIterator<Container, BackwardPostOrderIterator>;
+
+template <typename Iterator>
+struct IteratorRange {
+    Iterator m_begin;
+    Iterator m_end;
+
+    Iterator begin() { return m_begin; }
+    Iterator end() { return m_end; }
 };
 
 template <typename T>
@@ -543,6 +535,30 @@ public:
 
     backward_postorder_iterator postorder_rend() {
         return backward_postorder_iterator(this, nullptr);
+    }
+
+    auto inorder() {
+        return IteratorRange<forward_inorder_iterator>{begin(), end()};
+    }
+
+    auto rinorder() {
+        return IteratorRange<backward_inorder_iterator>{rbegin(), rend()};
+    }
+
+    auto preorder() {
+        return IteratorRange<forward_preorder_iterator>{preorder_begin(), preorder_end()};
+    }
+
+    auto rpreorder() {
+        return IteratorRange<backward_preorder_iterator>{preorder_rbegin(), preorder_rend()};
+    }
+
+    auto postorder() {
+        return IteratorRange<forward_postorder_iterator>{postorder_begin(), postorder_end()};
+    }
+
+    auto rpostorder() {
+        return IteratorRange<backward_postorder_iterator>{postorder_rbegin(), postorder_rend()};
     }
 
     template <typename TTraits>
