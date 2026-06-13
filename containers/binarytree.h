@@ -451,6 +451,11 @@ public:
     BinaryTreeNode(BinaryTreeNode&& other) noexcept
         : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref)), m_pParent(std::move(other.m_pParent))
     {
+        scoped_lock<mutex> lock(other.m_mtx);
+        m_data = move(other.m_data);
+        m_ref = move(other.m_ref);
+        m_pParent = move(other.m_pParent);
+
         m_pChild[0] = exchange(other.m_pChild[0], nullptr);
         m_pChild[1] = exchange(other.m_pChild[1], nullptr);
     }
@@ -458,6 +463,7 @@ public:
     // NOTA: Sin lock. Si otro hilo espera el mutex mientras este destructor
     // destruye la clase, despertará en memoria vacía causando un crasheo (Use-After-Free).
     ~BinaryTreeNode() {
+        scoped_lock<mutex> lock(m_mtx);
         // Desconectar el padre del nodo
         if(m_pParent != nullptr){
             if(m_pParent->m_pChild[0] == this)
