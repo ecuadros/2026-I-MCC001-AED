@@ -11,11 +11,11 @@ public:
     using NodePtr = Node*;
     using value_type = T;
 protected:
-    T m_height;
+    TI m_height;
 public:
     AVLNode(const value_type& data, const Ref& ref, NodePtr left = nullptr, NodePtr right = nullptr) : Parent(data, ref, left, right), m_height(1) {}
-    T getHeight() const{return m_height;}
-    void setHeight(T h){m_height = h;}
+    TI getHeight() const{return m_height;}
+    void setHeight(TI h){m_height = h;}
     virtual NodePtr clone() const override{return new Node(*this);}
 };
 template<typename T>
@@ -39,7 +39,7 @@ public:
         rebalance(pNode);
     }
 protected:
-    value_type height(NodePtr pNode) const{
+    TI height(NodePtr pNode) const{
         return pNode ? pNode->getHeight() : 0;
     }
     void updateHeight(NodePtr pNode){
@@ -47,7 +47,7 @@ protected:
             return;
         pNode->setHeight(1 + std::max(height(static_cast<NodePtr>(pNode->getChild(0))),height(static_cast<NodePtr>(pNode->getChild(1)))));
     }
-    value_type balanceFactor(NodePtr pNode) const{
+    TI balanceFactor(NodePtr pNode) const{
         if(!pNode)
             return 0;
         return
@@ -86,7 +86,7 @@ protected:
     void rebalance(NodePtr pNode){
         while(pNode){
             updateHeight(pNode);
-            value_type bf = balanceFactor(pNode);
+            TI bf = balanceFactor(pNode);
             if(bf > 1){
                 NodePtr left = static_cast<NodePtr>(pNode->getChild(0));
                 if(balanceFactor(left) < 0)
