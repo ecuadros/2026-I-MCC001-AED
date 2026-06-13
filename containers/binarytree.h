@@ -129,7 +129,6 @@ public:
 };
 
 template <typename T>
-<<<<<<< HEAD
 class BinaryTreeNode{
 public:
     using value_type = T;
@@ -268,9 +267,9 @@ public:
         return is;
     }
 };
-=======
+
+template <typename T>
 struct BaseBinaryTreeListTrait{using value_type = T;};
->>>>>>> 4715a3a (improve binary)
 
 template <typename T>
 struct AscendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>, public AscendingTrait<T>{};
