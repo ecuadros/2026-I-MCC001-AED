@@ -1,6 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <fstream>
+#include <sstream>
 #include "containers/vector.h"
 
 using namespace std;
@@ -32,8 +34,33 @@ bool IsGreaterThan(VectorNode<T> &node, T x){
     return node.GetDataRef() > x;
 }
 
+template<typename T>
+bool LoadFromFile(Vector< VectorTraits<T> > &vec, const string &filename){
+    ifstream ifs(filename);
+    if (!ifs.is_open()) return false;
+    T value;
+    Ref ref = 0;
+    while (ifs >> value) {
+        vec.push_back(value, ref++);
+    }
+    return true;
+}
+
 void DemoVector(){
     Vector< VectorTraits<TI> > v1;
+
+    Vector< VectorTraits<TI> > vf1;
+    if (LoadFromFile<TI>(vf1, "datosmatriz1.txt")){
+        cout << "Datos cargados desde datosmatriz1.txt: " << vf1.ToString() << endl;
+    } else {
+        cout << "No se encontro datosmatriz1.txt, usando datos por defecto." << endl;
+    }
+    Vector< VectorTraits<TI> > vf2;
+    if (LoadFromFile<TI>(vf2, "datosmatriz2.txt")){
+        cout << "Datos cargados desde datosmatriz2.txt: " << vf2.ToString() << endl;
+    } else {
+        cout << "No se encontro datosmatriz2.txt." << endl;
+    }
 
     v1.push_back(7, 15);
     v1.push_back(5, 10);

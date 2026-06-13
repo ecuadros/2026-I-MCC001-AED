@@ -1,4 +1,7 @@
 #include "containers/linkedlist.h"
+#include "containers/doublelinkedlist.h"
+#include "containers/Clinkedlist.h" 
+#include "containers/CDoublelinkedlist.h" 
 #include <fstream>
 
 template <typename Node>
@@ -23,7 +26,7 @@ bool IsGreaterThan(Node &node, T x){
 
 void LinkedListDemo(){
     // 
-    CLinkedList<DescendingLinkedListTrait<TI>> list1;
+    LinkedList<DescendingLinkedListTrait<TI>> list1;
     list1.insert(6, 15);
     list1.insert(2, 25);
     list1.insert(9, 35);
@@ -31,8 +34,8 @@ void LinkedListDemo(){
     list1.insert(7, 55);
     cout << "Lista descendente: " << list1 << endl;
 
-    CLinkedList<AscendingLinkedListTrait<TI>> list2;
-    using LI = CLinkedList<AscendingLinkedListTrait<TI>>::Node;
+    LinkedList<AscendingLinkedListTrait<TI>> list2;
+    using LI = LinkedList<AscendingLinkedListTrait<TI>>::Node;
     list2.insert(6, 15);
     list2.insert(2, 25);
     list2.insert(9, 35);
@@ -61,7 +64,7 @@ void LinkedListDemo(){
     list1.pop_front();
     cout << "Lista ascendente 1: " << list1 << endl;
 
-    CLinkedList<AscendingLinkedListTrait<TI>> list3;
+    LinkedList<AscendingLinkedListTrait<TI>> list3;
     cout << "Prueba PushBack: " << endl;
     list3.push_back(1, 10);
     list3.push_back(2, 20);
@@ -74,17 +77,17 @@ void LinkedListDemo(){
 
     list3.push_back(4, 40);
     cout << "Prueba Copy Constructor: " << endl;
-    CLinkedList<AscendingLinkedListTrait<TI>> list4(list3);
+    LinkedList<AscendingLinkedListTrait<TI>> list4(list3);
     cout << "Lista ascendente 4: " << list4 << endl;
 
     list3.push_back(5, 50);
     cout << "Prueba Move Constructor: " << endl;
-    CLinkedList<AscendingLinkedListTrait<TI>> list5 = move(list3);
+    LinkedList<AscendingLinkedListTrait<TI>> list5 = move(list3);
     cout << "Lista ascendente 5: " << list5 << endl;
 
-    cout << "Prueba del Destructor: " << endl;
-    list4.~CLinkedList();
-    cout << "Lista ascendente 4: " << list4 << endl;
+    //cout << "Prueba del Destructor: " << endl;
+    //list4.~LinkedList();
+    //cout << "Lista ascendente 4: " << list4 << endl;
 
     cout << "Prueba del operador >>: "<<endl;
     ofstream ofs;
@@ -93,7 +96,7 @@ void LinkedListDemo(){
     ofs.close();
 
     ifstream file("lista1.txt");
-    CLinkedList<AscendingLinkedListTrait<TI>> list6;
+    LinkedList<AscendingLinkedListTrait<TI>> list6;
     file >> list6;
     cout << "Lista 6 creada con datos de la lista 1: " << list6 << endl;
 
@@ -101,6 +104,81 @@ void LinkedListDemo(){
     cout << "Lista5 [2]: " << list5[2] << endl;
 }
 
+void DoubleLinkedListDemo(){
+    DoubleLinkedList<DescendingDoubleLinkedListTrait<TI>> list1;
+    list1.insert(6, 15);
+    list1.insert(2, 25);
+    list1.insert(9, 35);
+    list1.insert(1, 45);
+    list1.insert(7, 55);
+    cout << "Lista descendente DLL: " << list1 << endl;
+
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> list2;
+    list2.insert(6, 15);
+    list2.insert(2, 25);
+    list2.insert(9, 35);
+    list2.insert(1, 45);
+    list2.insert(7, 55);
+    cout << "Lista ascendente DLL: " << list2 << endl;
+}
+
+
+void CLinkedListDemo() {
+    CLinkedList<AscendingLinkedListTrait<TI>> list;
+    list.insert(6, 15);
+    list.insert(2, 25);
+    list.insert(9, 35);
+    list.insert(1, 45);
+    list.insert(7, 55);
+    cout << "Lista circular ascendente: " << list << endl;
+
+    // Probar push_front, pop_back, etc.
+    list.push_front(0, 99);
+    cout << "Después de push_front(0): " << list << endl;
+
+    auto [val, ref] = list.pop_back();
+    cout << "pop_back() devuelve (" << val << "," << ref << "), lista: " << list << endl;
+
+    // Probar ForEach
+    list.ForEach([](auto& node) { node.getDataRef() += 10; });
+    cout << "Después de sumar 10 a cada elemento: " << list << endl;
+}
+void CDoubleLinkedListDemo() {
+    cout << "\n=== CDoubleLinkedList (doble circular) ===\n";
+    CDoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> list;
+    list.insert(6, 15);
+    list.insert(2, 25);
+    list.insert(9, 35);
+    list.insert(1, 45);
+    list.insert(7, 55);
+    cout << "Lista doble circular ascendente: " << list << endl;
+
+    list.push_front(0, 99);
+    cout << "Después de push_front(0): " << list << endl;
+
+    auto [val, ref] = list.pop_back();
+    cout << "pop_back() devuelve (" << val << "," << ref << "), lista: " << list << endl;
+
+    // Prueba de recorrido inverso
+    cout << "Recorrido inverso (ReverseForEach): ";
+    list.ReverseForEach(Print<decltype(*list.begin())>, cout);
+    cout << endl;
+
+    // Prueba de FirstThat hacia adelante y hacia atrás
+    auto it = list.FirstThat(IsGreaterThan<decltype(*list.begin()), TI>, 5);
+    if (it != list.end())
+        cout << "Primer elemento mayor que 5: " << *it << endl;
+
+    auto rit = list.ReverseFirstThat(IsGreaterThan<decltype(*list.begin()), TI>, 5);
+    if (rit != list.rend())
+        cout << "Primer elemento desde atrás mayor que 5: " << *rit << endl;
+
+    list.ForEach([](auto& node) { node.getDataRef() += 10; });
+    cout << "Después de sumar 10 a cada elemento: " << list << endl;
+}
+
+
 void ListsDemo(){
-    LinkedListDemo();
+    CLinkedListDemo();
+    CDoubleLinkedListDemo();
 }

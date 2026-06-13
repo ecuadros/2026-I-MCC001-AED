@@ -1,90 +1,240 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Build & Run
-
-```bash
-# Build
-g++ -std=c++2b main.cpp vector.cpp macros.cpp -o main
-
-# Run
-./main
-```
-
-There is no test framework — demos are functions called directly from `main()`. To run a specific demo, uncomment the relevant call in `main.cpp` (e.g., `DemoVector()`, `DemoConcurrentVector()`, `DemoMacros()`).
+# Diagrama de Clases - Estructuras de Datos
 
 ```mermaid
-graph TD
-    main["main.cpp"] --> DemoVector
-    main --> ListsDemo
-    main --> DemoMacros
+classDiagram
+    direction TB
 
-    DemoVector --> Vector["Vector.h"]
-    ListsDemo --> LinkedList["LinkedList.h"]
-    ListsDemo --> DoubleLinkedList["DoubleLinkedList.h (WIP)"]
-    DemoMacros --> Macros["macros.h"]
+    class LLNode~T~ {
+        <<template>>
+        #T m_data
+        #Ref m_ref
+        #LLNode* m_pNext
+        +getData() T
+        +getDataRef() T&
+        +getRef() Ref
+        +setNext(LLNode*)
+        +getNext() LLNode*
+    }
 
-    Vector --> VectorTraits
-    LinkedList --> LinkedListTraits
-    DoubleLinkedList --> DLLTraits
+    class DLLNode~T~ {
+        <<template>>
+        -DLLNode* m_pPrev
+        +getPrev() DLLNode*
+        +setPrev(DLLNode*)
+        +getNext() DLLNode*
+    }
+    DLLNode~T~ --|> LLNode~T~
 
-    VectorTraits --> BaseTrait["BaseContainerTrait"]
-    LinkedListTraits --> BaseTrait
-    DLLTraits --> BaseTrait
+    class VectorNode~Traits~ {
+        <<template>>
+        +value_type m_data
+        +Ref m_ref
+        +GetData() value_type
+        +GetDataRef() value_type&
+        +operator++()
+        +operator+=(value_type)
+    }
 
-    Vector --> GenIter["general_iterator.h"]
-    LinkedList --> GenIter
-    DoubleLinkedList --> GenIter
+    class BaseContainerTrait {
+        <<abstract>>
+        +value_type
+        +Node
+    }
 
-    Vector --> Foreach["foreach.h"]
-    LinkedList --> Foreach
-    DoubleLinkedList --> Foreach
+    class BaseLinkedListTrait~T~ {
+        <<template>>
+        +value_type = T
+        +Node = LLNode~T~
+    }
+    BaseLinkedListTrait~T~ --|> BaseContainerTrait
 
-    GenIter --> Iterators["forward / backward iterators"]
-    Foreach --> ForEachFn["ForEach & FirstThat"]
+    class AscendingLinkedListTrait~T~ {
+        <<template>>
+        +Comp = less~T~
+    }
+    AscendingLinkedListTrait~T~ --|> BaseLinkedListTrait~T~
 
-    classDef container fill:#e1f5fe,stroke:#01579b;
-    classDef trait fill:#fff9c4,stroke:#fbc02d;
-    classDef util fill:#f3e5f5,stroke:#7b1fa2;
-    class Vector,LinkedList,DoubleLinkedList container;
-    class VectorTraits,LinkedListTraits,DLLTraits,BaseTrait trait;
-    class GenIter,Foreach,Iterators,ForEachFn,Macros util;
-```
+    class DescendingLinkedListTrait~T~ {
+        <<template>>
+        +Comp = greater~T~
+    }
+    DescendingLinkedListTrait~T~ --|> BaseLinkedListTrait~T~
 
+    class BaseDoubleLinkedListTrait~T~ {
+        <<template>>
+        +value_type = T
+        +Node = DLLNode~T~
+    }
+    BaseDoubleLinkedListTrait~T~ --|> BaseContainerTrait
 
-## Architecture
+    class AscendingDoubleLinkedListTrait~T~ {
+        <<template>>
+        +Comp = less~T~
+    }
+    AscendingDoubleLinkedListTrait~T~ --|> BaseDoubleLinkedListTrait~T~
 
-This is a C++23 educational data structures project (MCC001-AED, 2026-I). The codebase incrementally builds generic, thread-safe containers following a Traits-based design pattern.
+    class DescendingDoubleLinkedListTrait~T~ {
+        <<template>>
+        +Comp = greater~T~
+    }
+    DescendingDoubleLinkedListTrait~T~ --|> BaseDoubleLinkedListTrait~T~
 
-### Core Abstractions
+    class VectorTraits~T~ {
+        <<template>>
+        +value_type = T
+        +Node = VectorNode~T~
+    }
+    VectorTraits~T~ --|> BaseContainerTrait
 
-**Traits pattern** — containers are parameterized by a Traits struct (e.g., `VectorTraits<T>`) that bundles `value_type` and `Node` type aliases. This decouples the container from the element type and allows swapping node implementations without changing the container class.
+    class general_iterator {
+        <<abstract>>
+        #Container* m_pContainer
+        #Node* m_pNode
+        +operator*() Node&
+        +operator->() Node*
+        +getNode() Node*
+        +==() bool
+    }
 
-**Node types** — `VectorNode<Traits>` holds `m_data` (the element) and `m_ref` (a `long` reference/index). Each node supports `operator++`, `operator+=`, `GetData()`, `GetDataRef()`, and `ToString()`.
+    class LinkedListForwardIterator {
+        +operator++()
+    }
+    LinkedListForwardIterator --|> general_iterator
 
-**Iterator hierarchy** — `general_iterator<Container, IteratorBase>` (in `general_iterator.h`) is a CRTP base that holds a `Container*` and `Node*`. Concrete iterators (`vector_forward_iterator`, `vector_backward_iterator`) inherit from it and only override `operator++` (incrementing or decrementing the pointer).
+    class DoubleLinkedListBackwardIterator {
+        +operator++() (prev)
+    }
+    DoubleLinkedListBackwardIterator --|> general_iterator
 
-**ForEach / FirstThat** — free function templates in `foreach.h` that accept iterator pairs and a callable with variadic args. Containers expose `ForEach`, `ReverseForEach`, `FirstThat`, and `ReverseFirstThat` as member templates that delegate to these free functions.
+    class vector_forward_iterator {
+        +operator++()
+    }
+    vector_forward_iterator --|> general_iterator
 
-**Thread safety** — `Vector` uses a `std::mutex` with `scoped_lock` in `push_back`, `resize`, and `ToString`. `LinkedList` uses `std::shared_mutex`.
+    class vector_backward_iterator {
+        +operator++() (decrement)
+    }
+    vector_backward_iterator --|> general_iterator
 
-### File Map
+    class LinkedList~Traits~ {
+        <<template>>
+        #Node* m_pRoot
+        #Node* m_pTail
+        #size_t m_size
+        #Comp m_comp
+        #mutable mutex m_mtx
+        +push_front(value, ref)
+        +pop_front() pair
+        +push_back(value, ref)
+        +pop_back() pair
+        +insert(value, ref)
+        +operator[](index) Node&
+        +size() size_t
+        +toString() string
+        +begin() forward_iterator
+        +end() forward_iterator
+        +ForEach(func, args...)
+        +FirstThat(func, args...) forward_iterator
+    }
 
-| File | Purpose |
-|---|---|
-| `types.h` | Common type aliases (`TI`, `TD`, `TS`, `Ref`, platform-aware `XT`) |
-| `macros.h` / `macros.cpp` | Preprocessor macro examples |
-| `general_iterator.h` | CRTP iterator base class |
-| `foreach.h` | `ForEach` and `FirstThat` free function templates |
-| `vector.h` | `VectorNode`, `VectorTraits`, `Vector` template + iterator types |
-| `vector.cpp` | `DemoVector()` and `DemoConcurrentVector()` demo functions |
-| `linkedlist.h` | `LLNode`, `LinkedList` template with Trait-based ordering (WIP) |
-| `ListsDemo.cpp` | `LinkedListDemo()` — currently has include/type errors (WIP) |
-| `main.cpp` | Entry point; comment/uncomment demo calls to choose what runs |
+    class DoubleLinkedList~Traits~ {
+        <<template>>
+        +push_front(value, ref) override
+        +pop_front() override
+        +push_back(value, ref) override
+        +pop_back() override
+        +insert(value, ref) override
+        +rbegin() backward_iterator
+        +rend() backward_iterator
+        +ReverseForEach(func, args...)
+        +ReverseFirstThat(func, args...) backward_iterator
+    }
+    DoubleLinkedList~Traits~ --|> LinkedList~Traits~
 
-### Naming Conventions
+    class CLinkedList~Traits~ {
+        <<template>>
+        <<circular singly linked>>
+        -breakCircle()
+        -restoreCircle()
+        +push_front(value, ref) override
+        +pop_front() override
+        +push_back(value, ref) override
+        +pop_back() override
+        +insert(value, ref) override
+        +toString() string override
+        +ForEach(func, args...)
+        +FirstThat(func, args...) forward_iterator
+    }
+    CLinkedList~Traits~ --|> LinkedList~Traits~
 
-- Template parameters: `Traits` for trait structs, `T` for raw element types, `Container` for the owning container, `Func`/`Args` for callables.
-- Member variables: `m_` prefix (e.g., `m_data`, `m_size`, `m_pNode`).
-- Public API uses PascalCase (`ForEach`, `ToString`, `GetData`); STL-compatible names use snake_case (`push_back`, `begin`, `end`).
+    class CDoubleLinkedList~Traits~ {
+        <<template>>
+        <<circular doubly linked>>
+        -breakCircle()
+        -restoreCircle()
+        +push_front(value, ref) override
+        +pop_front() override
+        +push_back(value, ref) override
+        +pop_back() override
+        +insert(value, ref) override
+        +toString() string override
+        +begin() forward_iterator
+        +end() forward_iterator
+        +rbegin() backward_iterator
+        +rend() backward_iterator
+        +ForEach(func, args...)
+        +ReverseForEach(func, args...)
+        +FirstThat(func, args...) forward_iterator
+        +ReverseFirstThat(func, args...) backward_iterator
+    }
+    CDoubleLinkedList~Traits~ --|> DoubleLinkedList~Traits~
+
+    class Vector~Traits~ {
+        <<template>>
+        -Node* m_data
+        -size_t m_size
+        -size_t m_capacity
+        -mutex m_mtx
+        +push_back(value, ref)
+        +size() size_t
+        +ToString() string
+        +begin() forward_iterator
+        +end() forward_iterator
+        +rbegin() backward_iterator
+        +rend() backward_iterator
+        +ForEach(func, args...)
+        +ReverseForEach(func, args...)
+        +FirstThat(func, args...) forward_iterator
+        +ReverseFirstThat(func, args...) backward_iterator
+    }
+
+    LinkedList~Traits~ *-- Node : uses
+    LinkedList~Traits~ ..> LinkedListForwardIterator : creates
+    DoubleLinkedList~Traits~ ..> DoubleLinkedListBackwardIterator : creates
+    CDoubleLinkedList~Traits~ ..> LinkedListForwardIterator : creates
+    CDoubleLinkedList~Traits~ ..> DoubleLinkedListBackwardIterator : creates
+    Vector~Traits~ *-- Node : contains array
+    Vector~Traits~ ..> vector_forward_iterator : creates
+    Vector~Traits~ ..> vector_backward_iterator : creates
+
+    class ForEach {
+        <<function>>
+        +ForEach(begin, end, func, args...)
+    }
+    class FirstThat {
+        <<function>>
+        +FirstThat(begin, end, func, args...) Iterator
+    }
+
+    ForEach <.. LinkedList~Traits~ : uses
+    FirstThat <.. LinkedList~Traits~ : uses
+    ForEach <.. DoubleLinkedList~Traits~ : uses
+    FirstThat <.. DoubleLinkedList~Traits~ : uses
+    ForEach <.. Vector~Traits~ : uses
+    FirstThat <.. Vector~Traits~ : uses
+
+    LinkedList~Traits~ ..> mutex : uses
+    Vector~Traits~ ..> mutex : uses
+
+    note for LinkedListDemo "ListsDemo.cpp, main.cpp"
+    note for VectorDemo "DemoVector.cpp"
