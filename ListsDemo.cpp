@@ -122,25 +122,29 @@ void BinaryTreeDemo(){
     ss >> tree2;
     cout << tree2 << endl;
 
-    cout << "reverse inorder tree walk: " << endl;
-    for (auto it = tree.reverse_inorder_begin(); it != tree.reverse_inorder_end(); ++it)
-        cout << *it << endl; 
+    cout << "\ninorder tree walk: " << endl;
+    for(auto& node : tree.inorder())
+        cout << node << endl;
 
-    cout << "preorder tree walk: " << endl;
-    for (auto it = tree.preorder_begin(); it != tree.preorder_end(); ++it)
-        cout << *it << endl;
+    cout << "\nreverse inorder tree walk: " << endl;
+    for(auto& node : tree.reverse_inorder())
+        cout << node << endl;
+    
+    cout << "\npreorder tree walk: " << endl;
+    for(auto& node : tree.preorder())
+        cout << node << endl;
 
-    cout << "reverse preorder tree walk: " << endl;
-    for (auto it = tree.reverse_preorder_begin(); it != tree.reverse_preorder_end(); ++it)
-        cout << *it << endl;
+    cout << "\nreverse preorder tree walk: " << endl;
+    for(auto& node : tree.reverse_preorder())
+        cout << node << endl;
 
-    cout << "postorder tree walk: " << endl;
-    for (auto it = tree.postorder_begin(); it != tree.postorder_end(); ++it)
-        cout << *it << endl;
+    cout << "\npostorder tree walk: " << endl;
+    for(auto& node : tree.postorder())
+        cout << node << endl;
 
-    cout << "reverse postorder tree walk: " << endl;
-    for (auto it = tree.reverse_postorder_begin(); it != tree.reverse_postorder_end(); ++it)
-        cout << *it << endl;
+    cout << "\nreverse postorder tree walk: " << endl;
+    for(auto& node : tree.reverse_postorder())
+        cout << node << endl;
 }
 
 void AVLTreeDemo(){
@@ -162,5 +166,5 @@ void AVLTreeDemo(){
 
 void ListsDemo(){
     BinaryTreeDemo();
-    AVLTreeDemo();
+    //AVLTreeDemo();
 }

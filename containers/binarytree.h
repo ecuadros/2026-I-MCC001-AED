@@ -101,6 +101,7 @@ public:
         m_pRoot = nullptr;
     }
 
+    // Iteradores para distintos recorridos
     Iterator inorder_begin() {
         NodePtr p = m_pRoot;
         if (p == nullptr) return inorder_end();
@@ -158,6 +159,38 @@ public:
     }
     Iterator reverse_postorder_end() {
         return Iterator(this, nullptr, nullptr, R);
+    }
+
+    // Soporte para Range-based for loop
+    struct IteratorRange{
+        Iterator m_begin;
+        Iterator m_end;
+        Iterator begin() { return m_begin; }
+        Iterator end()   { return m_end; }
+    };
+
+    IteratorRange inorder(){
+        return {inorder_begin(), inorder_end()};
+    }
+
+    IteratorRange reverse_inorder(){
+        return {reverse_inorder_begin(), reverse_inorder_end()};
+    }
+
+    IteratorRange preorder(){
+        return {preorder_begin(), preorder_end()};
+    }
+
+    IteratorRange reverse_preorder(){
+        return {reverse_preorder_begin(), reverse_preorder_end()};
+    }
+
+    IteratorRange postorder(){
+        return {postorder_begin(), postorder_end()};
+    }
+
+    IteratorRange reverse_postorder(){
+        return {reverse_postorder_begin(), reverse_postorder_end()};
     }
 
 protected:
