@@ -125,45 +125,39 @@ void BinaryTreeDemo(){
     else
         cout << "No se encontró un nodo mayor a 6" << endl;
 
-    cout << endl << "Recorrido InOrder con iterador Forward: " << endl;
-    for (auto it = tree1.begin(); it != tree1.end(); ++it) {
-        cout << *it << ","; 
-    }
-    cout << endl;
 
-    cout << endl << "Recorrido InOrder con bucle nativo: " << endl;
+    cout << endl << "Recorrido InOrder con iterador Forward: " << endl;
     for (auto &node : tree1.inorder()) {
         cout << node << ",";
     }
     cout << endl;
 
     cout << endl << "Recorrido InOrder con iterador Backward: " << endl;
-    for (auto it = tree1.rbegin(); it != tree1.rend(); ++it) {
-        cout << *it << ",";
+    for (auto &node : tree1.rinorder()) {
+        cout << node << ",";
     }
-    cout << endl;
 
     cout << endl << "Recorrido PreOrder con iterador Forward: " << endl;
-    for (auto it = tree1.preorder_begin(); it != tree1.preorder_end(); ++it) {
-        cout << *it << ",";
+    for (auto &node : tree1.preorder()) {
+        cout << node << ",";
     }
     cout << endl;
 
     cout << endl << "Recorrido PreOrder con iterador Backward: " << endl;
-    for (auto it = tree1.preorder_rbegin(); it != tree1.preorder_rend(); ++it) {
-        cout << *it << ",";
+    for (auto &node : tree1.rpreorder()) {
+        cout << node << ",";
     }
     cout << endl;
 
     cout << endl << "Recorrido PostOrder con iterador Forward: " << endl;
-    for (auto it = tree1.postorder_begin(); it != tree1.postorder_end(); ++it) {
-        cout << *it << ",";
+    for (auto &node : tree1.postorder()) {
+        cout << node << ",";
     }
     cout << endl;
 
     cout << endl << "Recorrido PostOrder con iterador Backward: " << endl;
-    for (auto it = tree1.postorder_rbegin(); it != tree1.postorder_rend(); ++it) {
-        cout << *it << ",";
+    for (auto &node : tree1.rpostorder()) {
+        cout << node << ",";
     }
     cout << endl;
 

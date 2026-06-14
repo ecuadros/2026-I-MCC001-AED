@@ -64,6 +64,9 @@ class BinaryTreeWalkIterator : public general_iterator<Container,
 public:
     MySelf& operator++(){
         if (this->m_pNode != nullptr)
+            // Utiliza la política de avance para obtener el siguiente nodo en el recorrido 
+            // y actualiza el puntero del nodo actual (m_pNode) al siguiente nodo en el recorrido.
+            // Se usa template para indicar que next es una función miembro de AdvancePolicy que depende del tipo Container.
             this->m_pNode = AdvancePolicy::template next<Container>(this->m_pContainer, this->m_pNode);
         return *this;
     }
