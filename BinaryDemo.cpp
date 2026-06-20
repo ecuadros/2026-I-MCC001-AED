@@ -93,7 +93,7 @@ void DemoConcurrentBinaryTree(){
         random_device rd;
         mt19937 gen(rd() + thread_id);
         uniform_int_distribution<> dist(1, 999);
-        for(int i = 0 ; i < 2 ; i++){
+        for(int i = 0 ; i < 1 ; i++){
             int value = dist(gen);
             tree.insert(value, thread_id);
         }

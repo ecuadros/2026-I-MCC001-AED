@@ -16,307 +16,245 @@
 
 enum class Traversal{Inorder,Preorder,Postorder};
 enum class Direction{Forward,Backward};
-template<
-    typename Container,Traversal Order,Direction Dir>
+
+template<Direction Dir>
+struct DirectionTraits;
+
+template<>
+struct DirectionTraits<Direction::Forward>{
+    static constexpr size_t Next = 1;
+    static constexpr size_t Prev = 0;
+};
+
+template<>
+struct DirectionTraits<Direction::Backward>{
+    static constexpr size_t Next = 0;
+    static constexpr size_t Prev = 1;
+};
+
+template<Direction Dir>
+struct InorderAdapter;
+
+template<Direction Dir>
+struct PreorderAdapter;
+
+template<Direction Dir>
+struct PostorderAdapter;
+
+template<typename Container, typename Adapter>
 class BinaryTreeIterator :
-    public general_iterator<Container,BinaryTreeIterator<Container,Order,Dir>>
+    public general_iterator<Container, BinaryTreeIterator<Container,Adapter>>
 {
-    using MySelf = BinaryTreeIterator<Container,Order,Dir>;
+    using MySelf = BinaryTreeIterator<Container,Adapter>;
     using Parent = general_iterator<Container,MySelf>;
-    using Parent::Parent;
 public:
+    using Parent::Parent;
     MySelf& operator++(){
-        if(!this->m_pNode)
-            return *this;
-        if constexpr(Order == Traversal::Inorder && Dir == Direction::Forward)
-        {
-            if(this->m_pNode->getChild(1)){
-                this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(1));
-                while(this->m_pNode->getChild(0))
-                    this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(0));
-                return *this;
-            }
-            auto pParent = static_cast<typename Container::Node*>(this->m_pNode->m_pParent);
-            while(pParent && this->m_pNode == pParent->getChild(1)){
-                this->m_pNode = pParent;
-                pParent = static_cast<typename Container::Node*>(pParent->m_pParent);
-            }
-            this->m_pNode = pParent;
-        }
-        else if constexpr(Order == Traversal::Inorder && Dir == Direction::Backward)
-        {
-            if(this->m_pNode->getChild(0)){
-                this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(0));
-                while(this->m_pNode->getChild(1))
-                    this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(1));
-                return *this;
-            }
-            auto pParent = static_cast<typename Container::Node*>(this->m_pNode->m_pParent);
-            while(pParent && this->m_pNode == pParent->getChild(0)){
-                this->m_pNode = pParent;
-                pParent = static_cast<typename Container::Node*>(pParent->m_pParent);
-            }
-            this->m_pNode = pParent;
-        }
-        else if constexpr(Order == Traversal::Preorder && Dir == Direction::Forward)
-        {
-            if(this->m_pNode->getChild(0)){
-                this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(0));
-                return *this;
-            }
-            if(this->m_pNode->getChild(1)){
-                this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(1));
-                return *this;
-            }
-            auto pParent = static_cast<typename Container::Node*>(this->m_pNode->m_pParent);
-            while(pParent){
-                if(this->m_pNode == pParent->getChild(0) && pParent->getChild(1)){
-                    this->m_pNode = static_cast<typename Container::Node*>(pParent->getChild(1));
-                    return *this;
-                }
-                this->m_pNode = pParent;
-                pParent = static_cast<typename Container::Node*>(pParent->m_pParent);
-            }
-            this->m_pNode = nullptr;
-        }
-        else if constexpr(Order == Traversal::Preorder && Dir == Direction::Backward)
-        {
-            vector<typename Container::Node*> nodes;
-            this->m_pContainer->build_preorder(this->m_pContainer->m_pRoot,nodes);
-            auto it = find(nodes.begin(),nodes.end(),this->m_pNode);
-            if(it == nodes.begin())
-                this->m_pNode = nullptr;
-            else{
-                --it;
-                this->m_pNode = *it;
-            }
-        }
-        else if constexpr(Order == Traversal::Postorder && Dir == Direction::Forward)
-        {
-            auto pParent = static_cast<typename Container::Node*>(this->m_pNode->m_pParent);
-            if(!pParent){
-                this->m_pNode = nullptr;
-                return *this;
-            }
-            if(this->m_pNode == pParent->getChild(0) && pParent->getChild(1)){
-                this->m_pNode = static_cast<typename Container::Node*>(pParent->getChild(1));
-                while(true){
-                    if(this->m_pNode->getChild(0))
-                        this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(0));
-                    else if(this->m_pNode->getChild(1))
-                        this->m_pNode = static_cast<typename Container::Node*>(this->m_pNode->getChild(1));
-                    else
-                        break;
-                }
-                return *this;
-            }
-            this->m_pNode = pParent;
-        }
-        else if constexpr(Order == Traversal::Postorder && Dir == Direction::Backward)
-        {
-            vector<typename Container::Node*> nodes;
-            this->m_pContainer->build_postorder(this->m_pContainer->m_pRoot,nodes);
-            auto it = find(nodes.begin(),nodes.end(), this->m_pNode);
-            if(it == nodes.begin())
-                this->m_pNode = nullptr;
-            else{
-                --it;
-                this->m_pNode = *it;
-            }
-        }
+        if(this->m_pNode)
+            this->m_pNode = Adapter::next(this->m_pNode, this->m_pContainer);
         return *this;
     }
 };
 
-template <typename T>
-<<<<<<< HEAD
-class BinaryTreeNode{
-public:
-    using value_type = T;
-    using Node       = BinaryTreeNode<T>;
-    using NodePtr    = Node*;
-protected:
-    value_type m_data;
-    Ref        m_ref;
-    NodePtr    m_pChild[2] = {nullptr, nullptr};
-public:
-    NodePtr    m_pParent;
-	mutable mutex m_mtx;
-public:
-    BinaryTreeNode(const value_type& data, const Ref& ref, 
-        NodePtr left = nullptr, NodePtr right = nullptr)
-        : m_data(data), m_ref(ref), m_pParent(nullptr)
-    {
-        m_pChild[0] = left;
-        m_pChild[1] = right;
-        if(left)
-            left->m_pParent = this;
-        if(right)
-            right->m_pParent = this;
-    }
-    // copy constructor
-    BinaryTreeNode(const BinaryTreeNode& other) : m_data(), m_ref(), m_pParent(nullptr)
-    {
-        scoped_lock<mutex> lock(other.m_mtx);
-        m_data = other.m_data;
-    	m_ref  = other.m_ref;
-        if(other.m_pChild[0]){
-    		m_pChild[0] = other.m_pChild[0]->clone();
-    		m_pChild[0]->m_pParent = this;
-		}
+template<Traversal Order, Direction Dir>
+struct TraversalAdapter;
 
-		if(other.m_pChild[1]){
-    		m_pChild[1] = other.m_pChild[1]->clone();
-    		m_pChild[1]->m_pParent = this;
-		}
-    }
-    // Corregir con exchange, Move onstructor
-    BinaryTreeNode(BinaryTreeNode&& other) noexcept : m_data(), m_ref(), m_pParent(nullptr)
-    {
-        scoped_lock<mutex> lock(other.m_mtx);
-        m_data = std::move(other.m_data);
-		m_ref  = std::move(other.m_ref);
-        m_pChild[0] = std::exchange(other.m_pChild[0], nullptr);
-        m_pChild[1] = std::exchange(other.m_pChild[1], nullptr);
-        if (m_pChild[0]) m_pChild[0]->m_pParent = this;
-        if (m_pChild[1]) m_pChild[1]->m_pParent = this;
-    }
-    
-	BinaryTreeNode& operator=(const BinaryTreeNode& other){
-    	if(this == &other)
-        	return *this;
-    	delete m_pChild[0];
-    	delete m_pChild[1];
-    	m_data = other.m_data;
-    	m_ref  = other.m_ref;
-    	m_pChild[0] = nullptr;
-    	m_pChild[1] = nullptr;
-    	m_pParent   = nullptr;
-    	if(other.m_pChild[0]){
-    		m_pChild[0] = other.m_pChild[0]->clone();
-   	 		m_pChild[0]->m_pParent = this;
-		}
-
-		if(other.m_pChild[1]){
-   			m_pChild[1] = other.m_pChild[1]->clone();
-    		m_pChild[1]->m_pParent = this;
-		}
-    	return *this;
-	}
-	BinaryTreeNode& operator=(BinaryTreeNode&& other) noexcept{
-    	if(this == &other)
-        	return *this;
-    	delete m_pChild[0];
-    	delete m_pChild[1];
-    	m_data = std::move(other.m_data);
-    	m_ref  = std::move(other.m_ref);
-    	m_pChild[0] = std::exchange(other.m_pChild[0], nullptr);
-    	m_pChild[1] = std::exchange(other.m_pChild[1], nullptr);
-    	m_pParent = nullptr;
-    	if(m_pChild[0])
-        	m_pChild[0]->m_pParent = this;
-    	if(m_pChild[1])
-        	m_pChild[1]->m_pParent = this;
-    	return *this;
-	}
-    
-    // Destructor
-    virtual ~BinaryTreeNode() {
-    	scoped_lock<mutex> lock(m_mtx);
-        delete m_pChild[0];
-        delete m_pChild[1];
-    };
-
-    value_type      getData() const { return m_data; }
-    value_type&     getDataRef()    { return m_data; }
-    void            setData(value_type data) { m_data = data; }
-    Ref             getRef() const  { return m_ref; }
-    Ref&            getRefRef()     { return m_ref; }
-    void            setRef(Ref ref) { m_ref = ref; }
-
-    NodePtr         getChild(size_t pos) const {return m_pChild[pos];}
-    bool isLeaf() const {return !m_pChild[0] && !m_pChild[1];}
-    NodePtr&        getChildRef(size_t pos) {return m_pChild[pos];}
-    size_t childPosition() const { return m_pParent && m_pParent->getChild(1) == this; }
-    void            setChild(size_t pos, NodePtr pChild) { m_pChild[pos] = pChild; if(pChild) pChild->m_pParent = this;}
-
-    string to_string() const {
-        stringstream ss;
-        ss << "Node(data: " << m_data << ", ref: " << m_ref << ")";
-        return ss.str();
-    }
-    virtual NodePtr clone() const{
-    	return new Node(*this);
-	}
-    // Cuidado: en el disco hay posiciones dentro del archivo,
-    //          en memoria hay punteros
-    friend ostream& operator<<(ostream& os, 
-        const BinaryTreeNode& node) {
-        os << node.to_string();
-        return os;
-    }
-	
-    // Cuidado: en el disco hay posiciones dentro del archivo,
-    //          en memoria hay punteros
-    friend istream& operator>>(istream& is, 
-        BinaryTreeNode& node) {
-        string line;
-        if (getline(is, line)) {
-            stringstream ss(line);
-            ss >> node.m_data >> node.m_ref;
-        }
-        return is;
-    }
+template<>
+struct TraversalAdapter<Traversal::Inorder, Direction::Forward>
+{
+    template<typename Tree>
+    static auto begin(Tree* tree){return tree->begin();}
+    template<typename Tree>
+    static auto end(Tree* tree){return tree->end();}
 };
-=======
-struct BaseBinaryTreeListTrait{using value_type = T;};
->>>>>>> 4715a3a (improve binary)
 
-template <typename T>
-struct AscendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>, public AscendingTrait<T>{};
+template<>
+struct TraversalAdapter<Traversal::Inorder, Direction::Backward>
+{
+    template<typename Tree>
+    static auto begin(Tree* tree){return tree->rbegin();}
+    template<typename Tree>
+    static auto end(Tree* tree){return tree->rend();}
+};
 
-template <typename T>
-struct DescendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>, public DescendingTrait<T>{};
+template<>
+struct TraversalAdapter<Traversal::Preorder, Direction::Forward>
+{
+    template<typename Tree>
+    static auto begin(Tree* tree){return tree->pbegin();}
+    template<typename Tree>
+    static auto end(Tree* tree){return tree->pend();}
+};
 
-template<typename Tree,Traversal Order,Direction Dir>
+template<>
+struct TraversalAdapter<Traversal::Preorder, Direction::Backward>
+{
+    template<typename Tree>
+    static auto begin(Tree* tree){return tree->prbegin();}
+    template<typename Tree>
+    static auto end(Tree* tree){return tree->prend();}
+};
+
+template<>
+struct TraversalAdapter<Traversal::Postorder, Direction::Forward>
+{
+    template<typename Tree>
+    static auto begin(Tree* tree){return tree->postbegin();}
+    template<typename Tree>
+    static auto end(Tree* tree){return tree->postend();}
+};
+
+template<>
+struct TraversalAdapter<Traversal::Postorder, Direction::Backward>
+{
+    template<typename Tree>
+    static auto begin(Tree* tree){return tree->postrbegin();}
+    template<typename Tree>
+    static auto end(Tree* tree){return tree->postrend();}
+};
+
+template<Direction Dir>
+struct InorderAdapter{
+    template<typename Tree>
+    static typename Tree::Node* next(typename Tree::Node* node, Tree* tree);
+};
+
+template<Direction Dir>
+struct PreorderAdapter{
+    template<typename Tree>
+    static typename Tree::Node* next(typename Tree::Node* node, Tree* tree);
+};
+
+template<Direction Dir>
+struct PostorderAdapter{
+    template<typename Tree>
+    static typename Tree::Node* next(typename Tree::Node* node, Tree* tree);
+};
+
+template<typename Tree, Traversal Order, Direction Dir>
 class TraversalRange{
     Tree* m_tree;
 public:
-    TraversalRange(Tree* tree) : m_tree(tree){}
-    auto begin(){
-        if constexpr(Order == Traversal::Inorder && Dir == Direction::Forward)
-            return m_tree->begin();
-        else if constexpr(Order == Traversal::Inorder && Dir == Direction::Backward)
-            return m_tree->rbegin();
-        else if constexpr(Order == Traversal::Preorder && Dir == Direction::Forward)
-            return m_tree->pbegin();
-        else if constexpr(Order == Traversal::Preorder && Dir == Direction::Backward)
-            return m_tree->prbegin();
-        else if constexpr(Order == Traversal::Postorder && Dir == Direction::Forward)
-            return m_tree->postbegin();
-        else
-            return m_tree->postrbegin();
-    }
-    auto end(){
-        if constexpr(Order == Traversal::Inorder && Dir == Direction::Forward)
-            return m_tree->end();
-        else if constexpr(Order == Traversal::Inorder && Dir == Direction::Backward)
-            return m_tree->rend();
-        else if constexpr(Order == Traversal::Preorder && Dir == Direction::Forward)
-            return m_tree->pend();
-        else if constexpr(Order == Traversal::Preorder && Dir == Direction::Backward)
-            return m_tree->prend();
-        else if constexpr(Order == Traversal::Postorder && Dir == Direction::Forward)
-            return m_tree->postend();
-        else
-            return m_tree->postrend();
-    }
+    TraversalRange(Tree* tree) : m_tree(tree) {}
+    auto begin(){return TraversalAdapter<Order,Dir>::begin(m_tree);}
+    auto end(){return TraversalAdapter<Order,Dir>::end(m_tree);}
 };
+
+template<Direction Dir>
+template<typename Tree>
+typename Tree::Node*
+InorderAdapter<Dir>::next(typename Tree::Node* node, Tree*)
+{
+    constexpr size_t Next = DirectionTraits<Dir>::Next;
+    constexpr size_t Prev = DirectionTraits<Dir>::Prev;
+    if(node->getChild(Next)){
+        node = node->getChild(Next);
+        while(node->getChild(Prev))
+            node = node->getChild(Prev);
+        return node;
+    }
+    auto parent = node->m_pParent;
+    while(parent && node == parent->getChild(Next)){
+        node = parent;
+        parent = parent->m_pParent;
+    }
+    return parent;
+}
+
+template<Direction Dir>
+template<typename Tree>
+typename Tree::Node*
+PreorderAdapter<Dir>::next(typename Tree::Node* node, Tree* tree)
+{
+    constexpr size_t Next = DirectionTraits<Dir>::Next;
+    constexpr size_t Prev = DirectionTraits<Dir>::Prev;
+    if constexpr(Dir == Direction::Forward){
+        if(node->getChild(Prev))
+            return node->getChild(Prev);
+        if(node->getChild(Next))
+            return node->getChild(Next);
+        auto parent = node->m_pParent;
+        while(parent){
+            if(node == parent->getChild(Prev) && parent->getChild(Next))
+                return parent->getChild(Next);
+            node = parent;
+            parent = parent->m_pParent;
+        }
+        return nullptr;
+    }
+    else{
+        vector<typename Tree::Node*> nodes;
+        tree->build_preorder(tree->m_pRoot, nodes);
+        auto it = find(nodes.begin(), nodes.end(), node);
+        if(it == nodes.begin())
+            return nullptr;
+        --it;
+        return *it;
+    }
+}
+
+template<Direction Dir>
+template<typename Tree>
+typename Tree::Node*
+PostorderAdapter<Dir>::next(typename Tree::Node* node, Tree* tree)
+{
+    constexpr size_t Next = DirectionTraits<Dir>::Next;
+    constexpr size_t Prev = DirectionTraits<Dir>::Prev;
+    if constexpr(Dir == Direction::Forward){
+        auto parent = node->m_pParent;
+        if(!parent)
+            return nullptr;
+        if(node == parent->getChild(Prev) && parent->getChild(Next))
+        {
+            node = parent->getChild(Next);
+            while(true){
+                if(node->getChild(Prev))
+                    node = node->getChild(Prev);
+                else if(node->getChild(Next))
+                    node = node->getChild(Next);
+                else
+                    break;
+            }
+            return node;
+        }
+        return parent;
+    }
+    else{
+        vector<typename Tree::Node*> nodes;
+        tree->build_postorder(tree->m_pRoot, nodes);
+        auto it = find(nodes.begin(), nodes.end(), node);
+        if(it == nodes.begin())
+            return nullptr;
+        --it;
+        return *it;
+    }
+}
+
+template <typename T>
+struct BaseBinaryTreeListTrait{
+    using value_type = T;
+};
+
+template <typename T>
+struct AscendingBinaryTreeListTrait :
+    public BaseBinaryTreeListTrait<T>,
+    public AscendingTrait<T>{};
+
+template <typename T>
+struct DescendingBinaryTreeListTrait :
+    public BaseBinaryTreeListTrait<T>,
+    public DescendingTrait<T>{};
 
 template <typename Traits>
 class BinaryTree{
-    template<typename,Traversal,Direction>
+    template<typename,typename>
     friend class BinaryTreeIterator;
+    template<Direction>
+    friend struct InorderAdapter;
+    template<Direction>
+    friend struct PreorderAdapter;
+    template<Direction>
+    friend struct PostorderAdapter;
 public:
     using value_type = typename Traits::value_type;
     using Comp       = typename Traits::Comp;
@@ -430,23 +368,23 @@ protected:
     Comp    m_comp;
     mutable mutex m_mtx;
 public:
-    using forward_inorder_iterator = BinaryTreeIterator<MySelf,Traversal::Inorder,Direction::Forward>;
-    using backward_inorder_iterator = BinaryTreeIterator<MySelf,Traversal::Inorder,Direction::Backward>;
-    using forward_preorder_iterator = BinaryTreeIterator<MySelf,Traversal::Preorder,Direction::Forward>;
-    using backward_preorder_iterator = BinaryTreeIterator<MySelf,Traversal::Preorder,Direction::Backward>;
-    using forward_postorder_iterator = BinaryTreeIterator<MySelf,Traversal::Postorder,Direction::Forward>;
-    using backward_postorder_iterator = BinaryTreeIterator<MySelf,Traversal::Postorder,Direction::Backward>;
+    using forward_inorder_iterator   = BinaryTreeIterator<MySelf, InorderAdapter<Direction::Forward>>;
+    using backward_inorder_iterator  = BinaryTreeIterator<MySelf, InorderAdapter<Direction::Backward>>;
+    using forward_preorder_iterator  = BinaryTreeIterator<MySelf, PreorderAdapter<Direction::Forward>>;
+    using backward_preorder_iterator = BinaryTreeIterator<MySelf, PreorderAdapter<Direction::Backward>>;
+    using forward_postorder_iterator = BinaryTreeIterator<MySelf, PostorderAdapter<Direction::Forward>>;
+    using backward_postorder_iterator= BinaryTreeIterator<MySelf, PostorderAdapter<Direction::Backward>>;
 protected:
     // Funcion de impresion
-    void internal_print(NodePtr pNode, TI depth) const{
-        if(!pNode)
-            return;
-        internal_print(reinterpret_cast<NodePtr>(pNode->getChild(1)), depth + 1);
-        for(TI i = 0; i < depth; i++)
-            cout << "        ";
-        cout << pNode->getData() << "(" << pNode->getRef() << ")" << endl;
-        internal_print(reinterpret_cast<NodePtr>(pNode->getChild(0)), depth + 1);
-    }
+	void internal_print(NodePtr pNode, TI depth, ostream& os) const{
+    	if(!pNode)
+        	return;
+    	internal_print(pNode->getChild(1), depth + 1, os);
+    	vector<TI> tabs(depth);
+    	::ForEach(tabs.begin(), tabs.end(), [&](auto&){os << "        ";});
+    	os << pNode->getData() << "(" << pNode->getRef() << ")" << endl;
+    	internal_print(pNode->getChild(0), depth + 1, os);
+	}
     void build_postorder(NodePtr pNode, vector<NodePtr>& nodes) const{
         if(!pNode)
             return;
@@ -457,9 +395,7 @@ protected:
     void build_preorder(NodePtr pNode, vector<NodePtr>& nodes) const{
     if(!pNode)
         return;
-
     nodes.push_back(pNode);
-
     build_preorder(pNode->getChild(0), nodes);
     build_preorder(pNode->getChild(1), nodes);
 	}
@@ -545,10 +481,10 @@ protected:
     }
     
 public:
-    void printTree() const{
-        scoped_lock<mutex> lock(m_mtx);
-        internal_print(m_pRoot, 0);
-    }
+	void printTree(ostream& os = cout) const{
+    	scoped_lock<mutex> lock(m_mtx);
+    	internal_print(m_pRoot, 0, os);
+	}
     // Inorder
     forward_inorder_iterator begin(){
         Node* pNode = m_pRoot;
