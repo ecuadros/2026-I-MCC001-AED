@@ -14,9 +14,9 @@
 // Si no lo encuentra, deberia decirme:
 // cual es la posicion donde deberia estar
 template <typename Container, typename ObjType>
-int binary_search(Container& container, int first, int last, ObjType &object)
+int binary_search(Container& container, int first, int last, ObjType &object) // Busca la posicion en la hoja
 {
-       if( first >= last )
+       if( first >= last ) // condicion de seguridad en la busqueda
                return first;
        while( first < last )
        {
@@ -33,13 +33,13 @@ int binary_search(Container& container, int first, int last, ObjType &object)
        return last;
 }
 
-template <typename Container, typename ObjType>
-void insert_at(Container& container, const ObjType &object, int pos)
+template <typename Container, typename ObjType> 
+void insert_at(Container& container, const ObjType &object, int pos) // utiliza la posicion que devolvio el binary_search
 {
        int size = container.size();
-       for(int i = size-2 ; i >= pos ; i--)
+       for(int i = size-2 ; i >= pos ; i--) // empuja los elementos un espacio a la derecha
                container[i+1] = container[i];
-       container[pos] =  object;
+       container[pos] =  object; // coloca el nuevo elemento en el hueco
 }
 
 template <typename Container>
@@ -219,7 +219,7 @@ bool CBTreePage<keyType, ObjIDType>::Redistribute1(int &pos)
                if( pos < NumberOfKeys() )
                        nkor = m_SubPages[pos+1]->NumberOfKeys();
 
-               if( nkol > nkor ){}
+               if( nkol > nkor ){
                        if( m_SubPages[pos-1]->NumberOfKeys() > m_SubPages[pos-1]->MinNumberOfKeys() )
                                RedistributeL2R(pos-1); // bring elements from left brother
                        else{
@@ -227,6 +227,7 @@ bool CBTreePage<keyType, ObjIDType>::Redistribute1(int &pos)
                                         --pos;
                                 return false;
                        }
+               }
                else //nkol < nkor )
                        if( m_SubPages[pos+1]->NumberOfKeys() > m_SubPages[pos+1]->MinNumberOfKeys() )
                                RedistributeR2L(pos+1); // bring elements from right brother
