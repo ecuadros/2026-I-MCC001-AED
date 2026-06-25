@@ -10,20 +10,24 @@
 #include <vector>
 #include <iostream>
 #include <assert.h>
+#include <cstddef>   // size_t
+#include <functional> // for ForEach and FirstThat
+
+#include "../types.h"
 
 // Si no lo encuentra, deberia decirme:
 // cual es la posicion donde deberia estar
 template <typename Container, typename ObjType>
-int binary_search(Container& container, int first, int last, ObjType &object) // Busca la posicion en la hoja
+int binary_search(Container& container, size_t first, size_t last, ObjType &object) // Busca la posicion en la hoja
 {
        if( first >= last ) // condicion de seguridad en la busqueda
                return first;
        while( first < last )
        {
-               int mid = (first+last)/2;
-               if( object == (ObjType)container[mid ] )
+               size_t mid = (first+last)/2;
+               if( object == (ObjType)container[mid] )
                        return mid;
-               if( object > (ObjType)container[mid ] )
+               if( object > (ObjType)container[mid] )
                        first = mid+1;
                else
                        last  = mid;
@@ -34,7 +38,7 @@ int binary_search(Container& container, int first, int last, ObjType &object) //
 }
 
 template <typename Container, typename ObjType> 
-void insert_at(Container& container, const ObjType &object, int pos) // utiliza la posicion que devolvio el binary_search
+void insert_at(Container& container, const ObjType &object, TI pos) // utiliza la posicion que devolvio el binary_search
 {
        int size = container.size();
        for(int i = size-2 ; i >= pos ; i--) // empuja los elementos un espacio a la derecha
@@ -43,10 +47,10 @@ void insert_at(Container& container, const ObjType &object, int pos) // utiliza 
 }
 
 template <typename Container>
-void remove(Container& container, int pos)
+void remove(Container& container, TI pos)
 {
-       int size = container.size();
-       for(int i = pos+1 ; i < size ; i++)
+       size_t size = container.size();
+       for(size_t i = pos+1 ; i < size ; i++)
                container[i-1] = container[i];
 }
 
@@ -55,6 +59,8 @@ class BTree;
 
 
 using namespace std;
+
+//estados del container
 enum bt_ErrorCode {bt_ok, bt_overflow, bt_underflow, bt_duplicate, bt_nofound, bt_rootmerged};
 
 /*template <typename keyType>
@@ -65,17 +71,17 @@ template <typename keyType>
 bool operator<=(const _Node<keyType>& object1, const _Node<keyType>& object2)
 { return object1.key <= object2.key;    }*/
 
-template <typename keyType, typename ObjIDType>
-struct tagNode
+template <typename keyType, typename ObjIDType> // keyType:Objeto a buscar, ObjIDType:Indentificador del objeto
+struct tagNode  // tagNode: Estructura de cada llave de la hoja
 {
        keyType                 key;
        ObjIDType               ObjID;
-       long                    UseCounter;
+       Ref                     UseCounter; // Contador: aumenta cada vez que un dato es consultado
        tagNode(const keyType     &_key, ObjIDType _ObjID)
                : key(_key), ObjID(_ObjID), UseCounter(0) {}
        tagNode()                          {}
        operator keyType                         ()     { return key; }
-       long                    GetUseCounter() { return UseCounter;    }
+       Ref                    GetUseCounter() { return UseCounter;    }
 };
 
 
@@ -86,13 +92,25 @@ class CBTreePage
        friend class BTree<keyType, ObjIDType>;
 
        typedef CBTreePage<keyType, ObjIDType>    BTPage;         // useful shorthand
-       typedef tagNode<keyType, ObjIDType> Node;
+       typedef tagNode<keyType, ObjIDType>       Node;
 
-       typedef void (*lpfnForEach2)(Node &info, int level, void *pExtra1);
-       typedef void (*lpfnForEach3)(Node &info, int level, void *pExtra1, void *pExtra2);
+       // TODO: hacer un foreach en modo variadic template
+       typedef void (*lpfnForEach2)(Node &info, size_t level, void *pExtra1);
+       typedef void (*lpfnForEach3)(Node &info, size_t level, void *pExtra1, void *pExtra2);
 
-       typedef Node *(*lpfnFirstThat2)(Node &info, int level, void *pExtra1);
-       typedef Node *(*lpfnFirstThat3)(Node &info, int level, void *pExtra1, void *pExtra2);
+       typedef Node *(*lpfnFirstThat2)(Node &info, size_t level, void *pExtra1);
+       typedef Node *(*lpfnFirstThat3)(Node &info, size_t level, void *pExtra1, void *pExtra2);
+
+       // testing variadic templates
+       //template <typedef... Args>
+       //using lpfnForEach = function<void(Node &info, size_t level, Args.. args)>;
+
+       //template <typedef... Args>
+       //using lpfnFirstThat = function<Node *(Node &info, size_t level, Args.. args)>;
+
+
+
+
  public:
        CBTreePage(int maxKeys, bool unique = true);
        virtual ~CBTreePage();
@@ -101,10 +119,10 @@ class CBTreePage
        bt_ErrorCode    Remove (const keyType &key, const ObjIDType ObjID);
        bool            Search (const keyType &key, long &ObjID);
        void            Print  (ostream &os);
-       void            ForEach(lpfnForEach2 lpfn, int level, void *pExtra1);
-       void            ForEach(lpfnForEach3 lpfn, int level, void *pExtra1, void *pExtra2);
-       Node*     FirstThat(lpfnFirstThat2 lpfn, int level, void *pExtra1);
-       Node*     FirstThat(lpfnFirstThat3 lpfn, int level, void *pExtra1, void *pExtra2);
+       void            ForEach(lpfnForEach2 lpfn, size_t level, void *pExtra1);
+       void            ForEach(lpfnForEach3 lpfn, size_t level, void *pExtra1, void *pExtra2);
+       Node*     FirstThat(lpfnFirstThat2 lpfn, size_t level, void *pExtra1);
+       Node*     FirstThat(lpfnFirstThat3 lpfn, size_t level, void *pExtra1, void *pExtra2);
 
 protected:
        int  m_MinKeys; // minimum number of keys in a node
@@ -508,7 +526,7 @@ void CBTreePage<keyType, ObjIDType>::ForEachReverse(lpfnForEach2 lpfn, int level
 }*/
 
 template <typename keyType, typename ObjIDType>
-void CBTreePage<keyType, ObjIDType>::ForEach(lpfnForEach2 lpfn, int level, void *pExtra1)
+void CBTreePage<keyType, ObjIDType>::ForEach(lpfnForEach2 lpfn, size_t level, void *pExtra1)
 {
        for( int i = 0 ; i < m_KeyCount ; i++)
        {
@@ -521,7 +539,7 @@ void CBTreePage<keyType, ObjIDType>::ForEach(lpfnForEach2 lpfn, int level, void 
 }
 
 template <typename keyType, typename ObjIDType>
-void CBTreePage<keyType, ObjIDType>::ForEach(lpfnForEach3 lpfn, int level, void *pExtra1, void *pExtra2)
+void CBTreePage<keyType, ObjIDType>::ForEach(lpfnForEach3 lpfn, size_t level, void *pExtra1, void *pExtra2)
 {
        for( int i = 0 ; i < m_KeyCount ; i++)
        {
@@ -536,7 +554,7 @@ void CBTreePage<keyType, ObjIDType>::ForEach(lpfnForEach3 lpfn, int level, void 
 template <typename keyType, typename ObjIDType>
 typename CBTreePage<keyType, ObjIDType>::Node *
 CBTreePage<keyType, ObjIDType>::FirstThat(lpfnFirstThat2 lpfn,
-                                          int level, void *pExtra1)
+                                          size_t level, void *pExtra1)
 {
        Node *pTmp;
        for( int i = 0 ; i < m_KeyCount ; i++)
@@ -559,7 +577,7 @@ CBTreePage<keyType, ObjIDType>::FirstThat(lpfnFirstThat2 lpfn,
 
 template <typename keyType, typename ObjIDType>
 typename CBTreePage<keyType, ObjIDType>::Node *
-CBTreePage<keyType, ObjIDType>::FirstThat(lpfnFirstThat3 lpfn,int level, void *pExtra1, void *pExtra2)
+CBTreePage<keyType, ObjIDType>::FirstThat(lpfnFirstThat3 lpfn,size_t level, void *pExtra1, void *pExtra2)
 {
        Node *pTmp;
        for( int i = 0 ; i < m_KeyCount ; i++){
@@ -740,7 +758,7 @@ CBTreePage<keyType, ObjIDType>::GetFirstNode()
 
 // Deben eliminarlo e imprimir con un ForEach
 template <typename keyType, typename ObjIDType>
-void Print(tagNode<keyType, ObjIDType> &info, int level, void *pExtra)
+void Print(tagNode<keyType, ObjIDType> &info, size_t level, void *pExtra)
 {
         ostream &os = *(ostream *)pExtra;
         for( int i = 0; i < level ; i++)
