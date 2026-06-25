@@ -15,7 +15,7 @@ const int BTreeSize = 3;
 int main(int argc, char * argv[], char * envp[])
 {
        int result, i;
-       BTree <char> bt (BTreeSize);
+       BTree <char, int> bt (BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
