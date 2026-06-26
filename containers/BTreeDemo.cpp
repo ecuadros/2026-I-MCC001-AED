@@ -14,8 +14,11 @@ const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzK
 const int BTreeSize = 3;
 int main(int argc, char * argv[], char * envp[])
 {
-       int result, i;
-       BTree <char, int> bt (BTreeSize);
+       bool result;
+       size_t i;
+
+       using MyTreeTraits = BTreeTraits<char, int>;
+       BTree <MyTreeTraits> bt (BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
