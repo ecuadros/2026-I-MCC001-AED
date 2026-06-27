@@ -761,7 +761,7 @@ void CBTreePage<Traits>::clear()
 }
 
 template <typename Traits>
-CBTreePage<Traits> * CreateBTreeNode (TI maxKeys, TI unique)
+CBTreePage<Traits> * CreateBTreeNode (TI maxKeys, TB unique)
 {
        return new CBTreePage<Traits> (maxKeys, unique);
 }
