@@ -5,10 +5,11 @@
 
 #include <iostream>
 #include "BTreePage.h"
+#include "../types.h"
 
 #define DEFAULT_BTREE_ORDER 3
 
-template <typename T, typename U = long>
+template <typename T, typename U = TL>
 struct BTreeTrait{
     using key_type = T;
     using ref_type   = U;
@@ -40,17 +41,17 @@ public:
        typedef typename BTNode::Node      Node;
 
 public:
-       BTree(int order = DEFAULT_BTREE_ORDER, bool unique = true);
+       BTree(TreeOrderT order = DEFAULT_BTREE_ORDER, TB unique = true);
        ~BTree();
        //int           Open (char * name, int mode);
        //int           Create (char * name, int mode);
        //int           Close ();
-       bool            Insert (const keyType key, const ObjIDType ObjID);
-       bool            Remove (const keyType key, const ObjIDType ObjID);
+       StatusFlag      Insert (const keyType key, const ObjIDType ObjID);
+       StatusFlag      Remove (const keyType key, const ObjIDType ObjID);
        ObjIDType       Search (const keyType key);
-       long            size()  { return m_NumKeys; }
-       long            height() { return m_Height;      }
-       long            GetOrder() { return m_Order;     }
+       SizeT            size()  { return m_NumKeys; }
+       TreeOrderT            height() { return m_Height;      }
+       TreeOrderT            GetOrder() { return m_Order;     }
 
        void            Print (ostream &os);
 
@@ -63,15 +64,15 @@ public:
 
 protected:
        BTNode          m_Root;
-       int             m_Height;  // height of tree
-       int             m_Order;   // order of tree
-       long            m_NumKeys; // number of keys
-       bool            m_Unique;  // Accept the elements only once ?
+       TreeOrderT      m_Height;  // height of tree
+       TreeOrderT      m_Order;   // order of tree
+       SizeT            m_NumKeys; // number of keys
+       TB            m_Unique;  // Accept the elements only once ?
 };
 
-const int MaxHeight = 5;
+const TreeOrderT MaxHeight = 5;
 template <typename Traits>
-BTree<Traits>::BTree(int order, bool unique)
+BTree<Traits>::BTree(TreeOrderT order, TB unique)
                                : m_Unique(unique),
                                  m_Order(order),
                                  m_Root(2 * order  + 1, unique),
@@ -87,7 +88,7 @@ BTree<Traits>::~BTree()
 }
 
 template <typename Traits>
-bool BTree<Traits>::Insert(const typename Traits::key_type key, const typename Traits::ref_type ObjID)
+StatusFlag BTree<Traits>::Insert(const typename Traits::key_type key, const typename Traits::ref_type ObjID)
 {
        bt_ErrorCode error = m_Root.Insert(key, ObjID);
        if( error == bt_duplicate )
@@ -102,7 +103,7 @@ bool BTree<Traits>::Insert(const typename Traits::key_type key, const typename T
 }
 
 template <typename Traits>
-bool BTree<Traits>::Remove (const typename Traits::key_type key, const typename Traits::ref_type ObjID)
+StatusFlag BTree<Traits>::Remove (const typename Traits::key_type key, const typename Traits::ref_type ObjID)
 {
        bt_ErrorCode error = m_Root.Remove(key, ObjID);
        if( error == bt_duplicate || error == bt_nofound )

@@ -5,15 +5,15 @@
 #include "BTree.h"
 
 //const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
-const char * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
-const char * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
+const TC * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
+const TC * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const TC * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
-const int BTreeSize = 3;
-int BTreeDemo()
+const TreeOrderT BTreeSize = 3;
+TI BTreeDemo()
 {
-       int result, i;
-       BTree<BTreeTrait<char>> bt(BTreeSize);
+       TI result, i;
+       BTree<BTreeTrait<TC>> bt(BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
@@ -23,7 +23,7 @@ int BTreeDemo()
        bt.Print(cout);
 
         auto res = bt.FirstThat(
-            [](auto& nodo, int level, int limite) -> bool {
+            [](auto& nodo, TI level, TI limite) -> TB {
                 return nodo.key > limite;
             },
             'A' // Este argumento se envía al parámetro 'limite' del lambda

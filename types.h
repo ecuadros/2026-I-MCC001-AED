@@ -11,6 +11,15 @@ using namespace std;
 using TI = int;
 using TD = double;
 using TS = string;
+using TL = long;
+using TB = bool;
+using TC = char;
+
+// BTree Types
+using StatusFlag = bool;
+using TreeOrderT = int;
+using SizeT      = long;
+using ContZiseT  = int;
 
 // XT must be 32bit integer in Windows and 64bit in Linux
 #if defined(_WIN32) || defined(_WIN64)
