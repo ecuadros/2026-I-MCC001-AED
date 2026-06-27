@@ -219,7 +219,7 @@ bool CBTreePage<keyType, ObjIDType>::Redistribute1(int &pos)
                if( pos < NumberOfKeys() )
                        nkor = m_SubPages[pos+1]->NumberOfKeys();
 
-               if( nkol > nkor ){}
+               if( nkol > nkor ){
                        if( m_SubPages[pos-1]->NumberOfKeys() > m_SubPages[pos-1]->MinNumberOfKeys() )
                                RedistributeL2R(pos-1); // bring elements from left brother
                        else{
@@ -227,6 +227,7 @@ bool CBTreePage<keyType, ObjIDType>::Redistribute1(int &pos)
                                         --pos;
                                 return false;
                        }
+                }
                else //nkol < nkor )
                        if( m_SubPages[pos+1]->NumberOfKeys() > m_SubPages[pos+1]->MinNumberOfKeys() )
                                RedistributeR2L(pos+1); // bring elements from right brother

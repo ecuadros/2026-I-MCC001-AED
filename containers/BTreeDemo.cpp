@@ -10,7 +10,7 @@ const char * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv
 const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
 const int BTreeSize = 3;
-void main(int argc, char * argv[], char * envp[])
+int BTreeDemo()
 {
        int result, i;
        BTree <char> bt (BTreeSize);
@@ -43,7 +43,7 @@ void main(int argc, char * argv[], char * envp[])
        }
        bt.Print(cout);
        cout.flush();*/
-       return 1;
+       return result;
 }
 
 /*const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
