@@ -50,7 +50,12 @@ void remove(Container& container, int pos)
                container[i-1] = container[i];
 }
 
-template <typename keyType, typename ObjIDType>
+// Declaración anticipada de la estructura Traits (necesaria para BTree)
+template <typename T, typename U>
+struct BTreeTrait;
+
+// Declaración anticipada de BTree usando el nuevo parámetro Traits
+template <typename Traits>
 class BTree;
 
 
@@ -83,7 +88,7 @@ template <typename keyType, typename ObjIDType>
 class CBTreePage 
 // this is the in-memory version of the CBTreePage
 {
-       friend class BTree<keyType, ObjIDType>;
+       friend class BTree<BTreeTrait<keyType, ObjIDType>>;
 
        typedef CBTreePage<keyType, ObjIDType>    BTPage;         // useful shorthand
        typedef tagNode<keyType, ObjIDType> Node;

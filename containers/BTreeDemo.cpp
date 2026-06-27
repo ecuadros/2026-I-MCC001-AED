@@ -13,7 +13,7 @@ const int BTreeSize = 3;
 int BTreeDemo()
 {
        int result, i;
-       BTree <char> bt (BTreeSize);
+       BTree<BTreeTrait<char>> bt(BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
