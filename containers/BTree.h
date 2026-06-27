@@ -23,7 +23,7 @@ public:
        using ObjIDType = typename Traits::ref_type;
 
 private:
-       typedef CBTreePage <keyType, ObjIDType> BTNode;// useful shorthand
+       typedef CBTreePage <Traits> BTNode;// useful shorthand
        /*struct Node
        {
                keyType first;
