@@ -21,6 +21,19 @@ int BTreeDemo()
                //bt.Print(cout);
        }
        bt.Print(cout);
+
+        auto res = bt.FirstThat(
+            [](auto& nodo, int level, int limite) -> bool {
+                return nodo.key > limite;
+            },
+            'A' // Este argumento se envía al parámetro 'limite' del lambda
+        );
+
+        if(res != nullptr){
+            cout << "\nKey found: value=" << res->key << " ref=" << res->ObjID << endl;
+        }else{
+            cout << "\nKey not found!" << endl;
+        }
        /*for (i = 0; keys2[i]; i++)
        {
                cout << "Searching " << keys2[i] << " ";
