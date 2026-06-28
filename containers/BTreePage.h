@@ -100,10 +100,6 @@ class CBTreePage
        typedef tagNode<Traits> Node;
 
        typedef void (*lpfnForEach2)(Node &info, TI level, void *pExtra1);
-       typedef void (*lpfnForEach3)(Node &info, TI level, void *pExtra1, void *pExtra2);
-
-       typedef Node *(*lpfnFirstThat2)(Node &info, TI level, void *pExtra1);
-       typedef Node *(*lpfnFirstThat3)(Node &info, TI level, void *pExtra1, void *pExtra2);
  public:
        CBTreePage(TI maxKeys, TB unique = true);
        virtual ~CBTreePage();
