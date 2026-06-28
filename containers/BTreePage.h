@@ -113,11 +113,11 @@ class CBTreePage
        //typedef Node *(*lpfnFirstThat3)(Node &info, size_t level, void *pExtra1, void *pExtra2);
 
        // testing variadic templates
-        template <typename... Args>
-        using lpfnForEach = function<void(Node &info, size_t level, Args... args)>;
+        //template <typename... Args>
+        //using lpfnForEach = function<void(Node &info, size_t level, Args... args)>;
 
-        template <typename... Args>
-        using lpfnFirstThat = function<Node *(Node &info, size_t level, Args... args)>;
+        //template <typename... Args>
+        //using lpfnFirstThat = function<Node *(Node &info, size_t level, Args... args)>;
 
 
 
@@ -135,10 +135,11 @@ class CBTreePage
        //Node*     FirstThat(lpfnFirstThat2 lpfn, size_t level, void *pExtra1);
        //Node*     FirstThat(lpfnFirstThat3 lpfn, size_t level, void *pExtra1, void *pExtra2);
        // ForEach y FisrtThat con variadic template
-       template <typename... Args>
-       void ForEach(lpfnForEach<Args...> lpfn, size_t level, Args... args);
-       template <typename... Args>
-       Node* FirstThat(lpfnFirstThat<Args...> lpfn, size_t level, Args... args);
+       template <typename Func, typename... Args>
+       void ForEach(Func func, size_t level, Args&&... args);
+
+       template <typename Func,typename... Args>
+       Node* FirstThat(Func func, size_t level, Args&&... args);
 protected:
        size_t  m_MinKeys; // minimum number of keys in a node
        size_t  m_MaxKeys, // maximum number of keys in a node
@@ -541,38 +542,38 @@ void CBTreePage<keyType, ObjIDType>::ForEachReverse(lpfnForEach2 lpfn, int level
 }*/
 
 template <typename Traits>
-template <typename... Args>
-void CBTreePage<Traits>::ForEach(lpfnForEach<Args...> lpfn, size_t level, Args... args)
+template <typename Func, typename... Args>
+void CBTreePage<Traits>::ForEach(Func func, size_t level, Args&&... args)
 {
        for( size_t i = 0 ; i < m_KeyCount ; i++)
        {
                if( m_SubPages[i] )
-                       m_SubPages[i]->template ForEach<Args...>(lpfn, level+1, args...);
-               lpfn(m_Keys[i], level, args...);
+                       m_SubPages[i]->ForEach(func, level+1, std::forward<Args>(args)...);
+               func(m_Keys[i], level, std::forward<Args>(args)...);
        }
        if( m_SubPages[m_KeyCount] )
-               m_SubPages[m_KeyCount]->template ForEach<Args...>(lpfn, level+1, args...);
+               m_SubPages[m_KeyCount]->ForEach(func, level+1, std::forward<Args>(args)...);
 }
 
 template <typename Traits>
-template <typename... Args>
+template <typename Func,typename... Args>
 typename CBTreePage<Traits>::Node *
-CBTreePage<Traits>::FirstThat(lpfnFirstThat<Args...> lpfn,
-                                          size_t level, Args... args)
+CBTreePage<Traits>::FirstThat(Func func,
+                                          size_t level, Args&&... args)
 {
        Node *pTmp;
        for( size_t i = 0 ; i < m_KeyCount ; i++)
        {
                if( m_SubPages[i] ){
-                        pTmp = m_SubPages[i]->template FirstThat<Args...>(lpfn, level+1, args...);
+                        pTmp = m_SubPages[i]->FirstThat(func, level+1, std::forward<Args>(args)...);
                        if( pTmp )
                                return pTmp;
                }
-               if( lpfn(m_Keys[i], level, args...) )
+               if( func(m_Keys[i], level, std::forward<Args>(args)...) )
                        return &m_Keys[i];
        }
        if( m_SubPages[m_KeyCount] ){
-                pTmp = m_SubPages[m_KeyCount]->template FirstThat<Args...>(lpfn, level+1, args...);
+                pTmp = m_SubPages[m_KeyCount]->FirstThat(func, level+1, std::forward<Args>(args)...);
                if( pTmp )
                        return pTmp;
        }
@@ -782,13 +783,13 @@ void CBTreePage<keyType, ObjIDType>::Print(ostream & os)
 template <typename Traits>
 void CBTreePage<Traits>::Print(ostream & os)
 {
-        lpfnForEach<ostream&> printNode = [](Node &info, size_t level, ostream& os) {
+        auto printNode = [](Node &info, size_t level, ostream& os) {
             for (size_t i = 0; i < level; ++i)
                 os << "\t";
             os << info.key << "->" << info.ObjID << "\n";
         };
 
-        ForEach<ostream&>(printNode, 0, os);
+        ForEach(printNode, 0, os);
 }
 
 template <typename Traits>

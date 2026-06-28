@@ -30,11 +30,11 @@ public:
        //typedef typename BTNode::lpfnFirstThat2  lpfnFirstThat2;
        //typedef typename BTNode::lpfnFirstThat3  lpfnFirstThat3;
        
-       template <typename... Args>
-       using lpfnForEach = typename BTNode::template lpfnForEach<Args...>;
+       //template <typename... Args>
+       //using lpfnForEach = typename BTNode::template lpfnForEach<Args...>;
 
-       template <typename... Args>
-       using lpfnFirstThat = typename BTNode::template lpfnFirstThat<Args...>;
+       //template <typename... Args>
+       //using lpfnFirstThat = typename BTNode::template lpfnFirstThat<Args...>;
        
        using Node = typename BTNode::Node;
 
@@ -57,11 +57,11 @@ public:
        //Node*     FirstThat( lpfnFirstThat2 lpfn, void *pExtra1 );
        //Node*     FirstThat( lpfnFirstThat3 lpfn, void *pExtra1, void *pExtra2);
        //typedef               Node iterator;
-       template <typename... Args>
-       void ForEach(lpfnForEach<Args...> lpfn, Args... args);
+       template <typename Func, typename... Args>
+       void ForEach(Func func, Args&&... args);
 
-       template <typename... Args>
-       Node* FirstThat(lpfnFirstThat<Args...> lpfn, Args... args);
+       template <typename Func, typename... Args>
+       Node* FirstThat(Func func, Args&&... args);
 
 
 
@@ -155,18 +155,18 @@ BTree<keyType, ObjIDType>::FirstThat(lpfnFirstThat3 lpfn, void *pExtra1, void *p
 }
 */
 template <typename Traits>
-template <typename... Args>
-void BTree<Traits>::ForEach(lpfnForEach<Args...> lpfn, Args... args)
+template <typename Func, typename... Args>
+void BTree<Traits>::ForEach(Func func, Args&&... args)
 {
-       m_Root.ForEach(lpfn, 0, args...);
+       m_Root.ForEach(func, 0, std::forward<Args>(args)...);
 }
 
 template <typename Traits>
-template <typename... Args>
+template <typename Func, typename... Args>
 typename BTree<Traits>::Node *
-BTree<Traits>::FirstThat(lpfnFirstThat<Args...> lpfn, Args... args)
+BTree<Traits>::FirstThat(Func func, Args&&... args)
 {
-       return m_Root.FirstThat(lpfn, 0, args...);
+       return m_Root.FirstThat(func, 0, std::forward(args)...);
 }
 
 
