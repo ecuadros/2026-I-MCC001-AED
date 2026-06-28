@@ -99,11 +99,6 @@ class CBTreePage
        typedef CBTreePage<Traits>BTPage;         // useful shorthand
        typedef tagNode<Traits> Node;
 
-       typedef void (*lpfnForEach2)(Node &info, TI level, void *pExtra1);
-       typedef void (*lpfnForEach3)(Node &info, TI level, void *pExtra1, void *pExtra2);
-
-       typedef Node *(*lpfnFirstThat2)(Node &info, TI level, void *pExtra1);
-       typedef Node *(*lpfnFirstThat3)(Node &info, TI level, void *pExtra1, void *pExtra2);
  public:
        CBTreePage(TI maxKeys, TB unique = true);
        virtual ~CBTreePage();
@@ -111,7 +106,6 @@ class CBTreePage
        bt_ErrorCode    Insert (const keyType &key, const ObjIDType ObjID);
        bt_ErrorCode    Remove (const keyType &key, const ObjIDType ObjID);
        StatusFlag      Search (const keyType &key, ObjIDType &ObjID);
-       void            Print  (ostream &os);
 
        template <typename Func, typename... Args>
        void      ForEach(Func lpfn, TI level, Args&&... args);
@@ -715,23 +709,6 @@ CBTreePage<Traits>::GetFirstNode()
        if( m_SubPages[0] )
                return m_SubPages[0]->GetFirstNode();
        return m_Keys[0];
-}
-
-// Deben eliminarlo e imprimir con un ForEach
-template <typename Traits>
-void Print(tagNode<Traits> &info, TI level, void *pExtra)
-{
-        ostream &os = *(ostream *)pExtra;
-        for( TI i = 0; i < level ; i++)
-                os << "\t";
-        os << info.key << "->" << info.ObjID << "\n";
-}
-
-template <typename Traits>
-void CBTreePage<Traits>::Print(ostream & os)
-{
-       lpfnForEach2 lpfn = &::Print<Traits>;
-       ForEach(lpfn, 0, &os);
 }
 
 template <typename Traits>
