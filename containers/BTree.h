@@ -31,6 +31,26 @@ public:
     }
 };
 
+template <typename Container>
+class BTreeBackwardIterator : public general_iterator<Container, BTreeBackwardIterator<Container>> {
+    using MySelf = BTreeBackwardIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Node   = typename Container::Node;
+public:
+    BTreeBackwardIterator(Container *pContainer, Node *pNode)
+        : Parent(pContainer, pNode) {} 
+    MySelf& operator++(){
+        if (!this->m_pNode || !this->m_pContainer) {
+            this->m_pNode = nullptr;
+            return *this;
+        }
+
+        this->m_pNode = this->m_pContainer->GetPrevNode(this->m_pNode->key);
+        
+        return *this;
+    }
+};
+
 template <typename T, typename U = TL>
 struct BTreeTrait{
     using key_type = T;
@@ -93,12 +113,13 @@ protected:
        TB            m_Unique;  // Accept the elements only once ?
 
 public:
-    // Declaración del buscador para el forward iterator
-    Node* GetNextNode(const keyType& currentKey);
-
-    // Métodos de inicialización de iteradores
     BTreeForwardIterator<BTree<Traits>> begin();
     BTreeForwardIterator<BTree<Traits>> end();
+    Node* GetNextNode(const keyType& currentKey);
+
+    BTreeBackwardIterator<BTree<Traits>> rbegin();
+    BTreeBackwardIterator<BTree<Traits>> rend();
+    Node* GetPrevNode(const keyType& currentKey);
 };
 
 const TreeOrderT MaxHeight = 5;
@@ -249,7 +270,74 @@ typename BTree<Traits>::Node* BTree<Traits>::GetNextNode(const keyType& currentK
     return pBestAncestor; 
 }
 
+template <typename Traits>
+BTreeBackwardIterator<BTree<Traits>> BTree<Traits>::rbegin() {
+    BTNode* pCurr = &m_Root;
+    
+    // Bajamos siempre por la subpágina del extremo derecho (valores máximos)
+    while (pCurr && pCurr->m_SubPages[pCurr->GetNumberOfKeys()]) {
+        pCurr = pCurr->m_SubPages[pCurr->GetNumberOfKeys()];
+    }
+    if (!pCurr || pCurr->GetNumberOfKeys() == 0) return rend();
+    
+    // El elemento más a la derecha es la última llave de esa página hoja
+    int lastIdx = pCurr->GetNumberOfKeys() - 1;
+    return BTreeBackwardIterator<BTree<Traits>>(this, &(pCurr->m_Keys[lastIdx]));
+}
 
+template <typename Traits>
+BTreeBackwardIterator<BTree<Traits>> BTree<Traits>::rend() {
+    return BTreeBackwardIterator<BTree<Traits>>(this, nullptr);
+}
+
+template <typename Traits>
+typename BTree<Traits>::Node* BTree<Traits>::GetPrevNode(const keyType& currentKey)
+{
+    BTNode* pCurr = &m_Root;
+    Node* pBestAncestor = nullptr; // Guarda el antecesor potencial "hacia arriba" (el último menor)
+
+    while (pCurr != nullptr) 
+    {
+        int i = 0;
+        int numKeys = pCurr->GetNumberOfKeys();
+
+        // Buscamos la posición idónea en la página actual
+        while (i < numKeys && currentKey > pCurr->m_Keys[i].key) {
+            i++;
+        }
+
+        // Si i > 0, significa que m_Keys[i-1] es estrictamente MENOR que currentKey.
+        // Lo guardamos temporalmente como el mejor ancestro menor disponible.
+        if (i > 0) {
+            pBestAncestor = &(pCurr->m_Keys[i - 1]);
+        }
+
+        // Comprobamos si encontramos la llave exacta
+        if (i < numKeys && pCurr->m_Keys[i].key == currentKey) 
+        {
+            // CASO 1: Tiene un hijo izquierdo disponible en la subpágina 'i'
+            if (pCurr->m_SubPages[i] != nullptr) {
+                // El antecesor es el elemento más a la DERECHA de ese subárbol izquierdo
+                BTNode* pSub = pCurr->m_SubPages[i];
+                while (pSub->m_SubPages[pSub->GetNumberOfKeys()] != nullptr) {
+                    pSub = pSub->m_SubPages[pSub->GetNumberOfKeys()];
+                }
+                int lastIdx = pSub->GetNumberOfKeys() - 1;
+                return &(pSub->m_Keys[lastIdx]);
+            }
+            // CASO 2: Es una página hoja (no tiene hijo izquierdo)
+            else {
+                // Regresamos el ancestro menor más cercano que vimos al bajar
+                return pBestAncestor;
+            }
+        }
+
+        // Descendemos por la subpágina correspondiente
+        pCurr = pCurr->m_SubPages[i];
+    }
+
+    return pBestAncestor; 
+}
 
 
 #endif

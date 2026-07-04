@@ -48,12 +48,21 @@ TI BTreeDemo()
             cout << "\nKey not found using iterator!" << endl;
         }
 
+        cout << "\nBTree forward iteration:\n";
         ForEach(bt.begin(), bt.end(), 
             [](auto &nodo, ostream &os) {
                 os << "Llave: " << nodo.key << " -> Valor: " << nodo.ObjID << "\n";
             }, 
             cout // Este es el argumento extra que se mapea en args...
-    );
+            );
+
+        cout << "\nBTree backward iteration:\n";
+        ForEach(bt.rbegin(), bt.rend(), 
+            [](auto &nodo, ostream &os) {
+                os << "Llave: " << nodo.key << " -> Valor: " << nodo.ObjID << "\n";
+            }, 
+            cout // Este es el argumento extra que se mapea en args...
+            );
 
        /*for (i = 0; keys2[i]; i++)
        {
