@@ -10,7 +10,11 @@
 #include <vector>
 #include <iostream>
 #include <assert.h>
+#include <functional>
+#include <utility>
 #include "../types.h"
+#include <mutex>
+#include "general_iterator.h"
 
 // Si no lo encuentra, deberia decirme:
 // cual es la posicion donde deberia estar
@@ -98,11 +102,14 @@ class CBTreePage
        bt_ErrorCode    Insert (const keyType &key, const ObjIDType ObjID);
        bt_ErrorCode    Remove (const keyType &key, const ObjIDType ObjID);
        LSB             Search (const keyType &key, ObjIDType &ObjID);
+       mutable         std::mutex m_Mutex;
        void            Print  (ostream &os);
        template <typename Func, typename... Args>
        void ForEach(Func lpfn, LSI level, Args&&... args);
        template <typename Func, typename... Args>
        Node* FirstThat(Func lpfn, LSI level, Args&&... args);
+       template <typename Dual>
+       Node* Traverse(Dual&& dual, LSI level);
 protected:
        LSI  m_MinKeys; // minimum number of keys in a node
        LSI  m_MaxKeys, // maximum number of keys in a node
@@ -129,8 +136,11 @@ protected:
        bt_ErrorCode    MergeRoot ();
        void  SplitChild (LSI pos);
 
-       Node &GetFirstNode();
-
+       Node& GetFirstNode();
+       Node& GetLastNode();
+       Node* Next(Node *pNode);
+       Node* Prev(Node *pNode);
+       LSB  Contains(Node *pNode);
        LSB  Overflow()  { return m_KeyCount > m_MaxKeys; }
        LSB  Underflow() { return m_KeyCount < MinNumberOfKeys(); }
        LSB  IsFull()    { return m_KeyCount >= m_MaxKeys; }
@@ -148,7 +158,7 @@ protected:
        LSI GetFreeCellsOnRight(LSI pos);
 
 private:
-       LSB  SplitRoot();
+	   LSB  SplitRoot();
        void SplitPageInto3(vector<Node>   & tmpKeys,
                                                vector<BTPage *>  & SubPages,
                                                BTPage           *& pChild1,
@@ -176,7 +186,7 @@ CBTreePage<keyType, Traits>::~CBTreePage()
 template <typename keyType, typename Traits>
 bt_ErrorCode CBTreePage<keyType, Traits>::Insert(const keyType& key, const ObjIDType ObjID)
 {
-       LSI pos = binary_search(m_Keys, 0, m_KeyCount, key);
+	   LSI pos = binary_search(m_Keys, 0, m_KeyCount, key);
        bt_ErrorCode error = bt_ok;
 
        if( pos < m_KeyCount && (keyType)m_Keys[pos] == key && m_Unique)
@@ -206,7 +216,7 @@ bt_ErrorCode CBTreePage<keyType, Traits>::Insert(const keyType& key, const ObjID
 template <typename keyType, typename Traits>
 LSB CBTreePage<keyType, Traits>::Redistribute1(LSI &pos)
 {
-       if( m_SubPages[pos]->Underflow() )
+	   if( m_SubPages[pos]->Underflow() )
        {       // nkol = Number of keys on left brother, nkor = Number of keys on right brother
                LSI nkol = 0,
                    nkor = 0;
@@ -471,7 +481,7 @@ LSB CBTreePage<keyType, Traits>::SplitRoot()
 template <typename keyType, typename Traits>
 LSB CBTreePage<keyType, Traits>::Search(const keyType &key, ObjIDType &ObjID)
 {
-       LSI pos = binary_search(m_Keys, 0, m_KeyCount, key);
+	   LSI pos = binary_search(m_Keys, 0, m_KeyCount, key);
        if( pos >= m_KeyCount ){
                if( m_SubPages[pos] )
                        return m_SubPages[pos]->Search(key, ObjID);
@@ -507,44 +517,37 @@ template <typename keyType, typename Traits>
 template <typename Func, typename... Args>
 void CBTreePage<keyType, Traits>::ForEach(Func lpfn, LSI level, Args&&... args)
 {
-       for( LSI i = 0 ; i < m_KeyCount ; i++)
-       {
-               if( m_SubPages[i] )
-                       m_SubPages[i]->ForEach(lpfn, level+1, std::forward<Args>(args)...);
-               lpfn(m_Keys[i], level, std::forward<Args>(args)...);
-       }
-       if( m_SubPages[m_KeyCount] )
-               m_SubPages[m_KeyCount]->ForEach(lpfn, level+1, std::forward<Args>(args)...);
+       Traverse([&](Node& node, LSI lvl) -> Node* {std::invoke(lpfn, node, lvl, std::forward<Args>(args)...); return nullptr;}, level);
 }
 
 template <typename keyType, typename Traits>
 template <typename Func, typename... Args>
-typename CBTreePage<keyType, Traits>::Node*
-CBTreePage<keyType, Traits>::FirstThat(Func lpfn, LSI level, Args&&... args)
+typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::FirstThat(Func lpfn, LSI level, Args&&... args)
 {
-       Node *pTmp;
-       for( LSI i = 0 ; i < m_KeyCount ; i++)
+       return Traverse([&](Node& node, LSI lvl) -> Node* {if(std::invoke(lpfn, node, lvl, std::forward<Args>(args)...)) {return &node;} return nullptr;}, level);
+}
+
+template <typename keyType, typename Traits>
+template <typename Dual>
+typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Traverse(Dual&& dual, LSI level)
+{
+       for(LSI i = 0; i < m_KeyCount; i++)
        {
-               if( m_SubPages[i] ){
-                        pTmp = m_SubPages[i]->FirstThat(lpfn, level+1, std::forward<Args>(args)...);
-                       if( pTmp )
-                               return pTmp;
+               if(m_SubPages[i])
+               {
+                       Node* DD = m_SubPages[i]->Traverse(std::forward<Dual>(dual), level + 1);
+                       if(DD) {return DD;}
                }
-               if( lpfn(m_Keys[i], level, std::forward<Args>(args)...) )
-                       return &m_Keys[i];
+               if(Node* DD = std::invoke(std::forward<Dual>(dual), m_Keys[i], level)) {return DD;}
        }
-       if( m_SubPages[m_KeyCount] ){
-                pTmp = m_SubPages[m_KeyCount]->FirstThat(lpfn, level+1, std::forward<Args>(args)...);
-               if( pTmp )
-                       return pTmp;
-       }
-       return 0;
+       if(m_SubPages[m_KeyCount]) {return m_SubPages[m_KeyCount]->Traverse(std::forward<Dual>(dual), level + 1);}
+       return nullptr;
 }
 
 template <typename keyType, typename Traits>
 bt_ErrorCode CBTreePage<keyType, Traits>::Remove(const keyType &key, const ObjIDType ObjID)
 {
-       bt_ErrorCode error = bt_ok;
+	   bt_ErrorCode error = bt_ok;
        LSI pos = binary_search(m_Keys, 0, m_KeyCount, key);
        if( pos < NumberOfKeys() && key == m_Keys[pos].key /*&& m_Keys[pos].m_ObjID == ObjID*/) // We found it !
        {
@@ -700,12 +703,90 @@ CBTreePage<keyType, Traits>::GetFirstNode()
        return m_Keys[0];
 }
 
+template <typename keyType, typename Traits>
+typename CBTreePage<keyType, Traits>::Node &
+CBTreePage<keyType, Traits>::GetLastNode()
+{
+       if( m_SubPages[m_KeyCount] )
+               return m_SubPages[m_KeyCount]->GetLastNode();
+       return m_Keys[m_KeyCount - 1];
+}
+
+template <typename keyType, typename Traits>
+typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Next(Node *pNode)
+{
+       for(LSI i = 0; i < m_KeyCount; i++)
+       {
+               if(&m_Keys[i] == pNode)
+               {
+                       if(m_SubPages[i+1]) {return &m_SubPages[i+1]->GetFirstNode();}
+
+                       if(i + 1 < m_KeyCount) {return &m_Keys[i+1];}
+                       return nullptr;
+               }
+       }
+       for(LSI i = 0; i <= m_KeyCount; i++)
+       {
+               if(m_SubPages[i])
+               {
+                       Node *pRes = m_SubPages[i]->Next(pNode);
+                       if(pRes) {return pRes;}
+                       if(i < m_KeyCount)
+                       {
+                               if(m_SubPages[i]->Contains(pNode)) {return &m_Keys[i];}
+                       }
+               }
+       }
+       return nullptr;
+}
+
+template <typename keyType, typename Traits>
+typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Prev(Node *pNode)
+{
+       for(LSI i = 0; i < m_KeyCount; i++)
+       {
+               if(&m_Keys[i] == pNode)
+               {
+                       if(m_SubPages[i]) {return &m_SubPages[i]->GetLastNode();}
+                       if(i > 0) {return &m_Keys[i-1];}
+                       return nullptr;
+               }
+       }
+       for(LSI i = 0; i <= m_KeyCount; i++)
+       {
+               if(m_SubPages[i])
+               {
+                       Node *pRes = m_SubPages[i]->Prev(pNode);
+                       if(pRes) {return pRes;}
+                       if(i > 0)
+                       {
+                               if(m_SubPages[i]->Contains(pNode)) {return &m_Keys[i-1];}
+                       }
+               }
+       }
+       return nullptr;
+}
+
+template <typename keyType, typename Traits>
+LSB CBTreePage<keyType, Traits>::Contains(Node *pNode)
+{
+       for(LSI i = 0; i < m_KeyCount; i++)
+       {
+               if(&m_Keys[i] == pNode) {return true;}
+       }
+
+       for(LSI i = 0; i <= m_KeyCount; i++)
+       {
+               if(m_SubPages[i] && m_SubPages[i]->Contains(pNode)) {return true;}
+       }
+       return false;
+}
+
 // Deben eliminarlo e imprimir con un ForEach
 template <typename keyType, typename Traits>
 void CBTreePage<keyType, Traits>::Print(ostream &os)
 {
-    ForEach(
-        [](Node &info, LSI level, ostream &stream)
+	ForEach([](Node &info, LSI level, ostream &stream)
         {
             for (LSI i = 0; i < level; i++)
                 stream << "\t";
