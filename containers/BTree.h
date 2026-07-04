@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include "BTreePage.h"
+#include <mutex>
 #include "../types.h"
 
 #define DEFAULT_BTREE_ORDER 3
@@ -65,6 +66,7 @@ protected:
        OrderInt             m_Order;   // order of tree
        numKeysLong           m_NumKeys; // number of keys
        TB            m_Unique;  // Accept the elements only once ?
+       mutable std::mutex m_mtx;
 };
 
 const HeightInt MaxHeight = 5;
@@ -88,6 +90,7 @@ BTree<Traits>::~BTree()
 template <typename Traits>
 TB BTree<Traits>::Insert(const keyType key, const ObjIDType ObjID)
 {
+       std::lock_guard<std::mutex> lock(m_mtx);
        bt_ErrorCode error = m_Root.Insert(key, ObjID);
        if( error == bt_duplicate )
                return false;
@@ -103,6 +106,7 @@ TB BTree<Traits>::Insert(const keyType key, const ObjIDType ObjID)
 template <typename Traits>
 TB BTree<Traits>::Remove (const keyType key, const ObjIDType ObjID)
 {
+       std::lock_guard<std::mutex> lock(m_mtx);
        bt_ErrorCode error = m_Root.Remove(key, ObjID);
        if( error == bt_duplicate || error == bt_nofound )
                return false;
@@ -116,6 +120,7 @@ TB BTree<Traits>::Remove (const keyType key, const ObjIDType ObjID)
 template <typename Traits>
 typename BTree<Traits>::ObjIDType BTree<Traits>::Search (const keyType key)
 {
+       std::lock_guard<std::mutex> lock(m_mtx);
        ObjIDType ObjID = -1;
        m_Root.Search(key, ObjID);
        return ObjID;
@@ -126,6 +131,7 @@ template <typename Traits>
 template<typename Func, typename... Args>
 void BTree<Traits>::ForEach(Func lpfn, Args... args)
 {
+       std::lock_guard<std::mutex> lock(m_mtx);
        m_Root.ForEach(lpfn, 0, std::forward<Args>(args)...);
 }
 
@@ -141,6 +147,7 @@ template<typename Func, typename... Args>
 typename BTree<Traits>::Node *
 BTree<Traits>::FirstThat(Func lpfn, Args... args)
 {
+       std::lock_guard<std::mutex> lock(m_mtx);
        return m_Root.FirstThat(lpfn, 0, std::forward<Args>(args)...);
 }
 
@@ -153,6 +160,7 @@ BTree<Traits>::FirstThat(Func lpfn, Args... args)
 
 template <typename Traits>
 void BTree<Traits>::Print(ostream &os){
+       std::lock_guard<std::mutex> lock(m_mtx);
        m_Root.Print(os);
 }
 
