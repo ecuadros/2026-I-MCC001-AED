@@ -70,7 +70,7 @@ struct tagNode
 {
        keyType                 key;
        ObjIDType               ObjID;
-       long                    UseCounter;
+       Ref                      UseCounter;
        tagNode(const keyType     &_key, ObjIDType _ObjID)
                : key(_key), ObjID(_ObjID), UseCounter(0) {}
        tagNode()                          {}
