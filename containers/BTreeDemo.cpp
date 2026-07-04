@@ -11,7 +11,7 @@ const LSC * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKL
 
 const LSI BTreeSize = 3;
 //void main(int argc, char * argv[], char * envp[])
-LSI main()
+LSI principal()
 {
        LSI result, i;
        BTree<CharTraits> bt(BTreeSize);
