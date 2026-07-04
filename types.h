@@ -10,6 +10,7 @@ using namespace std;
 // C++11 style
 using TI = int;
 using TD = double;
+using TB = bool;
 using TS = string;
 
 // XT must be 32bit integer in Windows and 64bit in Linux
@@ -20,5 +21,9 @@ using TS = string;
 #endif
 
 using Ref = long;
+
+using HeightInt = int;
+using OrderInt = int;
+using numKeysLong = long;
 
 #endif // __TYPES_H__

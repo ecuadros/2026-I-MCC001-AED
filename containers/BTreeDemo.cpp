@@ -9,15 +9,15 @@ const char * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eM
 const char * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
-const int BTreeSize = 3;
-void main(int argc, char * argv[], char * envp[])
+const TI BTreeSize = 3;
+void BTreeDemo()
 {
-       int result, i;
-       BTree <char> bt (BTreeSize);
+       TI i;
+       BTree<BTreeTraits<char, TI>> bt(BTreeSize);
        for (i = 0; keys1[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;
-               result = bt.Insert(keys1[i], i*i);
+               bt.Insert(keys1[i], i*i);
                //bt.Print(cout);
        }
        bt.Print(cout);
@@ -43,7 +43,7 @@ void main(int argc, char * argv[], char * envp[])
        }
        bt.Print(cout);
        cout.flush();*/
-       return 1;
+       return;
 }
 
 /*const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
