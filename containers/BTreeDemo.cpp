@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string>
 #include "BTree.h"
+#include "../foreach.h"
 
 //const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
 const TC * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
@@ -34,6 +35,26 @@ TI BTreeDemo()
         }else{
             cout << "\nKey not found!" << endl;
         }
+
+        auto it = ::FirstThat(bt.begin(), bt.end(),
+            [](auto& nodo, TC limite) -> TB {
+                return nodo.key > limite;
+            },
+            'A' // Este argumento se envía al parámetro 'limite' del lambda
+            );
+        if (it != bt.end()){
+            cout << "\nKey found using iterator: value=" << it->key << " ref=" << it->ObjID << endl;
+        } else {
+            cout << "\nKey not found using iterator!" << endl;
+        }
+
+        ForEach(bt.begin(), bt.end(), 
+            [](auto &nodo, ostream &os) {
+                os << "Llave: " << nodo.key << " -> Valor: " << nodo.ObjID << "\n";
+            }, 
+            cout // Este es el argumento extra que se mapea en args...
+    );
+
        /*for (i = 0; keys2[i]; i++)
        {
                cout << "Searching " << keys2[i] << " ";
