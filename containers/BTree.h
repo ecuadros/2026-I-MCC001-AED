@@ -238,8 +238,8 @@ typename BTree<Traits>::Node* BTree<Traits>::GetNextNode(const keyType& currentK
 
     while (pCurr != nullptr) 
     {
-        int i = 0;
-        int numKeys = pCurr->GetNumberOfKeys();
+        TI i = 0;
+        TI numKeys = pCurr->GetNumberOfKeys();
 
         // Avanzamos en el vector de llaves de la página actual
         while (i < numKeys && currentKey >= pCurr->m_Keys[i].key) {
@@ -289,7 +289,7 @@ BTreeBackwardIterator<BTree<Traits>> BTree<Traits>::rbegin() {
     if (!pCurr || pCurr->GetNumberOfKeys() == 0) return rend();
     
     // El elemento más a la derecha es la última llave de esa página hoja
-    int lastIdx = pCurr->GetNumberOfKeys() - 1;
+    TI lastIdx = pCurr->GetNumberOfKeys() - 1;
     return BTreeBackwardIterator<BTree<Traits>>(this, &(pCurr->m_Keys[lastIdx]));
 }
 
@@ -306,8 +306,8 @@ typename BTree<Traits>::Node* BTree<Traits>::GetPrevNode(const keyType& currentK
 
     while (pCurr != nullptr) 
     {
-        int i = 0;
-        int numKeys = pCurr->GetNumberOfKeys();
+        TI i = 0;
+        TI numKeys = pCurr->GetNumberOfKeys();
 
         // Buscamos la posición idónea en la página actual
         while (i < numKeys && currentKey > pCurr->m_Keys[i].key) {
@@ -330,7 +330,7 @@ typename BTree<Traits>::Node* BTree<Traits>::GetPrevNode(const keyType& currentK
                 while (pSub->m_SubPages[pSub->GetNumberOfKeys()] != nullptr) {
                     pSub = pSub->m_SubPages[pSub->GetNumberOfKeys()];
                 }
-                int lastIdx = pSub->GetNumberOfKeys() - 1;
+                TI lastIdx = pSub->GetNumberOfKeys() - 1;
                 return &(pSub->m_Keys[lastIdx]);
             }
             // CASO 2: Es una página hoja (no tiene hijo izquierdo)
