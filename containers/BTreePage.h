@@ -101,6 +101,9 @@ class CBTreePage
         using keyType       = typename Traits::value_type;
         using ObjIDType     = typename Traits::ref;
         friend class BTree<Traits>;
+        template <typename T> friend class BTreeForwardIterator;
+        template <typename T> friend class BTreeBackwardIterator;
+
 
         typedef CBTreePage<Traits>    BTPage;         // useful shorthand
         typedef tagNode<Traits>       Node;

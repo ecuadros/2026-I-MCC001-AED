@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include "BTreePage.h"
+#include "general_iterator.h"
 
 #define DEFAULT_BTREE_ORDER 3
 
@@ -175,7 +176,11 @@ void BTree<Traits>::Print(std::ostream &os){
        m_Root.Print(os);
 }
 
-
+template <typename Traits>
+class BTreeForwardIterator : public general_iterator<BTree<Traits>, BTreeForwardIterator<Traits>>
+{
+       using Container = BTree<Traits>;
+};
 
 
 
