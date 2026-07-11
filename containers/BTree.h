@@ -1,5 +1,10 @@
 // btree.h
 
+/**
+ * @file btree.h
+ * @brief Implementación de una estructura de datos Árbol-B (B-Tree) concurrente con iteradores.
+ */
+
 #ifndef BTREE_H
 #define BTREE_H
 
@@ -10,8 +15,17 @@
 #include "../foreach.h"
 #include "general_iterator.h"
 
+/**
+ * @def DEFAULT_BTREE_ORDER
+ * @brief Orden por defecto del Árbol-B si no se especifica uno en el constructor.
+ */
 #define DEFAULT_BTREE_ORDER 3
 
+/**
+ * @class BTreeForwardIterator
+ * @brief Iterador hacia adelante (forward) para recorrer los elementos del B-Tree en orden ascendente.
+ * @tparam Container Tipo del contenedor B-Tree sobre el cual se itera.
+ */
 template <typename Container>
 class BTreeForwardIterator : public general_iterator<Container,
                              BTreeForwardIterator<Container>>{
@@ -19,8 +33,18 @@ class BTreeForwardIterator : public general_iterator<Container,
     using Parent = general_iterator<Container, MySelf>;
     using Node   = typename Container::Node;
 public:
+    /**
+     * @brief Constructor del iterador hacia adelante.
+     * @param pContainer Puntero al árbol B-Tree asociado.
+     * @param pNode Puntero al nodo/elemento inicial.
+     */
     BTreeForwardIterator(Container *pContainer, Node *pNode)
         : Parent(pContainer, pNode) {}
+        
+    /**
+     * @brief Operador de pre-incremento para avanzar al siguiente elemento (in-order).
+     * @return Referencia al propio iterador modificado.
+     */
     MySelf& operator++(){
         if (!this->m_pNode || !this->m_pContainer) {
             this->m_pNode = nullptr;
@@ -33,14 +57,29 @@ public:
     }
 };
 
+/**
+ * @class BTreeBackwardIterator
+ * @brief Iterador hacia atrás (backward) para recorrer los elementos del B-Tree en orden descendente.
+ * @tparam Container Tipo del contenedor B-Tree sobre el cual se itera.
+ */
 template <typename Container>
 class BTreeBackwardIterator : public general_iterator<Container, BTreeBackwardIterator<Container>> {
     using MySelf = BTreeBackwardIterator<Container>;
     using Parent = general_iterator<Container, MySelf>;
     using Node   = typename Container::Node;
 public:
+    /**
+     * @brief Constructor del iterador hacia atrás.
+     * @param pContainer Puntero al árbol B-Tree asociado.
+     * @param pNode Puntero al nodo/elemento inicial del recorrido reverso.
+     */
     BTreeBackwardIterator(Container *pContainer, Node *pNode)
         : Parent(pContainer, pNode) {} 
+        
+    /**
+     * @brief Operador de pre-incremento para retroceder al elemento anterior (in-order).
+     * @return Referencia al propio iterador modificado.
+     */
     MySelf& operator++(){
         if (!this->m_pNode || !this->m_pContainer) {
             this->m_pNode = nullptr;
@@ -53,20 +92,31 @@ public:
     }
 };
 
+/**
+ * @struct BTreeTrait
+ * @brief Estructura de rasgos (Traits) para definir los tipos de datos clave y referencia del B-Tree.
+ * @tparam T Tipo de la clave (Key).
+ * @tparam U Tipo del identificador u objeto referenciado (Object ID).
+ */
 template <typename T, typename U = TL>
 struct BTreeTrait{
     using key_type = T;
     using ref_type   = U;
 };
 
+/**
+ * @class BTree
+ * @brief Implementación completa de un contenedor Árbol-B genérico y seguro para hilos (thread-safe).
+ * @tparam Traits Estructura de rasgos que define 'key_type' y 'ref_type'.
+ */
 template <typename Traits>
 class BTree 
 // this is the full version of the BTree
 {
 public:
-       using keyType = typename Traits::key_type;
-       using ObjIDType = typename Traits::ref_type;
-       using forward_iterator = BTreeForwardIterator<BTree<Traits>>;
+       using keyType = typename Traits::key_type;               ///< Tipo de dato de la clave.
+       using ObjIDType = typename Traits::ref_type;             ///< Tipo de dato de la referencia u objeto asociado.
+       using forward_iterator = BTreeForwardIterator<BTree<Traits>>; ///< Tipo del iterador forward estándar.
 
 private:
        typedef CBTreePage <Traits> BTNode;// useful shorthand
@@ -83,49 +133,147 @@ public:
        // typedef typename BTNode::lpfnForEach3    lpfnForEach3;
        // typedef typename BTNode::lpfnFirstThat2  lpfnFirstThat2;
        // typedef typename BTNode::lpfnFirstThat3  lpfnFirstThat3;
-       typedef typename BTNode::Node      Node;
+       typedef typename BTNode::Node      Node;                 ///< Tipo de nodo interno expuesto.
 
 public:
+       /**
+        * @brief Constructor del Árbol-B.
+        * @param order Orden o factor de ramificación del árbol.
+        * @param unique Define si el árbol permite claves duplicadas (false) o solo únicas (true).
+        */
        BTree(TreeOrderT order = DEFAULT_BTREE_ORDER, TB unique = true);
+       
+       /**
+        * @brief Destructor de la clase BTree.
+        */
        ~BTree();
+       
        //int           Open (char * name, int mode);
        //int           Create (char * name, int mode);
        //int           Close ();
+       
+       /**
+        * @brief Inserta una clave con su respectivo objeto/ID en el árbol de forma segura.
+        * @param key Clave a insertar.
+        * @param ObjID Identificador u objeto asociado.
+        * @return StatusFlag True si se insertó con éxito, False en caso de duplicado (si unique=true).
+        */
        StatusFlag      Insert (const keyType key, const ObjIDType ObjID);
+       
+       /**
+        * @brief Elimina una clave y su ID del árbol de forma segura.
+        * @param key Clave a eliminar.
+        * @param ObjID Identificador u objeto asociado a remover.
+        * @return StatusFlag True si se eliminó con éxito, False si no fue encontrado.
+        */
        StatusFlag      Remove (const keyType key, const ObjIDType ObjID);
-       ObjIDType       Search (const keyType key);
+       
+       /**
+        * @brief Busca un objeto/ID en el árbol por medio de su clave.
+        * @param key Clave a buscar.
+        * @return ObjIDType ID del objeto encontrado, o -1 si no existe.
+        */
+       ObjIDType        Search (const keyType key);
+       
+       /**
+        * @brief Retorna la cantidad total de claves almacenadas en el árbol.
+        * @return SizeT Número total de llaves.
+        */
        SizeT            size()  { return m_NumKeys; }
+       
+       /**
+        * @brief Retorna la altura actual del Árbol-B.
+        * @return TreeOrderT Altura del árbol.
+        */
        TreeOrderT            height() { return m_Height;      }
+       
+       /**
+        * @brief Retorna el orden configurado en el árbol.
+        * @return TreeOrderT Orden del árbol.
+        */
        TreeOrderT            GetOrder() { return m_Order;     }
 
+       /**
+        * @brief Imprime la estructura y elementos del árbol en el flujo especificado.
+        * @param os Flujo de salida (ej. std::cout).
+        */
        void            Print (ostream &os);
 
+       /**
+        * @brief Aplica una función a cada elemento del árbol de manera ordenada (In-order).
+        * @tparam Func Tipo del callable (función, lambda, functor).
+        * @tparam Args Tipos de los argumentos variables pasados a la función.
+        * @param lpfn Función o predicado a ejecutar por cada elemento.
+        * @param args Argumentos variables pasados por referencia adaptativa.
+        */
        template <typename Func, typename... Args>
        void            ForEach(Func lpfn, Args&&... args);
 
+       /**
+        * @brief Busca el primer elemento que cumpla con una condición dada.
+        * @tparam Func Tipo del predicado/condición.
+        * @tparam Args Tipos de los argumentos del predicado.
+        * @param lpfn Condición a evaluar por elemento.
+        * @param args Argumentos adicionales para el predicado.
+        * @return Node* Puntero al primer nodo que cumple el criterio, o nullptr si ninguno coincide.
+        */
        template <typename Func, typename... Args>
-       Node*           FirstThat(Func lpfn, Args&&... args);
+       Node* FirstThat(Func lpfn, Args&&... args);
        //typedef               Node iterator;
 
 protected:
-       BTNode          m_Root;
-       TreeOrderT      m_Height;  // height of tree
-       TreeOrderT      m_Order;   // order of tree
+       BTNode          m_Root;     ///< Nodo raíz o página principal del árbol B.
+       TreeOrderT      m_Height;   // height of tree
+       TreeOrderT      m_Order;    // order of tree
        SizeT            m_NumKeys; // number of keys
-       TB            m_Unique;  // Accept the elements only once ?
-       mutex           m_mutex;
+       TB              m_Unique;   // Accept the elements only once ?
+       mutex           m_mutex;    ///< Mutex para garantizar la exclusión mutua/concurrencia segura.
 
 public:
+    /**
+     * @brief Retorna un iterador al primer elemento lógico (el menor) del árbol.
+     * @return BTreeForwardIterator Iterador apuntando al inicio.
+     */
     BTreeForwardIterator<BTree<Traits>> begin();
+    
+    /**
+     * @brief Retorna un iterador que marca el final lógico del árbol (nullptr).
+     * @return BTreeForwardIterator Iterador apuntando al fin.
+     */
     BTreeForwardIterator<BTree<Traits>> end();
+    
+    /**
+     * @brief Método de soporte para calcular internamente el nodo sucesor de una clave dada.
+     * @param currentKey Clave base.
+     * @return Node* Puntero al nodo sucesor inmediato, o nullptr si es el máximo.
+     */
     Node* GetNextNode(const keyType& currentKey);
 
+    /**
+     * @brief Retorna un iterador reverso apuntando al último elemento lógico (el mayor) del árbol.
+     * @return BTreeBackwardIterator Iterador reverso apuntando al inicio del recorrido inverso.
+     */
     BTreeBackwardIterator<BTree<Traits>> rbegin();
+    
+    /**
+     * @brief Retorna un iterador reverso que marca el final lógico del recorrido hacia atrás (nullptr).
+     * @return BTreeBackwardIterator Iterador apuntando al fin del recorrido inverso.
+     */
     BTreeBackwardIterator<BTree<Traits>> rend();
+    
+    /**
+     * @brief Método de soporte para calcular internamente el nodo antecesor de una clave dada.
+     * @param currentKey Clave base.
+     * @return Node* Puntero al nodo antecesor inmediato, o nullptr si es el mínimo.
+     */
     Node* GetPrevNode(const keyType& currentKey);
 };
 
+/**
+ * @brief Límite estático de la altura del árbol.
+ */
 const TreeOrderT MaxHeight = 5;
+
 template <typename Traits>
 BTree<Traits>::BTree(TreeOrderT order, TB unique)
                                : m_Unique(unique),
@@ -203,10 +351,10 @@ BTree<Traits>::FirstThat(Func lpfn, Args&&... args)
 
 template <typename Traits>
 void BTree<Traits>::Print(ostream &os){
-        //scoped_lock<mutex> lock(m_mutex);
-       ForEach([&os](Node &info){
+         //scoped_lock<mutex> lock(m_mutex);
+        ForEach([&os](Node &info){
               os << info.key << "->" << info.ObjID << "\n";
-       });
+        });
 }
 
 template <typename Traits>
@@ -346,6 +494,5 @@ typename BTree<Traits>::Node* BTree<Traits>::GetPrevNode(const keyType& currentK
 
     return pBestAncestor; 
 }
-
 
 #endif
