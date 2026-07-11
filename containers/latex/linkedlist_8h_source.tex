@@ -1,0 +1,308 @@
+\doxysection{linkedlist.\+h}
+\hypertarget{linkedlist_8h_source}{}\label{linkedlist_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ \_\_LINKEDLIST\_H\_\_}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ \_\_LINKEDLIST\_H\_\_}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <cstddef>}\ \ \ \textcolor{comment}{//\ size\_t}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <sstream>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <mutex>}\ \ \ \ \ \textcolor{comment}{//\ mutex}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}general\_iterator.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}util.h"{}}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ "{}../types.h"{}}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ "{}../foreach.h"{}}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ "{}basetrait.h"{}}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{using\ namespace\ }std;}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{comment}{//\ Forward\ iterator}}
+\DoxyCodeLine{00018\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00019\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_linked_list_forward_iterator}{LinkedListForwardIterator}}\ :\ \textcolor{keyword}{public}\ general\_iterator<Container,\ }
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ LinkedListForwardIterator<Container>>\{}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ =\ \doxymbox{\hyperlink{class_linked_list_forward_iterator}{LinkedListForwardIterator<Container>}};}
+\DoxyCodeLine{00022\ \ \ \ \ \textcolor{keyword}{using\ }Parent\ =\ general\_iterator<Container,\ MySelf>;}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keyword}{using\ }Parent::Parent;}
+\DoxyCodeLine{00024\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{comment}{//\ TODO:\ Completar\ el\ operator++}}
+\DoxyCodeLine{00026\ \ \ \ \ MySelf\&\ operator++()\{}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ this-\/>m\_pNode\ =\ this-\/>m\_pNode-\/>getNext();}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00029\ \ \ \ \ \}}
+\DoxyCodeLine{00030\ \};}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ Linked\ List\ Node}}
+\DoxyCodeLine{00033\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00034\ \textcolor{keyword}{class\ }LLNode\{}
+\DoxyCodeLine{00035\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{using\ }value\_type\ =\ T;}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keyword}{using\ }Node\ \ \ \ \ \ \ =\ LLNode<T>;}
+\DoxyCodeLine{00038\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00039\ \ \ \ \ value\_type\ m\_data;}
+\DoxyCodeLine{00040\ \ \ \ \ Ref\ \ \ \ \ \ \ \ m\_ref;}
+\DoxyCodeLine{00041\ \ \ \ \ Node\ \ \ \ \ \ *m\_pNext;}
+\DoxyCodeLine{00042\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00043\ \ \ \ \ LLNode()\{\}}
+\DoxyCodeLine{00044\ \ \ \ \ LLNode(value\_type\ data,\ Ref\ ref,\ Node\ *pNext\ =\ \textcolor{keyword}{nullptr})\ }
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ :\ m\_data(data),\ m\_ref(ref),\ m\_pNext(pNext)\ \{\}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keyword}{virtual}\ \string~LLNode()\ \{\}}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ value\_type\ \ \ \ \ \ getData()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_data;\ \}}
+\DoxyCodeLine{00049\ \ \ \ \ value\_type\&\ \ \ \ \ getDataRef()\ \ \ \ \{\ \textcolor{keywordflow}{return}\ m\_data;\ \}}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ setData(value\_type\ data)\ \{\ m\_data\ =\ data;\ \}}
+\DoxyCodeLine{00051\ \ \ \ \ Ref\ \ \ \ \ \ \ \ \ \ \ \ \ getRef()\textcolor{keyword}{\ const\ \ }\{\ \textcolor{keywordflow}{return}\ m\_ref;\ \}}
+\DoxyCodeLine{00052\ \ \ \ \ Ref\&\ \ \ \ \ \ \ \ \ \ \ \ getRefRef()\ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ m\_ref;\ \}}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ setRef(Ref\ ref)\ \{\ m\_ref\ =\ ref;\ \}}
+\DoxyCodeLine{00054\ \ \ \ \ Node*\ \ \ \ \ \ \ \ \ \ \ getNext()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pNext;\ \}}
+\DoxyCodeLine{00055\ \ \ \ \ Node*\&\ \ \ \ \ \ \ \ \ \ getNextRef()\ \ \ \ \{\ \textcolor{keywordflow}{return}\ m\_pNext;\ \}}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ setNext(Node\ *pNext)\ \{\ m\_pNext\ =\ pNext;\ \}}
+\DoxyCodeLine{00057\ \};}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00060\ ostream\ \&operator<<(ostream\ \&os,\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{class_l_l_node}{LLNode<T>}}\ \&node)\{}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordflow}{return}\ os\ <<\ \textcolor{stringliteral}{"{}("{}}\ <<node.getData()\ <<\ \textcolor{stringliteral}{"{},\ "{}}\ <<\ node.getRef()\ <<\ \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00062\ \}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00065\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_base_linked_list_trait}{BaseLinkedListTrait}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_container_trait}{BaseContainerTrait}}<T,\ LLNode<T>>\{}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \};}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00070\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_ascending_linked_list_trait}{AscendingLinkedListTrait}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_linked_list_trait}{BaseLinkedListTrait}}<T>,}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_ascending_trait}{AscendingTrait}}<T>}
+\DoxyCodeLine{00072\ \{}
+\DoxyCodeLine{00073\ \};}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00076\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_descending_linked_list_trait}{DescendingLinkedListTrait}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_linked_list_trait}{BaseLinkedListTrait}}<T>,}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_descending_trait}{DescendingTrait}}<T>}
+\DoxyCodeLine{00078\ \{}
+\DoxyCodeLine{00079\ \};}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00081\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00082\ \textcolor{keyword}{class\ }LinkedList\{}
+\DoxyCodeLine{00083\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \textcolor{keyword}{typename}\ Traits::value\_type;}
+\DoxyCodeLine{00085\ \ \ \ \ \textcolor{keyword}{using\ }Node\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ Traits::Node;}
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{keyword}{using\ }Comp\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ Traits::Comp;}
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ \ \ \ \ =\ LinkedList<Traits>;}
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keyword}{using\ }forward\_iterator\ =\ \doxymbox{\hyperlink{class_linked_list_forward_iterator}{LinkedListForwardIterator<MySelf>}};}
+\DoxyCodeLine{00090\ \ \ \ \ \textcolor{comment}{//\ friend\ forward\_iterator;}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00093\ \ \ \ \ Node\ *m\_pRoot\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00094\ \ \ \ \ Node\ *m\_pTail\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00095\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_size\ =\ 0;}
+\DoxyCodeLine{00096\ \ \ \ \ Comp\ \ \ m\_comp;}
+\DoxyCodeLine{00097\ \ \ \ \ mutex\ m\_mtx;}
+\DoxyCodeLine{00098\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00099\ \ \ \ \ LinkedList()\ \{\}}
+\DoxyCodeLine{00100\ \ \ \ \ LinkedList(\textcolor{keyword}{const}\ LinkedList\ \&other)\{\ \textcolor{comment}{//\ Copy\ constructor}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ Node*\ pTemp\ =\ other.m\_pRoot;}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(pTemp\ !=\ \textcolor{keyword}{nullptr})\{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ push\_back(pTemp\ -\/>\ getData(),\ pTemp\ -\/>\ getRef());}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ pTemp\ =\ pTemp-\/>getNext();}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00109\ \ \ \ \ \}}
+\DoxyCodeLine{00110\ \ \ \ \ LinkedList(LinkedList\ \&\&other)\{\ \textcolor{comment}{//\ Move\ constructor}}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ m\_pRoot\ =\ exchange(other.m\_pRoot,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ m\_pTail\ =\ exchange(other.m\_pTail,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ m\_size\ =\ exchange(other.m\_size,\ 0);}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \}}
+\DoxyCodeLine{00118\ \ \ \ \ LinkedList\&\ operator=(\textcolor{keyword}{const}\ LinkedList\ \&other)\{\ \textcolor{comment}{//\ Copy\ assignment\ operator}}
+\DoxyCodeLine{00119\ \ \ \ \ \}}
+\DoxyCodeLine{00120\ \ \ \ \ LinkedList\&\ operator=(LinkedList\ \&\&other)\{\ \textcolor{comment}{//\ Move\ assignment\ operator}}
+\DoxyCodeLine{00121\ \ \ \ \ \}}
+\DoxyCodeLine{00122\ \ \ \ \ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keyword}{virtual}\ \ \ \ \ \ \ \ \string~LinkedList()\ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ Node*\ pTemp\ =\ m\_pRoot;}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (pTemp)\{}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ \ \ \ \ Node*\ pNext\ =\ pTemp-\/>getNext();}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ pTemp;}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \ \ \ \ \ pTemp\ =\ pNext;}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00133\ }
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \ m\_pRoot\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ m\_pTail\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ m\_size\ \ =\ 0;}
+\DoxyCodeLine{00137\ \ \ \ \ \}}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ \ push\_front(value\_type\ value,\ Ref\ ref)\ \{}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ \ Node*\ pTemp\ =\ \textcolor{keyword}{new}\ Node(value,\ ref,\ m\_pRoot);\ \ \textcolor{comment}{//Se\ crea\ el\ Nodo\ temporal\ con\ los\ datos\ ingresados\ que\ apunta\ a\ m\_pRoot}}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ m\_pRoot\ =\ pTemp;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//Se\ actualiza\ el\ nodo\ raiz}}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_size\ ==\ 0)}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pTail\ =\ pTemp;\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//Si\ la\ lista\ esta\ vacia\ la\ cola\ tambien\ se\ debe\ actualizar}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ ++m\_size;}
+\DoxyCodeLine{00147\ \ \ \ \ \}}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{auto}\ \ \ \ pop\_front()\ -\/>\ pair<value\_type,\ Ref>\{\ }
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_pRoot\ )\{}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ \ \ \ \ \ Node*\ pTemp\ =\ m\_pRoot;}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pRoot\ =\ m\_pRoot-\/>getNext();}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \ \ \ \ -\/-\/m\_size;}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ make\_pair(pTemp-\/>getData(),\ pTemp-\/>getRef());}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \ \}\textcolor{keywordflow}{else}}
+\DoxyCodeLine{00157\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ out\_of\_range(\textcolor{stringliteral}{"{}pop\_front():\ empty\ list"{}});}
+\DoxyCodeLine{00158\ \ \ \ \ \}}
+\DoxyCodeLine{00159\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ \ \ push\_back(value\_type\ value,\ Ref\ ref)\{}
+\DoxyCodeLine{00160\ \ \ \ \ \ \ \ \ Node*\ pTemp\ =\ \textcolor{keyword}{new}\ Node(value,\ ref,\ \textcolor{keyword}{nullptr});\ \ \textcolor{comment}{//Como\ es\ el\ ultimo\ nodo\ no\ apunta\ a\ nada}}
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_size\ ==\ 0)\{}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pRoot\ =\ pTemp;}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pTail\ =\ pTemp;\ }
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pTail-\/>setNext(pTemp);}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pTail\ =\ pTemp;}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ ++m\_size;}
+\DoxyCodeLine{00171\ \ \ \ \ \}}
+\DoxyCodeLine{00172\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keyword}{auto}\ \ \ \ pop\_back()\ -\/>\ pair<value\_type,\ Ref>\{}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ !m\_pRoot\ )}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ out\_of\_range(\textcolor{stringliteral}{"{}pop\_back():\ empty\ list"{}});}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \textcolor{comment}{//Con\ un\ solo\ elemento}}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_pRoot\ ==\ m\_pTail)\{}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ pDelete\ =\ make\_pair(m\_pTail-\/>getData(),\ m\_pTail-\/>getRef());}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ m\_pTail;}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pRoot\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pTail\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ \ \ -\/-\/m\_size;}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ pDelete;}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00189\ }
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \textcolor{comment}{//Lista\ con\ varios\ elementos}}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ Node\ *pTemp\ =\ m\_pRoot;}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (pTemp-\/>getNext()\ !=\ m\_pTail)\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//Recorrer\ toda\ la\ lista\ hasta\ el\ penultimo\ elemento}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ pTemp\ =\ pTemp-\/>getNext();}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \textcolor{keyword}{auto}\ pDelete\ =\ make\_pair(m\_pTail-\/>getData(),\ m\_pTail-\/>getRef());}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ pTemp-\/>getNext();}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ pTemp-\/>setNext(\textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ m\_pTail\ =\ pTemp;}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ -\/-\/m\_size;}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ pDelete;}
+\DoxyCodeLine{00204\ \ \ \ \ \}}
+\DoxyCodeLine{00205\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ internal\_insert(Node*\ \&pParent,\ \textcolor{keyword}{const}\ value\_type\ \&value,\ Ref\ ref);}
+\DoxyCodeLine{00207\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00208\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ \ \ \ insert(\textcolor{keyword}{const}\ value\_type\ \&value,\ Ref\ ref);}
+\DoxyCodeLine{00209\ \ \ \ \ }
+\DoxyCodeLine{00210\ \ \ \ \ \textcolor{keyword}{virtual}\ Node\&\ operator[](\textcolor{keyword}{const}\ \textcolor{keywordtype}{size\_t}\ index)\textcolor{keyword}{\ const}\{}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (index\ >=\ m\_size)}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ out\_of\_range(\textcolor{stringliteral}{"{}Index\ out\ of\ range"{}});}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ Node*\ pTemp\ =\ m\_pRoot;}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ index;\ ++i)\{}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ \ \ \ \ pTemp\ =\ pTemp\ -\/>\ getNext();}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *pTemp;}
+\DoxyCodeLine{00220\ \ \ \ \ \};}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00222\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{size\_t}\ \ size()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_size;\ \}}
+\DoxyCodeLine{00223\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{string}\ \ toString();}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \ \ \ \ forward\_iterator\ begin()\ \{\ \textcolor{keywordflow}{return}\ forward\_iterator(\textcolor{keyword}{this},\ m\_pRoot);\ \}}
+\DoxyCodeLine{00226\ \ \ \ \ forward\_iterator\ end()\ \ \ \{\ \textcolor{keywordflow}{return}\ forward\_iterator(\textcolor{keyword}{this},\ \textcolor{keyword}{nullptr});\ \}}
+\DoxyCodeLine{00227\ }
+\DoxyCodeLine{00228\ \ \ \ \ \textcolor{comment}{//\ Agregar\ Foreach}}
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{keywordtype}{void}\ ForEach(Func\ func,\ Args\ \&\&...\ \ args)\{}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ unique\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ ::ForEach(begin(),\ end(),\ func,\ std::forward<Args>(args)...\ );}
+\DoxyCodeLine{00233\ \ \ \ \ \}}
+\DoxyCodeLine{00234\ }
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{comment}{//Agregar\ FirstThat}}
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00237\ \ \ \ \ forward\_iterator\ FirstThat(Func\ func,\ Args\ \&\&...\ \ args)\{}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ return\ ::FirstThat(begin(),\ end(),\ func,\ std::forward<Args>(args)...\ );}
+\DoxyCodeLine{00239\ \ \ \ \ \}}
+\DoxyCodeLine{00240\ \};}
+\DoxyCodeLine{00241\ }
+\DoxyCodeLine{00242\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00243\ \textcolor{keywordtype}{void}\ LinkedList<Traits>::internal\_insert(Node*\ \&pPrev,\ \textcolor{keyword}{const}\ value\_type\ \&value,\ Ref\ ref)\{}
+\DoxyCodeLine{00244\ \ \ \ \ \textcolor{keywordflow}{if}(!pPrev\ ||\ m\_comp(value,\ pPrev-\/>getDataRef()))\{}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ pPrev\ =\ \textcolor{keyword}{new}\ Node(value,\ ref,\ pPrev);}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ m\_size++;}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(pPrev\ ==\ m\_pRoot)}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pTail\ =\ pPrev;}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00250\ \ \ \ \ \}}
+\DoxyCodeLine{00251\ \ \ \ \ internal\_insert(pPrev-\/>getNextRef(),\ value,\ ref);}
+\DoxyCodeLine{00252\ \}}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00254\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00255\ \textcolor{keywordtype}{void}\ LinkedList<Traits>::insert(\textcolor{keyword}{const}\ value\_type\ \&value,\ Ref\ ref)\{}
+\DoxyCodeLine{00256\ \ \ \ \ internal\_insert(m\_pRoot,\ value,\ ref);}
+\DoxyCodeLine{00257\ \}}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00260\ \textcolor{keywordtype}{string}\ \ LinkedList<Traits>::toString()\ \{}
+\DoxyCodeLine{00261\ \ \ \ \ stringstream\ ss;}
+\DoxyCodeLine{00262\ \ \ \ \ Node\ *pNode\ =\ m\_pRoot;}
+\DoxyCodeLine{00263\ \ \ \ \ ss\ <<\ \textcolor{stringliteral}{"{}["{}};}
+\DoxyCodeLine{00264\ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_size\ >\ 0\ )\{}
+\DoxyCodeLine{00265\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\ \textcolor{keywordtype}{size\_t}\ i\ =\ 0\ ;\ i\ <\ size()-\/1\ ;\ ++i\ )\{}
+\DoxyCodeLine{00266\ \ \ \ \ \ \ \ \ \ \ \ \ ss\ <<\ *pNode\ <<\ \textcolor{stringliteral}{"{},"{}};}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \ \ \ \ \ \ pNode\ =\ pNode-\/>getNext();}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ ss\ <<\ *pNode;}
+\DoxyCodeLine{00270\ \ \ \ \ \}}
+\DoxyCodeLine{00271\ \ \ \ \ ss\ <<\ \textcolor{stringliteral}{"{}]"{}};}
+\DoxyCodeLine{00272\ \ \ \ \ \textcolor{keywordflow}{return}\ ss.str();}
+\DoxyCodeLine{00273\ \}}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00276\ ostream\&\ operator<<(ostream\&\ os,\ \doxymbox{\hyperlink{class_linked_list}{LinkedList<Traits>}}\&\ list)\{}
+\DoxyCodeLine{00277\ \ \ \ \ \textcolor{keywordflow}{return}\ os\ <<\ list.toString();}
+\DoxyCodeLine{00278\ \}}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00281\ istream\&\ operator>>(istream\&\ is,\ \doxymbox{\hyperlink{class_linked_list}{LinkedList<Traits>}}\&\ list)\{}
+\DoxyCodeLine{00282\ \ \ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \textcolor{keyword}{typename}\ LinkedList<Traits>::value\_type;}
+\DoxyCodeLine{00283\ \ \ \ \ \textcolor{keywordtype}{string}\ line;}
+\DoxyCodeLine{00284\ }
+\DoxyCodeLine{00285\ \ \ \ \ getline(is,\ line);}
+\DoxyCodeLine{00286\ }
+\DoxyCodeLine{00287\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{char}\&\ c\ :\ line)\{}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (c\ ==\ \textcolor{charliteral}{'['}\ ||\ c\ ==\ \textcolor{charliteral}{']'}\ ||\ c\ ==\ \textcolor{charliteral}{'('}\ ||\ c\ ==\ \textcolor{charliteral}{')'}\ ||\ c\ ==\ \textcolor{charliteral}{','})}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \ \ \ \ \ c\ =\ \textcolor{charliteral}{'\ '};}
+\DoxyCodeLine{00290\ \ \ \ \ \}}
+\DoxyCodeLine{00291\ }
+\DoxyCodeLine{00292\ \ \ \ \ value\_type\ value;}
+\DoxyCodeLine{00293\ \ \ \ \ Ref\ ref;}
+\DoxyCodeLine{00294\ \ \ \ \ stringstream\ ss(line);}
+\DoxyCodeLine{00295\ }
+\DoxyCodeLine{00296\ \ \ \ \ \textcolor{keywordflow}{while}\ (ss\ >>\ value\ >>\ ref)\{}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ list.push\_back(value,\ ref);}
+\DoxyCodeLine{00298\ \ \ \ \ \}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \ \ \ \ \textcolor{keywordflow}{return}\ is;}
+\DoxyCodeLine{00301\ \}}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ \_\_LINKEDLIST\_H\_\_}}
+
+\end{DoxyCode}

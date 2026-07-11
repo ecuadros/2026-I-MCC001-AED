@@ -1,0 +1,88 @@
+\doxysection{Binary\+Tree\+Node\texorpdfstring{$<$}{<} T \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_binary_tree_node}{}\label{class_binary_tree_node}\index{BinaryTreeNode$<$ T $>$@{BinaryTreeNode$<$ T $>$}}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_binary_tree_node_a29d5ae16ec6e1c0207fa2b7e7cccafbb}\label{class_binary_tree_node_a29d5ae16ec6e1c0207fa2b7e7cccafbb} 
+using {\bfseries value\+\_\+type} = T
+\item 
+\Hypertarget{class_binary_tree_node_a403e02c31c66344858e954d3d041bb3d}\label{class_binary_tree_node_a403e02c31c66344858e954d3d041bb3d} 
+using {\bfseries Node} = \doxymbox{\hyperlink{class_binary_tree_node}{Binary\+Tree\+Node}}$<$T$>$
+\item 
+\Hypertarget{class_binary_tree_node_a90316471505366347fd1f1380f8edc95}\label{class_binary_tree_node_a90316471505366347fd1f1380f8edc95} 
+using {\bfseries Node\+Ptr} = Node\texorpdfstring{$\ast$}{*}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_binary_tree_node_ace821096e228a7aecbbe52846dcbe48b}\label{class_binary_tree_node_ace821096e228a7aecbbe52846dcbe48b} 
+{\bfseries Binary\+Tree\+Node} (const value\+\_\+type \&data, const Ref \&ref, Node\+Ptr left=nullptr, Node\+Ptr right=nullptr)
+\item 
+\Hypertarget{class_binary_tree_node_a8d664b68294c11672ea2ff7c649169c4}\label{class_binary_tree_node_a8d664b68294c11672ea2ff7c649169c4} 
+{\bfseries Binary\+Tree\+Node} (const \doxymbox{\hyperlink{class_binary_tree_node}{Binary\+Tree\+Node}} \&other)
+\item 
+\Hypertarget{class_binary_tree_node_a8a18300291c8895bd8e6daee15393f9d}\label{class_binary_tree_node_a8a18300291c8895bd8e6daee15393f9d} 
+{\bfseries Binary\+Tree\+Node} (\doxymbox{\hyperlink{class_binary_tree_node}{Binary\+Tree\+Node}} \&\&other) noexcept
+\item 
+\Hypertarget{class_binary_tree_node_adbecc93510d7408b01b4e1138946e5c8}\label{class_binary_tree_node_adbecc93510d7408b01b4e1138946e5c8} 
+value\+\_\+type {\bfseries get\+Data} () const
+\item 
+\Hypertarget{class_binary_tree_node_a4f091350d9c17ae48adc445f029bc213}\label{class_binary_tree_node_a4f091350d9c17ae48adc445f029bc213} 
+value\+\_\+type \& {\bfseries get\+Data\+Ref} ()
+\item 
+\Hypertarget{class_binary_tree_node_affcca8b47fbfd4fd07c614f225936bd0}\label{class_binary_tree_node_affcca8b47fbfd4fd07c614f225936bd0} 
+void {\bfseries set\+Data} (value\+\_\+type data)
+\item 
+\Hypertarget{class_binary_tree_node_a5784b10880d482e4ec62fce61b8a44df}\label{class_binary_tree_node_a5784b10880d482e4ec62fce61b8a44df} 
+Ref {\bfseries get\+Ref} () const
+\item 
+\Hypertarget{class_binary_tree_node_af4ccf5023700f9329bf69d4407998c48}\label{class_binary_tree_node_af4ccf5023700f9329bf69d4407998c48} 
+Ref \& {\bfseries get\+Ref\+Ref} ()
+\item 
+\Hypertarget{class_binary_tree_node_a413c1c2b3b81bb0c58ead3da9b5bb626}\label{class_binary_tree_node_a413c1c2b3b81bb0c58ead3da9b5bb626} 
+void {\bfseries set\+Ref} (Ref ref)
+\item 
+\Hypertarget{class_binary_tree_node_a025520b6c50673cc2f36c2b80cb8025a}\label{class_binary_tree_node_a025520b6c50673cc2f36c2b80cb8025a} 
+Node\+Ptr {\bfseries get\+Child} (size\+\_\+t pos) const
+\item 
+\Hypertarget{class_binary_tree_node_ab1fbf0ff6945ffce51d85a6559f7b9fb}\label{class_binary_tree_node_ab1fbf0ff6945ffce51d85a6559f7b9fb} 
+Node\+Ptr \& {\bfseries get\+Child\+Ref} (size\+\_\+t pos)
+\item 
+\Hypertarget{class_binary_tree_node_ad64f697ad2483c6b74e30ae4988816bf}\label{class_binary_tree_node_ad64f697ad2483c6b74e30ae4988816bf} 
+void {\bfseries set\+Child} (size\+\_\+t pos, Node\+Ptr p\+Child)
+\item 
+\Hypertarget{class_binary_tree_node_ac834150cda395945467f94e527d4a6a4}\label{class_binary_tree_node_ac834150cda395945467f94e527d4a6a4} 
+string {\bfseries to\+\_\+string} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_binary_tree_node_ae6aef25e7a59e20b75236f771400d62c}\label{class_binary_tree_node_ae6aef25e7a59e20b75236f771400d62c} 
+value\+\_\+type {\bfseries m\+\_\+data}
+\item 
+\Hypertarget{class_binary_tree_node_a31751b3113efe2d5332ae87aade5de2b}\label{class_binary_tree_node_a31751b3113efe2d5332ae87aade5de2b} 
+Ref {\bfseries m\+\_\+ref}
+\item 
+\Hypertarget{class_binary_tree_node_a430b3baaccbbe736a7e4f55012daff30}\label{class_binary_tree_node_a430b3baaccbbe736a7e4f55012daff30} 
+Node\+Ptr {\bfseries m\+\_\+p\+Child} \+[2]\+ = \{nullptr, nullptr\}
+\item 
+\Hypertarget{class_binary_tree_node_a9f6e10efd40efe2845cf057635edf6a1}\label{class_binary_tree_node_a9f6e10efd40efe2845cf057635edf6a1} 
+Node\+Ptr {\bfseries m\+\_\+p\+Parent}
+\item 
+\Hypertarget{class_binary_tree_node_aba95c250457391abc376d41519b2d1a0}\label{class_binary_tree_node_aba95c250457391abc376d41519b2d1a0} 
+Node\+Ptr {\bfseries m\+\_\+right}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_binary_tree_node_acb0175128d628347bbce4f39453f7b77}\label{class_binary_tree_node_acb0175128d628347bbce4f39453f7b77} 
+ostream \& {\bfseries operator$<$$<$} (ostream \&os, const \doxymbox{\hyperlink{class_binary_tree_node}{Binary\+Tree\+Node}} \&node)
+\item 
+\Hypertarget{class_binary_tree_node_abc3c4869da7914e0923af4938cf7f15b}\label{class_binary_tree_node_abc3c4869da7914e0923af4938cf7f15b} 
+istream \& {\bfseries operator$>$$>$} (istream \&is, \doxymbox{\hyperlink{class_binary_tree_node}{Binary\+Tree\+Node}} \&node)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+binarytree.\+h\end{DoxyCompactItemize}

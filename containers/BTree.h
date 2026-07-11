@@ -54,7 +54,7 @@ class BTree
 public:
        using keyType     = typename Traits::key_type;
        using ObjIDType = typename Traits::ObjIDType;
-       typedef CBTreePage<keyType, Traits> BTNode;// useful shorthand
+       typedef CBTreePage<keyType, Traits> BNode;// useful shorthand
        /*struct Node
        {
                keyType first;
@@ -62,7 +62,7 @@ public:
                Node *&operator->() { return this; }
        };*/
        //typedef Node iterator;
-       typedef typename BTNode::Node      Node;
+       typedef typename BNode::Node      Node;
        using MySelf = BTree<Traits>;
        using forward_iterator  = BTreeForwardIterator<MySelf>;
        using backward_iterator = BTreeBackwardIterator<MySelf>;
@@ -95,7 +95,7 @@ public:
        //typedef               Node iterator;
 
 protected:
-       BTNode          m_Root;
+       BNode          m_Root;
        LSI             m_Height;  // height of tree
        LSI             m_Order;   // order of tree
        LSL             m_NumKeys; // number of keys
@@ -154,12 +154,18 @@ BTree<Traits>::Search(const keyType key)
        return ObjID;
 }
 
+template <typename Iterator, typename Func, typename... Args>
+void ForEach(Iterator begin, Iterator end, Func func, Args&&... args)
+{
+	for(auto it = begin; it != end; ++it) {std::invoke(func, *it, std::forward<Args>(args)...);}
+}
+
 template <typename Traits>
 template <typename Func, typename... Args>
-void BTree<Traits>::ForEach(Func lpfn, Args&&... args)
+void BTree<Traits>::ForEach(Func func, Args&&... args)
 {
-       std::lock_guard<std::mutex> lock(m_Mutex);
-       m_Root.ForEach(lpfn, 0, std::forward<Args>(args)...);
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    ::ForEach(begin(), end(), func, std::forward<Args>(args)...);
 }
 
 template <typename Traits>

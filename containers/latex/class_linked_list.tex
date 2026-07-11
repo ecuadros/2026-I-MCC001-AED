@@ -1,0 +1,76 @@
+\doxysection{Linked\+List\texorpdfstring{$<$}{<} Traits \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_linked_list}{}\label{class_linked_list}\index{LinkedList$<$ Traits $>$@{LinkedList$<$ Traits $>$}}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_linked_list_a1927e416815be40467c51b13c5391fc0}\label{class_linked_list_a1927e416815be40467c51b13c5391fc0} 
+using {\bfseries value\+\_\+type} = typename Traits::\+value\+\_\+type
+\item 
+\Hypertarget{class_linked_list_a19547765fb4afa7ffdf4dd3f28f74606}\label{class_linked_list_a19547765fb4afa7ffdf4dd3f28f74606} 
+using {\bfseries Node} = typename Traits::\+\+Node
+\item 
+\Hypertarget{class_linked_list_a85ad6746de9d30d296b73ef9bdfc5d59}\label{class_linked_list_a85ad6746de9d30d296b73ef9bdfc5d59} 
+using {\bfseries Comp} = typename Traits::\+\+Comp
+\item 
+\Hypertarget{class_linked_list_aa135183688fb37aa7e2ceb9253903f15}\label{class_linked_list_aa135183688fb37aa7e2ceb9253903f15} 
+using {\bfseries My\+Self} = \doxymbox{\hyperlink{class_linked_list}{Linked\+List}}$<$Traits$>$
+\item 
+\Hypertarget{class_linked_list_a0aef730d863aef23adbbf674c9c9ad3c}\label{class_linked_list_a0aef730d863aef23adbbf674c9c9ad3c} 
+using {\bfseries forward\+\_\+iterator} = \doxymbox{\hyperlink{class_linked_list_forward_iterator}{Linked\+List\+Forward\+Iterator}}$<$My\+Self$>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_linked_list_afb39e70434fd85e4ac599f171541bc3f}\label{class_linked_list_afb39e70434fd85e4ac599f171541bc3f} 
+{\bfseries Linked\+List} (const \doxymbox{\hyperlink{class_linked_list}{Linked\+List}} \&other)
+\item 
+\Hypertarget{class_linked_list_a89a60ff24866405ed23f61f9a2555c84}\label{class_linked_list_a89a60ff24866405ed23f61f9a2555c84} 
+{\bfseries Linked\+List} (\doxymbox{\hyperlink{class_linked_list}{Linked\+List}} \&\&other)
+\item 
+\Hypertarget{class_linked_list_adfab6f8d853fd5c7c421c40b93dd2840}\label{class_linked_list_adfab6f8d853fd5c7c421c40b93dd2840} 
+\doxymbox{\hyperlink{class_linked_list}{Linked\+List}} \& {\bfseries operator=} (const \doxymbox{\hyperlink{class_linked_list}{Linked\+List}} \&other)
+\item 
+\Hypertarget{class_linked_list_a3ae67075f8e7d82626fc678daa84167d}\label{class_linked_list_a3ae67075f8e7d82626fc678daa84167d} 
+\doxymbox{\hyperlink{class_linked_list}{Linked\+List}} \& {\bfseries operator=} (\doxymbox{\hyperlink{class_linked_list}{Linked\+List}} \&\&other)
+\item 
+\Hypertarget{class_linked_list_a3ba3fa353177f21a4edfa5e22fbe668f}\label{class_linked_list_a3ba3fa353177f21a4edfa5e22fbe668f} 
+virtual void {\bfseries push\+\_\+front} (value\+\_\+type value, Ref ref)
+\item 
+\Hypertarget{class_linked_list_a26a445d04f25332f7698ae598b0894fe}\label{class_linked_list_a26a445d04f25332f7698ae598b0894fe} 
+virtual auto {\bfseries pop\+\_\+front} () -\/$>$ pair$<$ value\+\_\+type, Ref $>$
+\item 
+\Hypertarget{class_linked_list_ad287f88c0760f23420ff11d434114dd8}\label{class_linked_list_ad287f88c0760f23420ff11d434114dd8} 
+virtual void {\bfseries push\+\_\+back} (value\+\_\+type value, Ref ref)
+\item 
+\Hypertarget{class_linked_list_a42d002ce2ce1cc25c51d0dc2071f8526}\label{class_linked_list_a42d002ce2ce1cc25c51d0dc2071f8526} 
+virtual auto {\bfseries pop\+\_\+back} () -\/$>$ pair$<$ value\+\_\+type, Ref $>$
+\item 
+\Hypertarget{class_linked_list_a217e7bee50c2e78abb08cf77287541e7}\label{class_linked_list_a217e7bee50c2e78abb08cf77287541e7} 
+virtual void {\bfseries insert} (const value\+\_\+type \&value, Ref ref)
+\item 
+\Hypertarget{class_linked_list_aea40b492d5f0c9e38eb42de042a39f83}\label{class_linked_list_aea40b492d5f0c9e38eb42de042a39f83} 
+virtual Node \& {\bfseries operator\+[$\,$]\+} (const size\+\_\+t index) const
+\item 
+\Hypertarget{class_linked_list_a88ef67d2e10636c1b379b2d90cc269fa}\label{class_linked_list_a88ef67d2e10636c1b379b2d90cc269fa} 
+virtual size\+\_\+t {\bfseries size} () const
+\item 
+\Hypertarget{class_linked_list_ae192f9a9d0dd164045fa71b5cc4a5705}\label{class_linked_list_ae192f9a9d0dd164045fa71b5cc4a5705} 
+virtual string {\bfseries to\+String} ()
+\item 
+\Hypertarget{class_linked_list_adbf3de5e5bfb6061dc23d9b570b589ed}\label{class_linked_list_adbf3de5e5bfb6061dc23d9b570b589ed} 
+forward\+\_\+iterator {\bfseries begin} ()
+\item 
+\Hypertarget{class_linked_list_ad4ddd651f065e99c9542f4c26c32809e}\label{class_linked_list_ad4ddd651f065e99c9542f4c26c32809e} 
+forward\+\_\+iterator {\bfseries end} ()
+\item 
+\Hypertarget{class_linked_list_ae0630746faf23f8dc4c270786be1bc52}\label{class_linked_list_ae0630746faf23f8dc4c270786be1bc52} 
+{\footnotesize template$<$typename Func, typename... Args$>$ }\\void {\bfseries For\+Each} (Func func, Args \&\&... args)
+\item 
+\Hypertarget{class_linked_list_a9742ea7d3bd70e0bfc0e3ce99d3194cb}\label{class_linked_list_a9742ea7d3bd70e0bfc0e3ce99d3194cb} 
+{\footnotesize template$<$typename Func, typename... Args$>$ }\\forward\+\_\+iterator {\bfseries First\+That} (Func func, Args \&\&... args)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+linkedlist.\+h\end{DoxyCompactItemize}

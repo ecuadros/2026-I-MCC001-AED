@@ -1,0 +1,133 @@
+\doxysection{doublelinkedlist.\+h}
+\hypertarget{doublelinkedlist_8h_source}{}\label{doublelinkedlist_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#include\ "{}linkedlist.h"{}}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00004\ \textcolor{keyword}{class\ }DLLNode\ :\ \ \textcolor{keyword}{public}\ LLNode<T>\{}
+\DoxyCodeLine{00005\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00006\ \ \ \ \ \textcolor{keyword}{using\ }value\_type\ =\ T;}
+\DoxyCodeLine{00007\ \ \ \ \ \textcolor{keyword}{using\ }Node\ \ \ \ \ \ \ =\ DLLNode<T>;}
+\DoxyCodeLine{00008\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00009\ \ \ \ \ Node\ *m\_pPrev;}
+\DoxyCodeLine{00010\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00011\ \ \ \ \ DLLNode(T\ data,\ Ref\ ref,\ Node\ *pNext\ =\ \textcolor{keyword}{nullptr},\ Node\ *pPrev\ =\ \textcolor{keyword}{nullptr})}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ :\ LLNode(data,\ ref,\ pNext),\ m\_pPrev(pPrev)\{\}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \ \ \ \ Node*\ \ getPrev()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pPrev;\ \}}
+\DoxyCodeLine{00015\ \ \ \ \ Node*\&\ getPrevRef()\ \{\ \textcolor{keywordflow}{return}\ m\_pPrev;\ \}}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ setPrev(Node*\ pPrev)\ \{\ m\_pPrev\ =\ pPrev;\ \}}
+\DoxyCodeLine{00017\ \};}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00020\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_base_double_linked_list_trait}{BaseDoubleLinkedListTrait}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_container_trait}{BaseContainerTrait}}<T,\ DLLNode<T>>\{}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00022\ \};}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00025\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_ascending_double_linked_list_trait}{AscendingDoubleLinkedListTrait}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_double_linked_list_trait}{BaseDoubleLinkedListTrait}}<T>\{}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{using\ }Comp\ =\ less<T>;}
+\DoxyCodeLine{00027\ \};}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00030\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_descending_double_linked_list_trait}{DescendingDoubleLinkedListTrait}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_double_linked_list_trait}{BaseDoubleLinkedListTrait}}<T>\{}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{using\ }Comp\ =\ greater<T>;}
+\DoxyCodeLine{00032\ \};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{comment}{//\ Reutiizar\ el\ LinkedListForwardIterator\ de\ la\ linked\ list}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ Backward\ iterator}}
+\DoxyCodeLine{00037\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00038\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_double_linked_list_backward_iterator}{DoubleLinkedListBackwardIterator}}\ :\ \textcolor{keyword}{public}\ general\_iterator<Container,\ }
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ DoubleLinkedListBackwardIterator<Container>>\{}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ =\ \doxymbox{\hyperlink{class_double_linked_list_backward_iterator}{DoubleLinkedListBackwardIterator<Container>}};}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{using\ }Parent\ =\ general\_iterator<Container,\ MySelf>;}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{using\ }Parent::Parent;}
+\DoxyCodeLine{00043\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00044\ \ \ \ \ MySelf\&\ operator++()\{}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ this-\/>m\_pNode\ =\ this-\/>m\_pNode-\/>getPrev();}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00047\ \ \ \ \ \}}
+\DoxyCodeLine{00048\ \};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00051\ \textcolor{keyword}{class\ }DoubleLinkedList\ public\ LinkedList<Traits>\{}
+\DoxyCodeLine{00052\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \textcolor{keyword}{typename}\ Traits::value\_type;}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keyword}{using\ }Node\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ Traits::Node;}
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keyword}{using\ }Comp\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ Traits::Comp;}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ \ \ \ \ =\ DoubleLinkedList<Traits>;}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keyword}{using\ }forward\_iterator\ \ =\ \doxymbox{\hyperlink{class_linked_list_forward_iterator}{LinkedListForwardIterator<MySelf>}};}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keyword}{using\ }backward\_iterator\ =\ \doxymbox{\hyperlink{class_double_linked_list_backward_iterator}{DoubleLinkedListBackwardIterator<MySelf>}};}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00062\ \ \ \ \ Node\ *m\_pHead;}
+\DoxyCodeLine{00063\ \ \ \ \ Node\ *m\_pTail;}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_size;}
+\DoxyCodeLine{00065\ \ \ \ \ mutex\ \ m\_mtx;}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00068\ \ \ \ \ DoubleLinkedList()\ :\ m\_pHead(\textcolor{keyword}{nullptr}),\ m\_pTail(\textcolor{keyword}{nullptr}),\ m\_size(0)\ \{\}}
+\DoxyCodeLine{00069\ \ \ \ \ DoubleLinkedList(DoubleLinkedList\ \&other)\{\}}
+\DoxyCodeLine{00070\ \ \ \ \ DoubleLinkedList(DoubleLinkedList\ \&\&other)\{}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ m\_pHead\ =\ exchange(other.m\_pHead,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ m\_pTail\ =\ exchange(other.m\_pTail,\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ m\_size\ =\ exchange(other.m\_size,\ 0);}
+\DoxyCodeLine{00075\ \ \ \ \ \}}
+\DoxyCodeLine{00076\ \ \ \ \ \string~DoubleLinkedList()\ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (m\_pHead\ !=\ \textcolor{keyword}{nullptr})\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ \ \ Node\ *pTemp\ =\ m\_pHead;}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \ \ \ \ m\_pHead\ =\ m\_pHead-\/>getNextRef();}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ pTemp;}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ m\_pHead\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ m\_pTail\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ m\_size\ =\ 0;}
+\DoxyCodeLine{00086\ \ \ \ \ \}}
+\DoxyCodeLine{00087\ \ \ \ \ }
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size\ ()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_size;\ \}}
+\DoxyCodeLine{00089\ \ \ \ \ \textcolor{keywordtype}{bool}\ isEmpty()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pHead\ ==\ \textcolor{keyword}{nullptr};\ \}}
+\DoxyCodeLine{00090\ \ \ \ \ }
+\DoxyCodeLine{00091\ \ \ \ \ voidd\ insert(value\_type\ value,\ Ref\ ref)\{}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ insertar\ la\ el\ nodo\ hacia\ adelante\ (como\ en\ la\ LinkedList)}}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ adicionalmente\ conectar\ el\ nodo\ anterior\ con\ su\ nuevo\ siguiente}}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ usar\ internal\ insert\ pero\ debe\ devolver\ el\ nuevo\ nodo\ creado\ y\ }}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ el\ puntero\ al\ lnodo\ anterior}}
+\DoxyCodeLine{00096\ \ \ \ \ \}}
+\DoxyCodeLine{00097\ \ \ \ \ \textcolor{keywordtype}{void}\ push\_back(value\_type\ value,\ Ref\ ref);}
+\DoxyCodeLine{00098\ \ \ \ \ value\_type\ pop\_back();}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ forward\_iterator\ begin()\ \ \ \{\ \textcolor{keywordflow}{return}\ forward\_iterator(\textcolor{keyword}{this},\ m\_pHead);\ \}}
+\DoxyCodeLine{00101\ \ \ \ \ forward\_iterator\ end()\ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ forward\_iterator(\textcolor{keyword}{this},\ \textcolor{keyword}{nullptr});\ \}}
+\DoxyCodeLine{00102\ \ \ \ \ backward\_iterator\ rbegin()\ \{\ \textcolor{keywordflow}{return}\ backward\_iterator(\textcolor{keyword}{this},\ m\_pTail);\ \}}
+\DoxyCodeLine{00103\ \ \ \ \ backward\_iterator\ rend()\ \ \ \{\ \textcolor{keywordflow}{return}\ backward\_iterator(\textcolor{keyword}{this},\ \textcolor{keyword}{nullptr});\ \}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keywordtype}{void}\ ForEach(Func\ func,\ Args\ \&\&...\ args)\{}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ ::ForEach(begin(),\ end(),\ func,\ forward<Args>(args)...);}
+\DoxyCodeLine{00109\ \ \ \ \ \}}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{keywordtype}{void}\ ReverseForEach(Func\ func,\ Args\ \&\&...\ args)\{}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \ \ ::ForEach(rbegin(),\ rend(),\ func,\ forward<Args>(args)...);}
+\DoxyCodeLine{00115\ \ \ \ \ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00118\ \ \ \ \ forward\_iterator\ FirstThat(Func\ func,\ Args\ \&\&...\ args)\{}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ return\ ::FirstThat(begin(),\ end(),\ func,\ forward<Args>(args)...);}
+\DoxyCodeLine{00121\ \ \ \ \ \}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00124\ \ \ \ \ backward\_iterator\ ReverseFirstThat(Func\ func,\ Args\ \&\&...\ args)\{}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ return\ ::FirstThat(rbegin(),\ rend(),\ func,\ forward<Args>(args)...);}
+\DoxyCodeLine{00127\ \ \ \ \ \}}
+\DoxyCodeLine{00128\ \};}
+
+\end{DoxyCode}

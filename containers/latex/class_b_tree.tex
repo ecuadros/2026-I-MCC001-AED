@@ -1,0 +1,106 @@
+\doxysection{BTree\texorpdfstring{$<$}{<} Traits \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_b_tree}{}\label{class_b_tree}\index{BTree$<$ Traits $>$@{BTree$<$ Traits $>$}}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_b_tree_ab4c6e64872ede399bb56c69287b82b1c}\label{class_b_tree_ab4c6e64872ede399bb56c69287b82b1c} 
+using {\bfseries key\+Type} = typename Traits::\+key\+\_\+type
+\item 
+\Hypertarget{class_b_tree_ac0eee4e19a3ab62831786a4f43b38e48}\label{class_b_tree_ac0eee4e19a3ab62831786a4f43b38e48} 
+using {\bfseries Obj\+IDType} = typename Traits::\+\+Obj\+IDType
+\item 
+\Hypertarget{class_b_tree_a678d09559e9ccad20ffd8df86c8a146b}\label{class_b_tree_a678d09559e9ccad20ffd8df86c8a146b} 
+typedef \doxymbox{\hyperlink{class_c_b_tree_page}{CBTree\+Page}}$<$ key\+Type, Traits $>$ {\bfseries BNode}
+\item 
+\Hypertarget{class_b_tree_a90300bd90b442d097bc8c9068296448c}\label{class_b_tree_a90300bd90b442d097bc8c9068296448c} 
+typedef BNode::\+\+Node {\bfseries Node}
+\item 
+\Hypertarget{class_b_tree_a81f9ab7f664bc119b6b66a7938c05d4f}\label{class_b_tree_a81f9ab7f664bc119b6b66a7938c05d4f} 
+using {\bfseries My\+Self} = \doxymbox{\hyperlink{class_b_tree}{BTree}}$<$Traits$>$
+\item 
+\Hypertarget{class_b_tree_ad7453755e60047c21c93e8b153aa19c5}\label{class_b_tree_ad7453755e60047c21c93e8b153aa19c5} 
+using {\bfseries forward\+\_\+iterator} = \doxymbox{\hyperlink{class_b_tree_forward_iterator}{BTree\+Forward\+Iterator}}$<$My\+Self$>$
+\item 
+\Hypertarget{class_b_tree_abe297d763960b28143ec4820492c9afb}\label{class_b_tree_abe297d763960b28143ec4820492c9afb} 
+using {\bfseries backward\+\_\+iterator} = \doxymbox{\hyperlink{class_b_tree_backward_iterator}{BTree\+Backward\+Iterator}}$<$My\+Self$>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_b_tree_a61adbdf49390330b25ca4e2011da2258}\label{class_b_tree_a61adbdf49390330b25ca4e2011da2258} 
+{\bfseries BTree} (LSI order=DEFAULT\+\_\+\+BTREE\+\_\+\+ORDER, LSB unique=true)
+\item 
+\Hypertarget{class_b_tree_ac4b2885dfd8a69817a59f90d3baf65c5}\label{class_b_tree_ac4b2885dfd8a69817a59f90d3baf65c5} 
+LSB {\bfseries Insert} (const key\+Type key, const Obj\+IDType Obj\+ID)
+\item 
+\Hypertarget{class_b_tree_a699815af8be10cfbcc897715f1347531}\label{class_b_tree_a699815af8be10cfbcc897715f1347531} 
+LSB {\bfseries Remove} (const key\+Type key, const Obj\+IDType Obj\+ID)
+\item 
+\Hypertarget{class_b_tree_aa297c79c8d3707684cbe03b2e37bb04c}\label{class_b_tree_aa297c79c8d3707684cbe03b2e37bb04c} 
+Obj\+IDType {\bfseries Search} (const key\+Type key)
+\item 
+\Hypertarget{class_b_tree_a339b844c05d0d78caf7f0ee4899e930b}\label{class_b_tree_a339b844c05d0d78caf7f0ee4899e930b} 
+LSL {\bfseries size} ()
+\item 
+\Hypertarget{class_b_tree_a1187020ff6adde5ed5d9c6703a8dad06}\label{class_b_tree_a1187020ff6adde5ed5d9c6703a8dad06} 
+LSL {\bfseries height} ()
+\item 
+\Hypertarget{class_b_tree_a949ff649665d85e1a97cfec76236018b}\label{class_b_tree_a949ff649665d85e1a97cfec76236018b} 
+LSL {\bfseries Get\+Order} ()
+\item 
+\Hypertarget{class_b_tree_ae42bf72c61387fbe14204b875119ebeb}\label{class_b_tree_ae42bf72c61387fbe14204b875119ebeb} 
+void {\bfseries Print} (ostream \&os)
+\item 
+\Hypertarget{class_b_tree_a5199492b7dc40d10570d8f23c9d178be}\label{class_b_tree_a5199492b7dc40d10570d8f23c9d178be} 
+{\footnotesize template$<$typename Func, typename... Args$>$ }\\void {\bfseries For\+Each} (Func lpfn, Args \&\&... args)
+\item 
+\Hypertarget{class_b_tree_a30cd570bbc32e18b54ba360ff28d802c}\label{class_b_tree_a30cd570bbc32e18b54ba360ff28d802c} 
+{\footnotesize template$<$typename Func, typename... Args$>$ }\\Node \texorpdfstring{$\ast$}{*} {\bfseries First\+That} (Func lpfn, Args \&\&... args)
+\item 
+\Hypertarget{class_b_tree_adbe98d8fe800dd269148250bebdd727e}\label{class_b_tree_adbe98d8fe800dd269148250bebdd727e} 
+forward\+\_\+iterator {\bfseries begin} ()
+\item 
+\Hypertarget{class_b_tree_acfc61c92b31ea15971eee0ef1f10ebfa}\label{class_b_tree_acfc61c92b31ea15971eee0ef1f10ebfa} 
+forward\+\_\+iterator {\bfseries end} ()
+\item 
+\Hypertarget{class_b_tree_ac2c428f4d796b721d8d02876e63168c1}\label{class_b_tree_ac2c428f4d796b721d8d02876e63168c1} 
+backward\+\_\+iterator {\bfseries rbegin} ()
+\item 
+\Hypertarget{class_b_tree_a5c9eaf53a2b54697af94770f7dc11b17}\label{class_b_tree_a5c9eaf53a2b54697af94770f7dc11b17} 
+backward\+\_\+iterator {\bfseries rend} ()
+\item 
+\Hypertarget{class_b_tree_ad8f6d442c15593272d4bd30d1ec4ecd7}\label{class_b_tree_ad8f6d442c15593272d4bd30d1ec4ecd7} 
+Node \texorpdfstring{$\ast$}{*} {\bfseries Next} (Node \texorpdfstring{$\ast$}{*}p\+Node)
+\item 
+\Hypertarget{class_b_tree_a703e3422559387af3493203147ebef01}\label{class_b_tree_a703e3422559387af3493203147ebef01} 
+Node \texorpdfstring{$\ast$}{*} {\bfseries Prev} (Node \texorpdfstring{$\ast$}{*}p\+Node)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_b_tree_a8648693e3f1f1d091c5a9acd4ae99163}\label{class_b_tree_a8648693e3f1f1d091c5a9acd4ae99163} 
+std::\+mutex {\bfseries m\+\_\+\+Mutex}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_b_tree_ab7203cf78dcb10e9ee04e36bfa21a8ce}\label{class_b_tree_ab7203cf78dcb10e9ee04e36bfa21a8ce} 
+BNode {\bfseries m\+\_\+\+Root}
+\item 
+\Hypertarget{class_b_tree_aa14d9f2337897d8d8654cf5bbb7291be}\label{class_b_tree_aa14d9f2337897d8d8654cf5bbb7291be} 
+LSI {\bfseries m\+\_\+\+Height}
+\item 
+\Hypertarget{class_b_tree_aedec3a5c89c3e680f340b0d04a0b72b7}\label{class_b_tree_aedec3a5c89c3e680f340b0d04a0b72b7} 
+LSI {\bfseries m\+\_\+\+Order}
+\item 
+\Hypertarget{class_b_tree_a4d91031072a1a072f17f9d6c5b884d34}\label{class_b_tree_a4d91031072a1a072f17f9d6c5b884d34} 
+LSL {\bfseries m\+\_\+\+Num\+Keys}
+\item 
+\Hypertarget{class_b_tree_a3c0f40cd9d4ed30a91c03c03d23d0189}\label{class_b_tree_a3c0f40cd9d4ed30a91c03c03d23d0189} 
+LSB {\bfseries m\+\_\+\+Unique}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file:\+\begin{DoxyCompactItemize}
+\item 
+BTree.\+h\end{DoxyCompactItemize}

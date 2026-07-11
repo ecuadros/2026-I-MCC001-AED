@@ -1,0 +1,116 @@
+\doxysection{heap.\+h}
+\hypertarget{heap_8h_source}{}\label{heap_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ \_\_HEAP\_H\_\_}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ \_\_HEAP\_H\_\_}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}vector.h"{}}}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00008\ \textcolor{keyword}{class\ }HeapNode\{}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00010\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ Traits::value\_type\ m\_data;}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ Ref\ m\_ref;}
+\DoxyCodeLine{00012\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ HeapNode(\textcolor{keyword}{typename}\ Traits::value\_type\ data,\ Ref\ ref)\ :\ m\_data(data),\ m\_ref(ref)\ \{\}}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \textcolor{keyword}{typename}\ Traits::value\_type\ GetData()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_data;\ \}}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ Ref\ GetRef()\textcolor{keyword}{\ \ const\ }\{\ \textcolor{keywordflow}{return}\ m\_ref;\ \ \}}
+\DoxyCodeLine{00017\ \};}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00020\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_ascending_heap_trait}{AscendingHeapTrait}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_container_trait}{BaseContainerTrait}}<T,\ HeapNode<T>\ >,}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_ascending_trait}{AscendingTrait}}<T>}
+\DoxyCodeLine{00022\ \{}
+\DoxyCodeLine{00023\ \};}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00026\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_descending_heap_trait}{DescendingHeapTrait}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_container_trait}{BaseContainerTrait}}<T,\ HeapNode<T>\ >,}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_descending_trait}{DescendingTrait}}<T>}
+\DoxyCodeLine{00028\ \{}
+\DoxyCodeLine{00029\ \};}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{comment}{//\ Revisar:\ https://www.cs.usfca.edu/\string~galles/visualization/Heap.html}}
+\DoxyCodeLine{00032\ \textcolor{comment}{//\ Pero\ en\ este\ ejercicio\ empezamos\ el\ la\ posicion\ [0]}}
+\DoxyCodeLine{00033\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00034\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_heap}{Heap}}\ \{}
+\DoxyCodeLine{00035\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \textcolor{keyword}{typename}\ Traits::value\_type;}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keyword}{using\ }Node\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ Traits::Node;}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keyword}{using\ }Comp\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ Traits::Comp;}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ \ \ \ \ =\ \doxymbox{\hyperlink{class_heap}{Heap<Traits>}};}
+\DoxyCodeLine{00040\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00041\ \ \ \ \ vector<Node>\ m\_heap;}
+\DoxyCodeLine{00042\ \ \ \ \ Comp\ \ \ \ \ \ \ \ \ m\_comp;}
+\DoxyCodeLine{00043\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00044\ }
+\DoxyCodeLine{00045\ \ \ \ \ \textcolor{keywordtype}{void}\ insert(\textcolor{keyword}{const}\ value\_type\ \&value,\ Ref\ ref)\ \{}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ m\_heap.push\_back(\ Node(value,\ ref)\ );}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ heapify\_up(m\_heap.size()\ -\/\ 1);}
+\DoxyCodeLine{00048\ \ \ \ \ \}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{//\ Revisar\ completamente}}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordtype}{void}\ extract()\ \{}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_heap.empty())\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::out\_of\_range(\textcolor{stringliteral}{"{}Heap\ is\ empty"{}});}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_heap.size()\ ==\ 1)\ \{}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ m\_heap.pop\_back();}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ m\_heap[0]\ =\ m\_heap.back();}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ m\_heap.pop\_back();}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ heapify\_down(0);}
+\DoxyCodeLine{00062\ \ \ \ \ \}}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ T\ peek\_min()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_heap.empty())\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ std::out\_of\_range(\textcolor{stringliteral}{"{}Heap\ is\ empty"{}});}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_heap[0];}
+\DoxyCodeLine{00069\ \ \ \ \ \}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordtype}{bool}\ empty()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_heap.empty();}
+\DoxyCodeLine{00073\ \ \ \ \ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size()\textcolor{keyword}{\ const\ }\{}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_heap.size();}
+\DoxyCodeLine{00077\ \ \ \ \ \}}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{keywordtype}{void}\ heapify\_up(\textcolor{keywordtype}{size\_t}\ index)\ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}\ (index\ >\ 0)\ \{}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ parent\ =\ (index\ -\/\ 1)\ /\ 2;}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (\ m\_comp(m\_heap[index],\ m\_heap[parent])\ )\ \{}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::swap(m\_heap[index],\ m\_heap[parent]);}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ index\ =\ parent;}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{break};}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00090\ \ \ \ \ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \textcolor{keywordtype}{void}\ heapify\_down(\textcolor{keywordtype}{size\_t}\ index)\ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ left\ =\ 2\ *\ index\ +\ 1;}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ right\ =\ 2\ *\ index\ +\ 2;}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ smallest\ =\ index;}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (left\ <\ m\_heap.size()\ \&\&\ m\_comp(m\_heap[left],\ m\_heap[smallest])\ )\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \ \ \ \ smallest\ =\ left;}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (right\ <\ m\_heap.size()\ \&\&\ m\_comp(m\_heap[right],\ m\_heap[smallest])\ )\ \{}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ smallest\ =\ right;}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (smallest\ !=\ index)\ \{}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \ \ \ \ std::swap(m\_heap[index],\ m\_heap[smallest]);}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \ \ \ \ \ heapify\_down(smallest);}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00108\ \ \ \ \ \}}
+\DoxyCodeLine{00109\ \};}
+\DoxyCodeLine{00110\ }
+\DoxyCodeLine{00111\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ \_\_HEAP\_H\_\_}}
+
+\end{DoxyCode}

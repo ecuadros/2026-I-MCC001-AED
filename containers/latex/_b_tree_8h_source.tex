@@ -1,0 +1,231 @@
+\doxysection{BTree.\+h}
+\hypertarget{_b_tree_8h_source}{}\label{_b_tree_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ btree.h}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#ifndef\ BTREE\_H}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#define\ BTREE\_H}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}BTreePage.h"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}general\_iterator.h"{}}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#define\ DEFAULT\_BTREE\_ORDER\ 3}}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00015\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_b_tree_forward_iterator}{BTreeForwardIterator}};}
+\DoxyCodeLine{00016\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00017\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_b_tree_backward_iterator}{BTreeBackwardIterator}};}
+\DoxyCodeLine{00018\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00020\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_b_tree_forward_iterator}{BTreeForwardIterator}}\ :\ \textcolor{keyword}{public}\ general\_iterator<Container,\ BTreeForwardIterator<Container>>}
+\DoxyCodeLine{00021\ \{}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ =\ \doxymbox{\hyperlink{class_b_tree_forward_iterator}{BTreeForwardIterator<Container>}};}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Parent\ =\ general\_iterator<Container,\ MySelf>;}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00025\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Node\ =\ \textcolor{keyword}{typename}\ Container::Node;}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Parent::Parent;}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ MySelf\&\ operator++()}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ this-\/>m\_pNode\ )\ \{this-\/>m\_pNode\ =\ this-\/>m\_pContainer-\/>Next(this-\/>m\_pNode);\}}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00033\ \};}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00036\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_b_tree_backward_iterator}{BTreeBackwardIterator}}\ :\ \textcolor{keyword}{public}\ general\_iterator<Container,\ BTreeBackwardIterator<Container>>}
+\DoxyCodeLine{00037\ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ =\ \doxymbox{\hyperlink{class_b_tree_backward_iterator}{BTreeBackwardIterator<Container>}};}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Parent\ =\ general\_iterator<Container,\ MySelf>;}
+\DoxyCodeLine{00040\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Node\ =\ \textcolor{keyword}{typename}\ Container::Node;}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Parent::Parent;}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ MySelf\&\ operator++()}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ this-\/>m\_pNode\ )\ \{this-\/>m\_pNode\ =\ this-\/>m\_pContainer-\/>Prev(this-\/>m\_pNode);\}}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00048\ \};}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00051\ \textcolor{keyword}{class\ }BTree}
+\DoxyCodeLine{00052\ \textcolor{comment}{//\ this\ is\ the\ full\ version\ of\ the\ BTree}}
+\DoxyCodeLine{00053\ \{}
+\DoxyCodeLine{00054\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }keyType\ \ \ \ \ =\ \textcolor{keyword}{typename}\ Traits::key\_type;}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }ObjIDType\ =\ \textcolor{keyword}{typename}\ Traits::ObjIDType;}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{class_c_b_tree_page}{CBTreePage<keyType,\ Traits>}}\ BNode;\textcolor{comment}{//\ useful\ shorthand}}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \textcolor{comment}{/*struct\ Node}}
+\DoxyCodeLine{00059\ \textcolor{comment}{\ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00060\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ keyType\ first;}}
+\DoxyCodeLine{00061\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ long\ \ \ \ second;}}
+\DoxyCodeLine{00062\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ *\&operator-\/>()\ \{\ return\ this;\ \}}}
+\DoxyCodeLine{00063\ \textcolor{comment}{\ \ \ \ \ \ \ \};*/}}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \textcolor{comment}{//typedef\ Node\ iterator;}}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \textcolor{keyword}{typename}\ BNode::Node\ \ \ \ \ \ Node;}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ =\ BTree<Traits>;}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }forward\_iterator\ \ =\ \doxymbox{\hyperlink{class_b_tree_forward_iterator}{BTreeForwardIterator<MySelf>}};}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }backward\_iterator\ =\ \doxymbox{\hyperlink{class_b_tree_backward_iterator}{BTreeBackwardIterator<MySelf>}};}
+\DoxyCodeLine{00069\ }
+\DoxyCodeLine{00070\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ BTree(LSI\ order\ =\ DEFAULT\_BTREE\_ORDER,\ LSB\ unique\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \string~BTree();}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \textcolor{comment}{//int\ \ \ \ \ \ \ \ \ \ \ Open\ (char\ *\ name,\ int\ mode);}}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \textcolor{comment}{//int\ \ \ \ \ \ \ \ \ \ \ Create\ (char\ *\ name,\ int\ mode);}}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \textcolor{comment}{//int\ \ \ \ \ \ \ \ \ \ \ Close\ ();}}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ LSB\ \ \ \ \ \ \ \ \ \ \ \ \ Insert\ (\textcolor{keyword}{const}\ keyType\ key,\ \textcolor{keyword}{const}\ ObjIDType\ ObjID);}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ LSB\ \ \ \ \ \ \ \ \ \ \ \ \ Remove\ (\textcolor{keyword}{const}\ keyType\ key,\ \textcolor{keyword}{const}\ ObjIDType\ ObjID);}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ ObjIDType\ \ \ \ \ \ \ Search\ (\textcolor{keyword}{const}\ keyType\ key);}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ LSL\ \ \ \ \ \ \ \ \ \ \ \ \ size()\ \ \{\ \textcolor{keywordflow}{return}\ m\_NumKeys;\ \}}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ LSL\ \ \ \ \ \ \ \ \ \ \ \ \ height()\ \{\ \textcolor{keywordflow}{return}\ m\_Height;\ \ \ \ \ \ \}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ LSL\ \ \ \ \ \ \ \ \ \ \ \ \ GetOrder()\ \{\ \textcolor{keywordflow}{return}\ m\_Order;\ \ \ \ \ \}}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \textcolor{keyword}{mutable}\ std::mutex\ m\_Mutex;}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ Print\ (ostream\ \&os);}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ ForEach(Func\ lpfn,\ Args\&\&...\ args);}
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ Node*\ FirstThat(Func\ lpfn,\ Args\&\&...\ args);}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ forward\_iterator\ begin();}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ forward\_iterator\ end();}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ \ backward\_iterator\ rbegin();}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ backward\_iterator\ rend();}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ Node*\ \ \ \ \ \ \ \ \ \ \ Next(Node\ *pNode);}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ Node*\ \ \ \ \ \ \ \ \ \ \ Prev(Node\ *pNode);}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \textcolor{comment}{//typedef\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ iterator;}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ BNode\ \ \ \ \ \ \ \ \ \ m\_Root;}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ LSI\ \ \ \ \ \ \ \ \ \ \ \ \ m\_Height;\ \ \textcolor{comment}{//\ height\ of\ tree}}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ LSI\ \ \ \ \ \ \ \ \ \ \ \ \ m\_Order;\ \ \ \textcolor{comment}{//\ order\ of\ tree}}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ LSL\ \ \ \ \ \ \ \ \ \ \ \ \ m\_NumKeys;\ \textcolor{comment}{//\ number\ of\ keys}}
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ LSB\ \ \ \ \ \ \ \ \ \ \ \ \ m\_Unique;\ \ \textcolor{comment}{//\ Accept\ the\ elements\ only\ once\ ?}}
+\DoxyCodeLine{00103\ \};}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \textcolor{keyword}{const}\ LSI\ MaxHeight\ =\ 5;}
+\DoxyCodeLine{00106\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00107\ BTree<Traits>::BTree(LSI\ order,\ LSB\ unique)\ :\ m\_Root(2\ *\ order\ +\ 1,\ unique),\ m\_Height(1),\ m\_Order(order),\ m\_NumKeys(0),\ m\_Unique(unique)}
+\DoxyCodeLine{00108\ \{}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ m\_Root.SetMaxKeysForChilds(order);}
+\DoxyCodeLine{00110\ \}}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00113\ BTree<Traits>::\string~BTree()}
+\DoxyCodeLine{00114\ \{}
+\DoxyCodeLine{00115\ \}}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00117\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00118\ LSB\ BTree<Traits>::Insert(\textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ BTree<Traits>::keyType\ key,\ \textcolor{keyword}{const}\ \textcolor{keyword}{typename}\ BTree<Traits>::ObjIDType\ ObjID)}
+\DoxyCodeLine{00119\ \{}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(m\_Mutex);}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ bt\_ErrorCode\ error\ =\ m\_Root.Insert(key,\ ObjID);}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ error\ ==\ bt\_duplicate\ )}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ m\_NumKeys++;}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ error\ ==\ bt\_overflow\ )}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_Root.SplitRoot();}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_Height++;}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00131\ \}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00134\ LSB\ BTree<Traits>::Remove(\textcolor{keyword}{const}\ keyType\ key,\ \textcolor{keyword}{const}\ ObjIDType\ ObjID)}
+\DoxyCodeLine{00135\ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(m\_Mutex);}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ bt\_ErrorCode\ error\ =\ m\_Root.Remove(key,\ ObjID);}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ error\ ==\ bt\_duplicate\ ||\ error\ ==\ bt\_nofound\ )}
+\DoxyCodeLine{00139\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ m\_NumKeys-\/-\/;}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ error\ ==\ bt\_rootmerged\ )}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_Height-\/-\/;}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00145\ \}}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00148\ \textcolor{keyword}{typename}\ BTree<Traits>::ObjIDType}
+\DoxyCodeLine{00149\ BTree<Traits>::Search(\textcolor{keyword}{const}\ keyType\ key)}
+\DoxyCodeLine{00150\ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(m\_Mutex);}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ ObjIDType\ ObjID\ =\ -\/1;}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ m\_Root.Search(key,\ ObjID);}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ ObjID;}
+\DoxyCodeLine{00155\ \}}
+\DoxyCodeLine{00156\ }
+\DoxyCodeLine{00157\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Iterator,\ \textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00158\ \textcolor{keywordtype}{void}\ ForEach(Iterator\ begin,\ Iterator\ end,\ Func\ func,\ Args\&\&...\ args)}
+\DoxyCodeLine{00159\ \{}
+\DoxyCodeLine{00160\ \ \ \ \ \textcolor{keywordflow}{for}(\textcolor{keyword}{auto}\ it\ =\ begin;\ it\ !=\ end;\ ++it)\ \{std::invoke(func,\ *it,\ std::forward<Args>(args)...);\}}
+\DoxyCodeLine{00161\ \}}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00163\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00164\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00165\ \textcolor{keywordtype}{void}\ BTree<Traits>::ForEach(Func\ func,\ Args\&\&...\ args)}
+\DoxyCodeLine{00166\ \{}
+\DoxyCodeLine{00167\ \ \ \ \ std::lock\_guard<std::mutex>\ lock(m\_Mutex);}
+\DoxyCodeLine{00168\ \ \ \ \ ::ForEach(begin(),\ end(),\ func,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00169\ \}}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00172\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00173\ \textcolor{keyword}{typename}\ BTree<Traits>::Node*}
+\DoxyCodeLine{00174\ BTree<Traits>::FirstThat(Func\ lpfn,\ Args\&\&...\ args)}
+\DoxyCodeLine{00175\ \{}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(m\_Mutex);}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_Root.FirstThat(lpfn,\ 0,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00178\ \}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00181\ \textcolor{keywordtype}{void}\ BTree<Traits>::Print(std::ostream\ \&os)\{}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(m\_Mutex);}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ m\_Root.Print(os);}
+\DoxyCodeLine{00184\ \}}
+\DoxyCodeLine{00185\ }
+\DoxyCodeLine{00186\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00187\ \textcolor{keyword}{typename}\ BTree<Traits>::forward\_iterator}
+\DoxyCodeLine{00188\ BTree<Traits>::begin()}
+\DoxyCodeLine{00189\ \{}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ forward\_iterator(\textcolor{keyword}{this},\ \&m\_Root.GetFirstNode());}
+\DoxyCodeLine{00191\ \}}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00194\ \textcolor{keyword}{typename}\ BTree<Traits>::forward\_iterator\ BTree<Traits>::end()}
+\DoxyCodeLine{00195\ \{}
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ forward\_iterator(\textcolor{keyword}{this},\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00197\ \}}
+\DoxyCodeLine{00198\ }
+\DoxyCodeLine{00199\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00200\ \textcolor{keyword}{typename}\ BTree<Traits>::backward\_iterator\ BTree<Traits>::rbegin()}
+\DoxyCodeLine{00201\ \{}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ backward\_iterator(\textcolor{keyword}{this},\ \&m\_Root.GetLastNode());}
+\DoxyCodeLine{00203\ \}}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00206\ \textcolor{keyword}{typename}\ BTree<Traits>::backward\_iterator\ BTree<Traits>::rend()}
+\DoxyCodeLine{00207\ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ backward\_iterator(\textcolor{keyword}{this},\ \textcolor{keyword}{nullptr});}
+\DoxyCodeLine{00209\ \}}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00211\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00212\ \textcolor{keyword}{typename}\ BTree<Traits>::Node*\ BTree<Traits>::Next(Node\ *pNode)}
+\DoxyCodeLine{00213\ \{}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(m\_Mutex);}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pNode\ ==\ \textcolor{keyword}{nullptr}\ )\ \{\textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};\}}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_Root.Next(pNode);}
+\DoxyCodeLine{00217\ \}}
+\DoxyCodeLine{00218\ }
+\DoxyCodeLine{00219\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00220\ \textcolor{keyword}{typename}\ BTree<Traits>::Node*\ BTree<Traits>::Prev(Node\ *pNode)}
+\DoxyCodeLine{00221\ \{}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ std::lock\_guard<std::mutex>\ lock(m\_Mutex);}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pNode\ ==\ \textcolor{keyword}{nullptr}\ )\ \{\textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};\}}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_Root.Prev(pNode);}
+\DoxyCodeLine{00225\ \}}
+\DoxyCodeLine{00226\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

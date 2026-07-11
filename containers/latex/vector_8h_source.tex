@@ -1,0 +1,173 @@
+\doxysection{vector.\+h}
+\hypertarget{vector_8h_source}{}\label{vector_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ \_\_VECTOR\_H\_\_}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ \_\_VECTOR\_H\_\_}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <cstddef>}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <sstream>}\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}general\_iterator.h"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}../types.h"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}../foreach.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}basetrait.h"{}}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00013\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvector__forward__iterator}{vector\_forward\_iterator}}\ :\ \textcolor{keyword}{public}\ general\_iterator<Container,\ vector\_forward\_iterator<Container>>\ \{}
+\DoxyCodeLine{00014\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ =\ \doxymbox{\hyperlink{classvector__forward__iterator}{vector\_forward\_iterator<Container>}};}
+\DoxyCodeLine{00016\ \ \ \ \ \textcolor{keyword}{using\ }Parent\ =\ general\_iterator<Container,\ MySelf>;}
+\DoxyCodeLine{00017\ \ \ \ \ \textcolor{keyword}{using\ }Parent::Parent;}
+\DoxyCodeLine{00018\ \ \ \ \ MySelf\ operator++()\ \{\ this-\/>m\_pNode++;\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00019\ \};}
+\DoxyCodeLine{00020\ }
+\DoxyCodeLine{00021\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00022\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classvector__backward__iterator}{vector\_backward\_iterator}}\ :\ \textcolor{keyword}{public}\ general\_iterator<Container,\ vector\_backward\_iterator<Container>>\ \{}
+\DoxyCodeLine{00023\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ =\ \doxymbox{\hyperlink{classvector__backward__iterator}{vector\_backward\_iterator<Container>}};}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keyword}{using\ }Parent\ =\ general\_iterator<Container,\ MySelf>;}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{using\ }Parent::Parent;}
+\DoxyCodeLine{00027\ \ \ \ \ MySelf\ operator++()\ \{\ this-\/>m\_pNode-\/-\/;\ \textcolor{keywordflow}{return}\ *\textcolor{keyword}{this};\ \}}
+\DoxyCodeLine{00028\ \};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00031\ \textcolor{keyword}{struct\ }VectorNode\{}
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \textcolor{keyword}{typename}\ Traits::value\_type;}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ value\_type\ \ \ m\_data;}
+\DoxyCodeLine{00035\ \ \ \ \ Ref\ \ \ \ \ \ \ \ \ \ m\_ref;}
+\DoxyCodeLine{00036\ \ \ \ \ VectorNode()\ :\ m\_data(value\_type()),\ m\_ref(Ref())\ \{\}}
+\DoxyCodeLine{00037\ \ \ \ \ VectorNode(value\_type\ data,\ Ref\ ref)\ :\ m\_data(data),\ m\_ref(ref)\ \{\}}
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keywordtype}{string}\ ToString()\{}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \ ostringstream\ oss;}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \ \ oss\ <<\ \textcolor{stringliteral}{"{}("{}}\ <<\ m\_data\ <<\ \textcolor{stringliteral}{"{},"{}}\ <<\ m\_ref\ <<\ \textcolor{stringliteral}{"{})"{}};}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ oss.str();}
+\DoxyCodeLine{00042\ \ \ \ \ \}}
+\DoxyCodeLine{00043\ \ \ \ \ value\_type\ \ \ GetData()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_data;\ \}}
+\DoxyCodeLine{00044\ \ \ \ \ value\_type\&\ \ GetDataRef()\ \ \ \ \{\ \textcolor{keywordflow}{return}\ m\_data;\ \}}
+\DoxyCodeLine{00045\ \ \ \ \ Ref\ GetRef()\textcolor{keyword}{\ \ const\ }\{\ \textcolor{keywordflow}{return}\ m\_ref;\ \ \}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{void}\ operator++()\ \{\ ++m\_data;\ \}}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{void}\ operator+=(\textcolor{keyword}{const}\ value\_type\&\ value)\ \{\ m\_data\ +=\ value;\ \}}
+\DoxyCodeLine{00048\ \};}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00051\ \textcolor{keyword}{struct\ }\doxymbox{\hyperlink{struct_vector_traits}{VectorTraits}}\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{struct_base_container_trait}{BaseContainerTrait}}<T,\ VectorNode<T>>\{}
+\DoxyCodeLine{00052\ \};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00055\ ostream\&\ operator<<(ostream\&\ os,\ \doxymbox{\hyperlink{struct_vector_node}{VectorNode<Traits>}}\&\ vn)\{}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordflow}{return}\ os\ <<\ vn.ToString();}
+\DoxyCodeLine{00057\ \}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00060\ \textcolor{keyword}{class\ }Vector\{}
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }value\_type\ =\ \textcolor{keyword}{typename}\ Traits::value\_type;}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }Node\ \ \ \ \ \ \ =\ \textcolor{keyword}{typename}\ Traits::Node;}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }MySelf\ \ \ \ \ =\ Vector<Traits>;}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }forward\_iterator\ \ =\ \doxymbox{\hyperlink{classvector__forward__iterator}{vector\_forward\_iterator<MySelf>}};}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }backward\_iterator\ =\ \doxymbox{\hyperlink{classvector__backward__iterator}{vector\_backward\_iterator<MySelf>}};}
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ Node\ *\ m\_data;}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_size;}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ m\_capacity;}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ mutex\ \ m\_mtx;}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ resize();}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ Vector(\textcolor{keywordtype}{size\_t}\ capacity\ =\ 10);}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \string~Vector();}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ push\_back(value\_type\ value,\ Ref\ ref);}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ size();}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{string}\ ToString();}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ forward\_iterator\ \ begin()\ \ \ \{\ \textcolor{keywordflow}{return}\ forward\_iterator(\textcolor{keyword}{this},\ m\_data);\ \}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ forward\_iterator\ \ end()\ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ forward\_iterator(\textcolor{keyword}{this},\ m\_data\ +\ m\_size);\ \}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \ backward\_iterator\ rbegin()\ \ \{\ \textcolor{keywordflow}{return}\ backward\_iterator(\textcolor{keyword}{this},\ m\_data\ +\ m\_size\ -\/\ 1);\ \}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ backward\_iterator\ rend()\ \ \ \ \{\ \textcolor{keywordflow}{return}\ backward\_iterator(\textcolor{keyword}{this},\ m\_data\ -\/\ 1);\ \}}
+\DoxyCodeLine{00086\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{00087\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ ForEach(Func\ func,\ Args\ \&\&...\ args)\{}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ ::ForEach(begin(),\ end(),\ func,\ forward<Args>(args)...);}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ ReverseForEach(Func\ func,\ Args\ \&\&...\ args)\{}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ ::ForEach(rbegin(),\ rend(),\ func,\ forward<Args>(args)...);}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ forward\_iterator\ FirstThat(Func\ func,\ Args\ \&\&...\ args)\{}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \ \ \ \ return\ ::FirstThat(begin(),\ end(),\ func,\ forward<Args>(args)...);}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ \ backward\_iterator\ ReverseFirstThat(Func\ func,\ Args\ \&\&...\ args)\{}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ \ \ \ \ \ return\ ::FirstThat(rbegin(),\ rend(),\ func,\ forward<Args>(args)...);}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00106\ \};}
+\DoxyCodeLine{00107\ }
+\DoxyCodeLine{00108\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00109\ Vector<Traits>::Vector(\textcolor{keywordtype}{size\_t}\ capacity)\ \{}
+\DoxyCodeLine{00110\ \ \ \ \ m\_data\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00111\ \ \ \ \ m\_size\ =\ 0;}
+\DoxyCodeLine{00112\ \ \ \ \ m\_capacity\ =\ capacity;}
+\DoxyCodeLine{00113\ \ \ \ \ m\_data\ =\ \textcolor{keyword}{new}\ Node[m\_capacity];}
+\DoxyCodeLine{00114\ \}}
+\DoxyCodeLine{00115\ }
+\DoxyCodeLine{00116\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00117\ Vector<Traits>::\string~Vector()\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keyword}{delete}[]\ m\_data;}
+\DoxyCodeLine{00119\ \}}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00122\ \textcolor{keywordtype}{void}\ Vector<Traits>::push\_back(value\_type\ value,\ Ref\ ref)\ \{}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_size\ ==\ m\_capacity)}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ resize();}
+\DoxyCodeLine{00125\ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00126\ \ \ \ \ m\_data[m\_size]\ =\ Node(value,\ ref);}
+\DoxyCodeLine{00127\ \ \ \ \ m\_size++;}
+\DoxyCodeLine{00128\ \}}
+\DoxyCodeLine{00129\ }
+\DoxyCodeLine{00130\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00131\ \textcolor{keywordtype}{void}\ Vector<Traits>::resize()\ \{}
+\DoxyCodeLine{00132\ \ \ \ \ scoped\_lock<mutex>\ lock(m\_mtx);}
+\DoxyCodeLine{00133\ \ \ \ \ m\_capacity\ =\ m\_capacity\ <\ 10\ ?\ 10:\ m\_capacity\ *\ 2;}
+\DoxyCodeLine{00134\ \ \ \ \ Node\ *newData\ =\ \textcolor{keyword}{new}\ Node[m\_capacity];}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ m\_size;\ i++)}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ \ newData[i]\ =\ m\_data[i];}
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keyword}{delete}[]\ m\_data;}
+\DoxyCodeLine{00138\ \ \ \ \ m\_data\ =\ newData;}
+\DoxyCodeLine{00139\ \}}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00142\ \textcolor{keywordtype}{size\_t}\ Vector<Traits>::size()\ \{}
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{keywordflow}{return}\ m\_size;}
+\DoxyCodeLine{00144\ \}}
+\DoxyCodeLine{00145\ }
+\DoxyCodeLine{00146\ \textcolor{comment}{//\ [1,\ 2,\ 3,\ 4,\ 5]}}
+\DoxyCodeLine{00147\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00148\ \textcolor{keywordtype}{string}\ Vector<Traits>::ToString()\ \{}
+\DoxyCodeLine{00149\ \ \ \ \ scoped\_lock\ lock(m\_mtx);}
+\DoxyCodeLine{00150\ \ \ \ \ ostringstream\ oss;}
+\DoxyCodeLine{00151\ \ \ \ \ oss\ <<\ \textcolor{stringliteral}{"{}["{}};}
+\DoxyCodeLine{00152\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keywordtype}{size\_t}\ i\ =\ 0;\ i\ <\ m\_size-\/1;\ i++)}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \ oss\ <<\ m\_data[i]\ <<\ \textcolor{stringliteral}{"{},"{}};}
+\DoxyCodeLine{00154\ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_size\ >\ 0)}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ oss\ <<\ m\_data[m\_size-\/1];}
+\DoxyCodeLine{00156\ \ \ \ \ oss\ <<\ \textcolor{stringliteral}{"{}]"{}};}
+\DoxyCodeLine{00157\ \ \ \ \ \textcolor{keywordflow}{return}\ oss.str();}
+\DoxyCodeLine{00158\ \}}
+\DoxyCodeLine{00159\ }
+\DoxyCodeLine{00160\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00161\ ostream\&\ operator<<(ostream\&\ os,\ \doxymbox{\hyperlink{class_vector}{Vector<Traits>}}\&\ v)\{}
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keywordflow}{return}\ os\ <<\ v.ToString();}
+\DoxyCodeLine{00163\ \}}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00165\ \textcolor{keywordtype}{void}\ DemoVector();}
+\DoxyCodeLine{00166\ \textcolor{keywordtype}{void}\ DemoConcurrentVector();}
+\DoxyCodeLine{00167\ }
+\DoxyCodeLine{00168\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{//\ \_\_VECTOR\_H\_\_}}
+
+\end{DoxyCode}

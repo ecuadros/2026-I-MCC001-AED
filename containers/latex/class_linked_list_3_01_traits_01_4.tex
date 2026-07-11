@@ -1,0 +1,95 @@
+\doxysection{Linked\+List\texorpdfstring{$<$}{<} Traits \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_linked_list_3_01_traits_01_4}{}\label{class_linked_list_3_01_traits_01_4}\index{LinkedList$<$ Traits $>$@{LinkedList$<$ Traits $>$}}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a1927e416815be40467c51b13c5391fc0}\label{class_linked_list_3_01_traits_01_4_a1927e416815be40467c51b13c5391fc0} 
+using {\bfseries value\+\_\+type} = typename Traits::\+value\+\_\+type
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a19547765fb4afa7ffdf4dd3f28f74606}\label{class_linked_list_3_01_traits_01_4_a19547765fb4afa7ffdf4dd3f28f74606} 
+using {\bfseries Node} = typename Traits::\+\+Node
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a85ad6746de9d30d296b73ef9bdfc5d59}\label{class_linked_list_3_01_traits_01_4_a85ad6746de9d30d296b73ef9bdfc5d59} 
+using {\bfseries Comp} = typename Traits::\+\+Comp
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a76c107564c24f7db35d61ad5f5a0121a}\label{class_linked_list_3_01_traits_01_4_a76c107564c24f7db35d61ad5f5a0121a} 
+using {\bfseries My\+Self} = Double\+Linked\+List$<$Traits$>$
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a0aef730d863aef23adbbf674c9c9ad3c}\label{class_linked_list_3_01_traits_01_4_a0aef730d863aef23adbbf674c9c9ad3c} 
+using {\bfseries forward\+\_\+iterator} = \doxymbox{\hyperlink{class_linked_list_forward_iterator}{Linked\+List\+Forward\+Iterator}}$<$My\+Self$>$
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a04550ea3c2ee645c540d7020d0d35059}\label{class_linked_list_3_01_traits_01_4_a04550ea3c2ee645c540d7020d0d35059} 
+using {\bfseries backward\+\_\+iterator} = \doxymbox{\hyperlink{class_double_linked_list_backward_iterator}{Double\+Linked\+List\+Backward\+Iterator}}$<$My\+Self$>$
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a48dc04847d5b455ed344a647cd4eeefa}\label{class_linked_list_3_01_traits_01_4_a48dc04847d5b455ed344a647cd4eeefa} 
+{\bfseries Double\+Linked\+List} ()
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a69e1a6ded3449a459d7a05766be1a852}\label{class_linked_list_3_01_traits_01_4_a69e1a6ded3449a459d7a05766be1a852} 
+{\bfseries Double\+Linked\+List} (Double\+Linked\+List \&other)
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_ae7d1bc9abd69e5709387fa04cac0d85a}\label{class_linked_list_3_01_traits_01_4_ae7d1bc9abd69e5709387fa04cac0d85a} 
+{\bfseries Double\+Linked\+List} (Double\+Linked\+List \&\&other)
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a8a8feb448d781a98506e17623a79e97d}\label{class_linked_list_3_01_traits_01_4_a8a8feb448d781a98506e17623a79e97d} 
+size\+\_\+t {\bfseries size} () const
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_af6995d33c3c31a89ccf8ed9b0ca7f988}\label{class_linked_list_3_01_traits_01_4_af6995d33c3c31a89ccf8ed9b0ca7f988} 
+bool {\bfseries is\+Empty} () const
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_abb53fb94c4da87b968e53cc93e8853cd}\label{class_linked_list_3_01_traits_01_4_abb53fb94c4da87b968e53cc93e8853cd} 
+voidd {\bfseries insert} (value\+\_\+type value, Ref ref)
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a7756343d222f8c573a9bd48f05e48287}\label{class_linked_list_3_01_traits_01_4_a7756343d222f8c573a9bd48f05e48287} 
+void {\bfseries push\+\_\+back} (value\+\_\+type value, Ref ref)
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_ac0446cf0d0f826852aaf86ed239b67db}\label{class_linked_list_3_01_traits_01_4_ac0446cf0d0f826852aaf86ed239b67db} 
+value\+\_\+type {\bfseries pop\+\_\+back} ()
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_adbf3de5e5bfb6061dc23d9b570b589ed}\label{class_linked_list_3_01_traits_01_4_adbf3de5e5bfb6061dc23d9b570b589ed} 
+forward\+\_\+iterator {\bfseries begin} ()
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_ad4ddd651f065e99c9542f4c26c32809e}\label{class_linked_list_3_01_traits_01_4_ad4ddd651f065e99c9542f4c26c32809e} 
+forward\+\_\+iterator {\bfseries end} ()
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a21d4cda9ec386a30bea0e44d5c39c089}\label{class_linked_list_3_01_traits_01_4_a21d4cda9ec386a30bea0e44d5c39c089} 
+backward\+\_\+iterator {\bfseries rbegin} ()
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_aa2ac55b87631d451b3ef923726ba141e}\label{class_linked_list_3_01_traits_01_4_aa2ac55b87631d451b3ef923726ba141e} 
+backward\+\_\+iterator {\bfseries rend} ()
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_ae0630746faf23f8dc4c270786be1bc52}\label{class_linked_list_3_01_traits_01_4_ae0630746faf23f8dc4c270786be1bc52} 
+{\footnotesize template$<$typename Func, typename... Args$>$ }\\void {\bfseries For\+Each} (Func func, Args \&\&... args)
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a910de647f17e0099a9c926e2d026cc23}\label{class_linked_list_3_01_traits_01_4_a910de647f17e0099a9c926e2d026cc23} 
+{\footnotesize template$<$typename Func, typename... Args$>$ }\\void {\bfseries Reverse\+For\+Each} (Func func, Args \&\&... args)
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_a9742ea7d3bd70e0bfc0e3ce99d3194cb}\label{class_linked_list_3_01_traits_01_4_a9742ea7d3bd70e0bfc0e3ce99d3194cb} 
+{\footnotesize template$<$typename Func, typename... Args$>$ }\\forward\+\_\+iterator {\bfseries First\+That} (Func func, Args \&\&... args)
+\item 
+\Hypertarget{class_linked_list_3_01_traits_01_4_ad4a0e0f9ad2bb9cb93fd94b6a2cb5dc2}\label{class_linked_list_3_01_traits_01_4_ad4a0e0f9ad2bb9cb93fd94b6a2cb5dc2} 
+{\footnotesize template$<$typename Func, typename... Args$>$ }\\backward\+\_\+iterator {\bfseries Reverse\+First\+That} (Func func, Args \&\&... args)
+\item 
+\Hypertarget{class_linked_list_adfab6f8d853fd5c7c421c40b93dd2840}\label{class_linked_list_adfab6f8d853fd5c7c421c40b93dd2840} 
+\doxymbox{\hyperlink{class_linked_list}{Linked\+List}} \& {\bfseries operator=} (const \doxymbox{\hyperlink{class_linked_list}{Linked\+List}} \&other)
+\item 
+\Hypertarget{class_linked_list_a3ba3fa353177f21a4edfa5e22fbe668f}\label{class_linked_list_a3ba3fa353177f21a4edfa5e22fbe668f} 
+virtual void {\bfseries push\+\_\+front} (value\+\_\+type value, Ref ref)
+\item 
+\Hypertarget{class_linked_list_a26a445d04f25332f7698ae598b0894fe}\label{class_linked_list_a26a445d04f25332f7698ae598b0894fe} 
+virtual auto {\bfseries pop\+\_\+front} () -\/$>$ pair$<$ value\+\_\+type, Ref $>$
+\item 
+\Hypertarget{class_linked_list_aea40b492d5f0c9e38eb42de042a39f83}\label{class_linked_list_aea40b492d5f0c9e38eb42de042a39f83} 
+virtual Node \& {\bfseries operator\+[$\,$]\+} (const size\+\_\+t index) const
+\item 
+\Hypertarget{class_linked_list_ae192f9a9d0dd164045fa71b5cc4a5705}\label{class_linked_list_ae192f9a9d0dd164045fa71b5cc4a5705} 
+virtual string {\bfseries to\+String} ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files:\+\begin{DoxyCompactItemize}
+\item 
+doublelinkedlist.\+h\item 
+linkedlist.\+h\end{DoxyCompactItemize}

@@ -1,0 +1,43 @@
+\doxysection{general\+\_\+iterator.\+h}
+\hypertarget{general__iterator_8h_source}{}\label{general__iterator_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ \_\_ITERATOR\_H\_\_}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ \_\_ITERATOR\_H\_\_}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <algorithm>}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00005\ \textcolor{keyword}{using\ namespace\ }std;}
+\DoxyCodeLine{00006\ }
+\DoxyCodeLine{00007\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container,\ \textcolor{keyword}{class}\ IteratorBase>\ \textcolor{comment}{//\ }}
+\DoxyCodeLine{00008\ \textcolor{keyword}{class\ }general\_iterator}
+\DoxyCodeLine{00009\ \{\textcolor{keyword}{public}:}
+\DoxyCodeLine{00010\ \ \ \ \ \textcolor{keyword}{using\ }Node\ \ \ =\ \textcolor{keyword}{typename}\ Container::Node;}
+\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keyword}{using\ }Myself\ =\ general\_iterator<Container,\ IteratorBase>;}
+\DoxyCodeLine{00012\ \ \ \ \ }
+\DoxyCodeLine{00013\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00014\ \ \ \ \ Container\ *m\_pContainer;}
+\DoxyCodeLine{00015\ \ \ \ \ Node\ \ \ \ \ \ *m\_pNode;}
+\DoxyCodeLine{00016\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00017\ \ \ \ \ general\_iterator(Container\ *pContainer,\ Node\ *pNode)}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ :\ m\_pContainer(pContainer),\ m\_pNode(pNode)\ \{\}}
+\DoxyCodeLine{00019\ \ \ \ \ general\_iterator(\textcolor{keyword}{const}\ Myself\ \&other)\ }
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ :\ m\_pContainer(other.m\_pContainer),\ m\_pNode(other.m\_pNode)\{\}}
+\DoxyCodeLine{00021\ \ \ \ \ general\_iterator(Myself\ \&\&other)\ \textcolor{comment}{//\ Move\ constructor}}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \ \ \{\ \ \ m\_pContainer\ =\ move(other.m\_pContainer);}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_pNode\ \ \ \ \ \ =\ move(other.m\_pNode);}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00025\ \ \ \ \ IteratorBase\&\ operator=(\textcolor{keyword}{const}\ IteratorBase\ \&iter)}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \{\ \ \ m\_pContainer\ =\ iter.m\_pContainer;}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_pNode\ \ \ \ \ \ =\ iter.m\_pNode;}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{static\_cast<}IteratorBase\&\textcolor{keyword}{>}(*this);}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00030\ \ \ \ \ Node\ *getNode()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pNode;\ \}}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ operator==(\textcolor{keyword}{const}\ IteratorBase\ \&a,\ \textcolor{keyword}{const}\ IteratorBase\ \&b)\ \{\ \textcolor{keywordflow}{return}\ a.getNode()\ ==\ b.getNode();\ \}\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keywordtype}{bool}\ operator!=(\textcolor{keyword}{const}\ IteratorBase\ \&a,\ \textcolor{keyword}{const}\ IteratorBase\ \&b)\ \{\ \textcolor{keywordflow}{return}\ !(a\ ==\ b);\}}
+\DoxyCodeLine{00033\ \ \ \ \ Node\ \&operator*()\{\ \textcolor{keywordflow}{return}\ *m\_pNode;\ \}}
+\DoxyCodeLine{00034\ \ \ \ \ Node*\ operator-\/>()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ m\_pNode;\ \}}
+\DoxyCodeLine{00035\ \};}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00038\ \ }
+
+\end{DoxyCode}

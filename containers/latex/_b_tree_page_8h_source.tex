@@ -1,0 +1,866 @@
+\doxysection{BTree\+Page.\+h}
+\hypertarget{_b_tree_page_8h_source}{}\label{_b_tree_page_8h_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00002\ \textcolor{comment}{//CBTreePage.h}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ \textcolor{comment}{/*************************}}
+\DoxyCodeLine{00005\ \textcolor{comment}{\#ifndef\ BTPage\_H}}
+\DoxyCodeLine{00006\ \textcolor{comment}{\#define\ BTPage\_H}}
+\DoxyCodeLine{00007\ \textcolor{comment}{***************************/}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#ifndef\ CBTreePage\_H}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#define\ CBTreePage\_H}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#include\ <assert.h>}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <functional>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <type\_traits>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include\ <utility>}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include\ "{}../types.h"{}}}
+\DoxyCodeLine{00017\ \textcolor{preprocessor}{\#include\ <mutex>}}
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ "{}general\_iterator.h"{}}}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{comment}{//\ Si\ no\ lo\ encuentra,\ deberia\ decirme:}}
+\DoxyCodeLine{00021\ \textcolor{comment}{//\ cual\ es\ la\ posicion\ donde\ deberia\ estar}}
+\DoxyCodeLine{00022\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container,\ \textcolor{keyword}{typename}\ ObjType>}
+\DoxyCodeLine{00023\ LSI\ binary\_search(Container\&\ container,\ LSI\ first,\ LSI\ last,\ ObjType\ \&\textcolor{keywordtype}{object})}
+\DoxyCodeLine{00024\ \{}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ first\ >=\ last\ )}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ first;}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(\ first\ <\ last\ )}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ LSI\ mid\ =\ (first+last)/2;}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ \textcolor{keywordtype}{object}\ ==\ (ObjType)container[mid\ ]\ )}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ mid;}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ \textcolor{keywordtype}{object}\ >\ (ObjType)container[mid\ ]\ )}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ first\ =\ mid+1;}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ last\ \ =\ mid;}
+\DoxyCodeLine{00036\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00037\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ \textcolor{keywordtype}{object}\ <=\ (ObjType)container[first]\ )}
+\DoxyCodeLine{00038\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ first;}
+\DoxyCodeLine{00039\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ last;}
+\DoxyCodeLine{00040\ \}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container,\ \textcolor{keyword}{typename}\ ObjType>}
+\DoxyCodeLine{00043\ \textcolor{keywordtype}{void}\ insert\_at(Container\&\ container,\ \textcolor{keyword}{const}\ ObjType\ \&\textcolor{keywordtype}{object},\ LSI\ pos)}
+\DoxyCodeLine{00044\ \{}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ LSI\ size\ =\ container.size();}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(LSI\ i\ =\ size-\/2\ ;\ i\ >=\ pos\ ;\ i-\/-\/)}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ container[i+1]\ =\ container[i];}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ container[pos]\ =\ \ object;}
+\DoxyCodeLine{00049\ \}}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container>}
+\DoxyCodeLine{00052\ \textcolor{keywordtype}{void}\ remove(Container\&\ container,\ LSI\ pos)}
+\DoxyCodeLine{00053\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ LSI\ size\ =\ container.size();}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(LSI\ i\ =\ pos+1\ ;\ i\ <\ size\ ;\ i++)}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ container[i-\/1]\ =\ container[i];}
+\DoxyCodeLine{00057\ \}}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00060\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_b_tree}{BTree}};}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00063\ \textcolor{keyword}{using\ namespace\ }std;}
+\DoxyCodeLine{00064\ \textcolor{keyword}{enum}\ bt\_ErrorCode\ \{bt\_ok,\ bt\_overflow,\ bt\_underflow,\ bt\_duplicate,\ bt\_nofound,\ bt\_rootmerged\};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00066\ \textcolor{comment}{/*template\ <typename\ keyType>}}
+\DoxyCodeLine{00067\ \textcolor{comment}{bool\ operator>=(const\ \_Node<keyType>\&\ object1,\ const\ \_Node<keyType>\&\ object2)}}
+\DoxyCodeLine{00068\ \textcolor{comment}{\{\ return\ object1.key\ >=\ object2.key;\ \ \ \ \}}}
+\DoxyCodeLine{00069\ \textcolor{comment}{}}
+\DoxyCodeLine{00070\ \textcolor{comment}{template\ <typename\ keyType>}}
+\DoxyCodeLine{00071\ \textcolor{comment}{bool\ operator<=(const\ \_Node<keyType>\&\ object1,\ const\ \_Node<keyType>\&\ object2)}}
+\DoxyCodeLine{00072\ \textcolor{comment}{\{\ return\ object1.key\ <=\ object2.key;\ \ \ \ \}*/}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00075\ \textcolor{keyword}{struct\ }tagNode}
+\DoxyCodeLine{00076\ \{}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }ObjIDType\ =\ \textcolor{keyword}{typename}\ Traits::ObjIDType;}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ keyType\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ key;}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ ObjIDType\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ObjID;}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ LSL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ UseCounter;}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ tagNode(\textcolor{keyword}{const}\ keyType\ \ \ \ \ \&\_key,\ ObjIDType\ \_ObjID)}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ key(\_key),\ ObjID(\_ObjID),\ UseCounter(0)\ \{\}}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ tagNode()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\}}
+\DoxyCodeLine{00084\ \ \ \ \ \ \ \ \textcolor{keyword}{operator}\ keyType\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ()\ \ \ \ \ \{\ \textcolor{keywordflow}{return}\ key;\ \}}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ LSL\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ GetUseCounter()\ \{\ \textcolor{keywordflow}{return}\ UseCounter;\ \ \ \ \}}
+\DoxyCodeLine{00086\ \};}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ }
+\DoxyCodeLine{00089\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00090\ \textcolor{keyword}{class\ }CBTreePage}
+\DoxyCodeLine{00091\ \textcolor{comment}{//\ this\ is\ the\ in-\/memory\ version\ of\ the\ CBTreePage}}
+\DoxyCodeLine{00092\ \{}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \textcolor{keyword}{using\ }ObjIDType\ =\ \textcolor{keyword}{typename}\ Traits::ObjIDType;}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{class_b_tree}{BTree}}<Traits>;}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ CBTreePage<keyType,\ Traits>\ BTPage;\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ useful\ shorthand}}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \textcolor{keyword}{typedef}\ \doxymbox{\hyperlink{structtag_node}{tagNode<keyType,\ Traits>}}\ Node;}
+\DoxyCodeLine{00098\ }
+\DoxyCodeLine{00099\ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ CBTreePage(LSI\ maxKeys,\ LSB\ unique\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \string~CBTreePage();}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ \ \ \ bt\_ErrorCode\ \ \ \ Insert\ (\textcolor{keyword}{const}\ keyType\ \&key,\ \textcolor{keyword}{const}\ ObjIDType\ ObjID);}
+\DoxyCodeLine{00104\ \ \ \ \ \ \ \ bt\_ErrorCode\ \ \ \ Remove\ (\textcolor{keyword}{const}\ keyType\ \&key,\ \textcolor{keyword}{const}\ ObjIDType\ ObjID);}
+\DoxyCodeLine{00105\ \ \ \ \ \ \ \ LSB\ \ \ \ \ \ \ \ \ \ \ \ \ Search\ (\textcolor{keyword}{const}\ keyType\ \&key,\ ObjIDType\ \&ObjID);}
+\DoxyCodeLine{00106\ \ \ \ \ \ \ \ \textcolor{keyword}{mutable}\ \ \ \ \ \ \ \ \ std::mutex\ m\_Mutex;}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ \ \ \ \ \ \ \ \ \ Print\ \ (ostream\ \&os);}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ ForEach(Func\ lpfn,\ LSI\ level,\ Args\&\&...\ args);}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00111\ \ \ \ \ \ \ \ Node*\ FirstThat(Func\ lpfn,\ LSI\ level,\ Args\&\&...\ args);}
+\DoxyCodeLine{00112\ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Dual,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ Node*\ Traverse(Dual\&\&\ dual,\ LSI\ level,\ Args\&\&...\ args);}
+\DoxyCodeLine{00114\ \textcolor{keyword}{protected}:}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ LSI\ \ m\_MinKeys;\ \textcolor{comment}{//\ minimum\ number\ of\ keys\ in\ a\ node}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ LSI\ \ m\_MaxKeys,\ \textcolor{comment}{//\ maximum\ number\ of\ keys\ in\ a\ node}}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_MaxKeysForChilds;\ \textcolor{comment}{//\ just\ to\ distinguish\ the\ root}}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ LSB\ \ m\_Unique;}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ LSB\ \ m\_isRoot;}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ vector<Node>\ \ \ \ \ \ \ m\_Keys;}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ vector<BTPage\ *>\ \ \ m\_SubPages;}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ LSI\ \ m\_KeyCount;}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ Create();}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ Reset\ ();}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ Destroy\ ()\ \{\ \ \ Reset();\ \textcolor{keyword}{delete}\ \textcolor{keyword}{this};\}}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ clear\ ();}
+\DoxyCodeLine{00127\ }
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \ LSB\ \ \ Redistribute1\ \ \ (LSI\ \&pos);}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ LSB\ \ \ Redistribute2\ \ \ (LSI\ pos);}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ RedistributeR2L\ (LSI\ pos);}
+\DoxyCodeLine{00131\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ RedistributeL2R\ (LSI\ pos);}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \ \ \ \ \ LSB\ \ \ \ \ TreatUnderflow\ \ (LSI\ \&pos)}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Redistribute1(pos)\ ||\ Redistribute2(pos);\}}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ \ \ \ bt\_ErrorCode\ \ \ \ Merge\ \ (LSI\ pos);}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ bt\_ErrorCode\ \ \ \ MergeRoot\ ();}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \ SplitChild\ (LSI\ pos);}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00140\ \ \ \ \ \ \ \ Node\&\ GetFirstNode();}
+\DoxyCodeLine{00141\ \ \ \ \ \ \ \ Node\&\ GetLastNode();}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ \ Node*\ Next(Node\ *pNode);}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ Node*\ Prev(Node\ *pNode);}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ LSB\ \ Contains(Node\ *pNode);}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \ LSB\ \ Overflow()\ \ \{\ \textcolor{keywordflow}{return}\ m\_KeyCount\ >\ m\_MaxKeys;\ \}}
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ LSB\ \ Underflow()\ \{\ \textcolor{keywordflow}{return}\ m\_KeyCount\ <\ MinNumberOfKeys();\ \}}
+\DoxyCodeLine{00147\ \ \ \ \ \ \ \ LSB\ \ IsFull()\ \ \ \ \{\ \textcolor{keywordflow}{return}\ m\_KeyCount\ >=\ m\_MaxKeys;\ \}}
+\DoxyCodeLine{00148\ \ \ \ \ \ \ \ LSI\ \ MinNumberOfKeys()\ \ \{\ \textcolor{keywordflow}{return}\ 2*m\_MaxKeys/3.0;\ \}}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ \ LSI\ \ GetFreeCells()\ \ \{\ \textcolor{keywordflow}{return}\ m\_MaxKeys\ -\/\ m\_KeyCount;\ \}}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ LSI\&\ NumberOfKeys()\ \ \{\ \textcolor{keywordflow}{return}\ m\_KeyCount;\ \}}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ LSI\ \ GetNumberOfKeys()\ \ \{\ \textcolor{keywordflow}{return}\ m\_KeyCount;\ \}}
+\DoxyCodeLine{00152\ \ \ \ \ \ \ \ LSB\ \ IsRoot()\ \ \{\ \textcolor{keywordflow}{return}\ m\_MaxKeysForChilds\ !=\ m\_MaxKeys;\ \}}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ SetMaxKeysForChilds(LSI\ orderforchilds)}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_MaxKeysForChilds\ =\ orderforchilds;}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \ \ \ LSI\ GetFreeCellsOnLeft(LSI\ pos);}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ LSI\ GetFreeCellsOnRight(LSI\ pos);}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ LSB\ \ SplitRoot();}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ SplitPageInto3(vector<Node>\ \ \ \&\ tmpKeys,}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vector<BTPage\ *>\ \ \&\ SubPages,}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BTPage\ \ \ \ \ \ \ \ \ \ \ *\&\ pChild1,}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BTPage\ \ \ \ \ \ \ \ \ \ \ *\&\ pChild2,}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BTPage\ \ \ \ \ \ \ \ \ \ \ *\&\ pChild3,}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ \ \ \ \ \ \ \ \&\ oi1,}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ \ \ \ \ \ \ \ \&\ oi2);}
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ MovePage(BTPage\ *\ \ pChildPage,vector<Node>\ \&\ tmpKeys,vector<BTPage\ *>\ \&\ tmpSubPages);}
+\DoxyCodeLine{00171\ \};}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00174\ CBTreePage<keyType,\ Traits>::CBTreePage(LSI\ maxKeys,\ LSB\ unique)}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ m\_MaxKeys(maxKeys),\ m\_Unique(unique),\ m\_KeyCount(0)}
+\DoxyCodeLine{00176\ \{}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ Create();}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ SetMaxKeysForChilds(m\_MaxKeys);}
+\DoxyCodeLine{00179\ \}}
+\DoxyCodeLine{00180\ }
+\DoxyCodeLine{00181\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00182\ CBTreePage<keyType,\ Traits>::\string~CBTreePage()}
+\DoxyCodeLine{00183\ \{}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ Reset();}
+\DoxyCodeLine{00185\ \}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00188\ bt\_ErrorCode\ CBTreePage<keyType,\ Traits>::Insert(\textcolor{keyword}{const}\ keyType\&\ key,\ \textcolor{keyword}{const}\ ObjIDType\ ObjID)}
+\DoxyCodeLine{00189\ \{}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ LSI\ pos\ =\ binary\_search(m\_Keys,\ 0,\ m\_KeyCount,\ key);}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ bt\_ErrorCode\ error\ =\ bt\_ok;}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ <\ m\_KeyCount\ \&\&\ (keyType)m\_Keys[pos]\ ==\ key\ \&\&\ m\_Unique)}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_duplicate;\ \textcolor{comment}{//\ this\ key\ is\ duplicate}}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ !m\_SubPages[pos]\ )\ \textcolor{comment}{//\ this\ is\ a\ leave}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ::insert\_at(m\_Keys,\ Node(key,\ ObjID),\ pos);}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ NumberOfKeys()++;}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ Overflow()\ )}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_overflow;}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_ok;}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ recursive\ insertion}}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ error\ =\ m\_SubPages[pos]-\/>Insert(key,\ ObjID);}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ error\ ==\ bt\_overflow\ )}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ !Redistribute1(pos)\ )}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SplitChild(pos);}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ Overflow()\ )\ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Propagate\ overflow}}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_overflow;}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_ok;}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_ok;}
+\DoxyCodeLine{00215\ \}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00217\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00218\ LSB\ CBTreePage<keyType,\ Traits>::Redistribute1(LSI\ \&pos)}
+\DoxyCodeLine{00219\ \{}
+\DoxyCodeLine{00220\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos]-\/>Underflow()\ )}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \textcolor{comment}{//\ nkol\ =\ Number\ of\ keys\ on\ left\ brother,\ nkor\ =\ Number\ of\ keys\ on\ right\ brother}}
+\DoxyCodeLine{00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ LSI\ nkol\ =\ 0,}
+\DoxyCodeLine{00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nkor\ =\ 0;}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ is\ this\ the\ first\ element\ or\ there\ are\ more\ elements\ on\ right\ brother}}
+\DoxyCodeLine{00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ >\ 0\ )}
+\DoxyCodeLine{00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nkol\ =\ m\_SubPages[pos-\/1]-\/>NumberOfKeys();}
+\DoxyCodeLine{00227\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ <\ NumberOfKeys()\ )}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ nkor\ =\ m\_SubPages[pos+1]-\/>NumberOfKeys();}
+\DoxyCodeLine{00229\ }
+\DoxyCodeLine{00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ nkol\ >\ nkor\ )\{}
+\DoxyCodeLine{00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos-\/1]-\/>NumberOfKeys()\ >\ m\_SubPages[pos-\/1]-\/>MinNumberOfKeys()\ )}
+\DoxyCodeLine{00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeL2R(pos-\/1);\ \textcolor{comment}{//\ bring\ elements\ from\ left\ brother}}
+\DoxyCodeLine{00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ ==\ NumberOfKeys()\ )}
+\DoxyCodeLine{00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -\/-\/pos;}
+\DoxyCodeLine{00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{//nkol\ <\ nkor\ )}}
+\DoxyCodeLine{00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos+1]-\/>NumberOfKeys()\ >\ m\_SubPages[pos+1]-\/>MinNumberOfKeys()\ )}
+\DoxyCodeLine{00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeR2L(pos+1);\ \textcolor{comment}{//\ bring\ elements\ from\ right\ brother}}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ ==\ 0\ )}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ++pos;}
+\DoxyCodeLine{00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00247\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{//\ it\ is\ due\ to\ overflow}}
+\DoxyCodeLine{00248\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ LSI\ fcol\ =\ GetFreeCellsOnLeft(pos),\ \ \ \textcolor{comment}{//\ Free\ Cells\ On\ Left}}
+\DoxyCodeLine{00250\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fcor\ =\ GetFreeCellsOnRight(pos);\ \ \textcolor{comment}{//\ Free\ Cells\ On\ Right}}
+\DoxyCodeLine{00251\ }
+\DoxyCodeLine{00252\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ !fcol\ \&\&\ !fcor\ \&\&\ m\_SubPages[pos]-\/>IsFull()\ )}
+\DoxyCodeLine{00253\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00254\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ fcol\ >\ fcor\ )\ \textcolor{comment}{//\ There\ is\ more\ space\ on\ left}}
+\DoxyCodeLine{00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeR2L(pos);}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeL2R(pos);}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00260\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00261\ \}}
+\DoxyCodeLine{00262\ }
+\DoxyCodeLine{00263\ \textcolor{comment}{//\ Redistribute2\ function}}
+\DoxyCodeLine{00264\ \textcolor{comment}{//\ it\ considers\ two\ brothers\ m\_SubPages[pos-\/1]\ \&\&\ m\_SubPages[pos+1]}}
+\DoxyCodeLine{00265\ \textcolor{comment}{//\ if\ it\ fails\ the\ only\ way\ is\ merge\ !}}
+\DoxyCodeLine{00266\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00267\ LSB\ CBTreePage<keyType,\ Traits>::Redistribute2(LSI\ pos)}
+\DoxyCodeLine{00268\ \{}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ assert(\ pos\ >\ 0\ \&\&\ pos\ <\ NumberOfKeys()\ \ );}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ \ assert(\ m\_SubPages[pos-\/1]\ !=\ 0\ \&\&\ m\_SubPages[pos]\ !=\ 0\ \&\&\ m\_SubPages[pos+1]\ !=\ 0\ );}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ \ assert(\ m\_SubPages[pos-\/1]-\/>Underflow()\ ||}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[\ pos\ ]-\/>Underflow()\ ||}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[pos+1]-\/>Underflow()\ );}
+\DoxyCodeLine{00274\ }
+\DoxyCodeLine{00275\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos-\/1]-\/>Underflow()\ )}
+\DoxyCodeLine{00276\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \textcolor{comment}{//\ Rotate\ R2L}}
+\DoxyCodeLine{00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeR2L(pos+1);}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeR2L(pos);}
+\DoxyCodeLine{00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos-\/1]-\/>Underflow()\ )}
+\DoxyCodeLine{00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00281\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}(\ m\_SubPages[pos+1]-\/>Underflow()\ )}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \textcolor{comment}{//\ Rotate\ L2R}}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeL2R(pos-\/1);}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeL2R(pos);}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos+1]-\/>Underflow()\ )}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00288\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00289\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{comment}{//\ The\ problem\ is\ exactly\ at\ pos\ !}}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Rotate\ L2R}}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeL2R(pos-\/1);}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RedistributeR2L(pos+1);}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos]-\/>Underflow()\ )}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00296\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00298\ \}}
+\DoxyCodeLine{00299\ }
+\DoxyCodeLine{00300\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00301\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::RedistributeR2L(LSI\ pos)\ \ }
+\DoxyCodeLine{00302\ \{}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ BTPage\ \ *pSource\ =\ m\_SubPages[\ pos\ ],}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *pTarget\ =\ m\_SubPages[pos-\/1];}
+\DoxyCodeLine{00305\ }
+\DoxyCodeLine{00306\ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(pSource-\/>GetNumberOfKeys()\ >\ pSource-\/>MinNumberOfKeys()\ \&\&}
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ pTarget-\/>GetNumberOfKeys()\ <\ pSource-\/>GetNumberOfKeys()\ )}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Move\ from\ this\ page\ to\ the\ down-\/left\ page\ \(\backslash\)/}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ::insert\_at(pTarget-\/>m\_Keys,\ m\_Keys[pos-\/1],\ pTarget-\/>NumberOfKeys()++);}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Move\ the\ pointer\ leftest\ pointer\ to\ the\ rightest\ position}}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ::insert\_at(pTarget-\/>m\_SubPages,\ pSource-\/>m\_SubPages[0],\ pTarget-\/>NumberOfKeys());}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Move\ the\ leftest\ element\ to\ the\ root}}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_Keys[pos-\/1]\ =\ pSource-\/>m\_Keys[0];}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Remove\ the\ leftest\ element\ from\ rigth\ page}}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ::remove(pSource-\/>m\_Keys\ \ \ \ ,\ 0);}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ::remove(pSource-\/>m\_SubPages,\ 0);}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pSource-\/>NumberOfKeys()-\/-\/;}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00322\ \}}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00325\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::RedistributeL2R(LSI\ pos)}
+\DoxyCodeLine{00326\ \{}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ BTPage\ \ *pSource\ =\ m\_SubPages[pos],}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *pTarget\ =\ m\_SubPages[pos+1];}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \textcolor{keywordflow}{while}(pSource-\/>GetNumberOfKeys()\ >\ pSource-\/>MinNumberOfKeys()\ \&\&}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pTarget-\/>GetNumberOfKeys()\ <\ pSource-\/>GetNumberOfKeys()\ )}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Move\ from\ this\ page\ to\ the\ down-\/RIGHT\ page\ \(\backslash\)/}}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ::insert\_at(pTarget-\/>m\_Keys,\ m\_Keys[pos],\ 0);}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Move\ the\ pointer\ rightest\ pointer\ to\ the\ leftest\ position}}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ::insert\_at(pTarget-\/>m\_SubPages,\ pSource-\/>m\_SubPages[pSource-\/>NumberOfKeys()],\ 0);}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pTarget-\/>NumberOfKeys()++;}
+\DoxyCodeLine{00337\ }
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Move\ the\ rightest\ element\ to\ the\ root}}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_Keys[pos]\ =\ pSource-\/>m\_Keys[pSource-\/>NumberOfKeys()-\/1];}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Remove\ the\ leftest\ element\ from\ rigth\ page}}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ it\ is\ not\ necessary\ erase\ because\ m\_KeyCount\ controls}}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pSource-\/>NumberOfKeys()-\/-\/;}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00345\ \}}
+\DoxyCodeLine{00346\ }
+\DoxyCodeLine{00347\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00348\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::SplitChild(LSI\ pos)}
+\DoxyCodeLine{00349\ \{}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \textcolor{comment}{//\ FIRST:\ deciding\ the\ second\ page\ to\ split}}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ BTPage\ \ *pChild1\ =\ 0,\ *pChild2\ =\ 0;}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ >\ 0\ )\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ is\ left\ page\ full\ ?}}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos-\/1]-\/>IsFull()\ )}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1\ =\ m\_SubPages[pos-\/1];}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2\ =\ m\_SubPages[pos-\/-\/];}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ <\ GetNumberOfKeys()\ )\ \ \ \textcolor{comment}{//\ is\ right\ page\ full\ ?}}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos+1]-\/>IsFull()\ )}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1\ =\ m\_SubPages[pos];}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2\ =\ m\_SubPages[pos+1];}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ LSI\ nKeys\ =\ pChild1-\/>GetNumberOfKeys()\ +\ pChild2-\/>GetNumberOfKeys()\ +\ 1;}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \textcolor{comment}{//\ SECOND:\ copy\ both\ pages\ to\ a\ temporal\ one}}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Create\ two\ tmp\ vector}}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ vector<Node>\ tmpKeys;}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \textcolor{comment}{//tmpKeys.resize(nKeys);}}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ vector<BTPage\ *>\ \ \ tmpSubPages;}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \textcolor{comment}{//tmpKeys.resize(nKeys+1);}}
+\DoxyCodeLine{00373\ }
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Prepara\ el\ vectpor\ unificado\ de\ las\ 2\ paginas\ a\ ser\ divididas\ en\ 3}}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ from\ left\ child}}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ MovePage(pChild1,\ tmpKeys,\ tmpSubPages);}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ a\ key\ from\ parent}}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ tmpKeys\ \ \ \ .push\_back(m\_Keys[pos]);}
+\DoxyCodeLine{00379\ }
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ from\ right\ child}}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ MovePage(pChild2,\ tmpKeys,\ tmpSubPages);}
+\DoxyCodeLine{00382\ }
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ BTPage\ *pChild3\ =\ 0;}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ Node\ oi1,\ oi2;}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ SplitPageInto3(tmpKeys,\ tmpSubPages,\ pChild1,\ pChild2,\ pChild3,\ oi1,\ oi2);}
+\DoxyCodeLine{00386\ }
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ the\ first\ element\ to\ the\ root}}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ m\_Keys\ \ \ \ [pos]\ =\ oi1;}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ m\_SubPages[pos]\ =\ pChild1;}
+\DoxyCodeLine{00390\ }
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ the\ second\ element\ to\ the\ root}}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ ::insert\_at(m\_Keys,\ oi2,\ pos+1);}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ ::insert\_at(m\_SubPages,\ pChild2,\ pos+1);}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ NumberOfKeys()++;}
+\DoxyCodeLine{00395\ }
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ m\_SubPages[pos+2]\ =\ pChild3;}
+\DoxyCodeLine{00397\ \}}
+\DoxyCodeLine{00398\ }
+\DoxyCodeLine{00399\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00400\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::SplitPageInto3(vector<Node>\&\ tmpKeys,}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ vector<BTPage\ *>\ \ \&\ tmpSubPages,}
+\DoxyCodeLine{00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BTPage*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ pChild1,}
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BTPage*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ pChild2,}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BTPage*\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ \ \ \ \ pChild3,}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ oi1,}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \&\ oi2)}
+\DoxyCodeLine{00407\ \{}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ assert(tmpKeys.size()\ >=\ 8);}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ assert(tmpSubPages.size()\ >=\ 9);}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ !pChild1\ )}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1\ =\ \textcolor{keyword}{new}\ BTPage(m\_MaxKeysForChilds,\ m\_Unique);}
+\DoxyCodeLine{00412\ }
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Split\ tmpKeys\ page\ into\ 3\ pages}}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ 1/3\ elements\ to\ the\ first\ child}}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ pChild1-\/>clear();}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ LSI\ nKeys\ =\ (tmpKeys.size()-\/2)/3;}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ LSI\ i\ =\ 0;}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\ ;\ i\ <\ nKeys;\ i++\ )}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1-\/>m\_Keys\ \ \ \ [i]\ =\ tmpKeys\ \ \ \ [i];}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1-\/>m\_SubPages[i]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1-\/>NumberOfKeys()++;}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ pChild1-\/>m\_SubPages[i]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00425\ }
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \textcolor{comment}{//\ first\ element\ to\ go\ up\ !}}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ oi1\ =\ tmpKeys[i++];}
+\DoxyCodeLine{00428\ }
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ !pChild2\ )}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2\ =\ \textcolor{keyword}{new}\ BTPage(m\_MaxKeysForChilds,\ m\_Unique);}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ pChild2-\/>clear();}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ 1/3\ to\ the\ second\ child}}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ nKeys\ +=\ (tmpKeys.size()-\/2)/3\ +\ 1;}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ LSI\ j\ =\ 0;}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(;\ i\ <\ nKeys;\ i++,\ j++\ )}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2-\/>m\_Keys\ \ \ \ [j]\ =\ tmpKeys\ \ \ \ [i];}
+\DoxyCodeLine{00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2-\/>m\_SubPages[j]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2-\/>NumberOfKeys()++;}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ \ pChild2-\/>m\_SubPages[j]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ the\ second\ element\ to\ the\ root}}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ oi2\ =\ tmpKeys[i++];}
+\DoxyCodeLine{00445\ }
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ 1/3\ to\ the\ third\ child}}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ !pChild3\ )}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild3\ =\ \textcolor{keyword}{new}\ BTPage(m\_MaxKeysForChilds,\ m\_Unique);}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ pChild3-\/>clear();}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ nKeys\ =\ tmpKeys.size();}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(j\ =\ 0;\ i\ <\ nKeys;\ i++,\ j++)}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild3-\/>m\_Keys\ \ \ \ [j]\ =\ tmpKeys\ \ \ \ [i];}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild3-\/>m\_SubPages[j]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild3-\/>NumberOfKeys()++;}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ pChild3-\/>m\_SubPages[j]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00458\ \}}
+\DoxyCodeLine{00459\ }
+\DoxyCodeLine{00460\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00461\ LSB\ CBTreePage<keyType,\ Traits>::SplitRoot()}
+\DoxyCodeLine{00462\ \{}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ BTPage\ \ *pChild1\ =\ 0,\ *pChild2\ =\ 0,\ *pChild3\ =\ 0;}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ Node\ oi1,\ oi2;}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ SplitPageInto3(\ m\_Keys,m\_SubPages,pChild1,\ pChild2,\ pChild3,\ oi1,\ oi2);}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ clear();}
+\DoxyCodeLine{00467\ }
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ the\ first\ element\ to\ the\ root}}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ m\_Keys\ \ \ \ [0]\ =\ oi1;}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ m\_SubPages[0]\ =\ pChild1;}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ NumberOfKeys()++;}
+\DoxyCodeLine{00472\ }
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \textcolor{comment}{//\ copy\ the\ second\ element\ to\ the\ root}}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ m\_Keys\ \ \ \ [1]\ =\ oi2;}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ m\_SubPages[1]\ =\ pChild2;}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ NumberOfKeys()++;}
+\DoxyCodeLine{00477\ }
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ m\_SubPages[2]\ =\ pChild3;}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00480\ \}}
+\DoxyCodeLine{00481\ }
+\DoxyCodeLine{00482\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00483\ LSB\ CBTreePage<keyType,\ Traits>::Search(\textcolor{keyword}{const}\ keyType\ \&key,\ ObjIDType\ \&ObjID)}
+\DoxyCodeLine{00484\ \{}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ LSI\ pos\ =\ binary\_search(m\_Keys,\ 0,\ m\_KeyCount,\ key);}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ >=\ m\_KeyCount\ )\{}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos]\ )}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_SubPages[pos]-\/>Search(key,\ ObjID);}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00491\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ key\ ==\ m\_Keys[pos].key\ )}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ObjID\ =\ m\_Keys[pos].ObjID;}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_Keys[pos].UseCounter++;}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ key\ <\ m\_Keys[pos].key\ )}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos]\ )}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_SubPages[pos]-\/>Search(key,\ ObjID);}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00502\ \}}
+\DoxyCodeLine{00503\ }
+\DoxyCodeLine{00504\ \textcolor{comment}{/*template\ <typename\ keyType,\ typename\ ObjIDType>}}
+\DoxyCodeLine{00505\ \textcolor{comment}{void\ CBTreePage<keyType,\ ObjIDType>::ForEachReverse(lpfnForEach2\ lpfn,\ int\ level,\ void\ *pExtra1)}}
+\DoxyCodeLine{00506\ \textcolor{comment}{\{}}
+\DoxyCodeLine{00507\ \textcolor{comment}{\ \ \ \ \ \ \ if(\ m\_SubPages[m\_KeyCount]\ )}}
+\DoxyCodeLine{00508\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[m\_KeyCount]-\/>ForEach(lpfn,\ level+1,\ pExtra1);}}
+\DoxyCodeLine{00509\ \textcolor{comment}{\ \ \ \ \ \ \ for(\ int\ i\ =\ m\_KeyCount-\/1\ ;\ i\ >=\ 0\ \ ;\ i-\/-\/)}}
+\DoxyCodeLine{00510\ \textcolor{comment}{\ \ \ \ \ \ \ \{}}
+\DoxyCodeLine{00511\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lpfn(m\_Keys[i],\ level,\ pExtra1);}}
+\DoxyCodeLine{00512\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if(\ m\_SubPages[i]\ )}}
+\DoxyCodeLine{00513\ \textcolor{comment}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[i]-\/>ForEach(lpfn,\ level+1,\ pExtra1);}}
+\DoxyCodeLine{00514\ \textcolor{comment}{\ \ \ \ \ \ \ \}}}
+\DoxyCodeLine{00515\ \textcolor{comment}{\}*/}}
+\DoxyCodeLine{00516\ }
+\DoxyCodeLine{00517\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00518\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00519\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::ForEach(Func\ lpfn,\ LSI\ level,\ Args\&\&...\ args)}
+\DoxyCodeLine{00520\ \{}
+\DoxyCodeLine{00521\ \ \ \ \ Traverse([\&](Node\&\ node,\ LSI\ lvl,\ Args\&\&...\ innerArgs)\ -\/>\ Node*\ \{std::invoke(lpfn,\ node,\ lvl,\ std::forward<Args>(innerArgs)...);\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};\},\ level,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00522\ \}}
+\DoxyCodeLine{00523\ }
+\DoxyCodeLine{00524\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00525\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00526\ \textcolor{keyword}{typename}\ CBTreePage<keyType,\ Traits>::Node*\ CBTreePage<keyType,\ Traits>::FirstThat(Func\ lpfn,\ LSI\ level,\ Args\&\&...\ args)}
+\DoxyCodeLine{00527\ \{}
+\DoxyCodeLine{00528\ \ \ \ \ \textcolor{keywordflow}{return}\ Traverse([\&](Node\&\ node,\ LSI\ lvl,\ Args\&\&...\ innerArgs)\ -\/>\ Node*\ \{\textcolor{keywordflow}{if}\ (std::invoke(lpfn,\ node,\ lvl,\ std::forward<Args>(innerArgs)...))\ \textcolor{keywordflow}{return}\ \&node;\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};\},\ level,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00529\ \}}
+\DoxyCodeLine{00530\ }
+\DoxyCodeLine{00531\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00532\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Dual,\ \textcolor{keyword}{typename}...\ Args>}
+\DoxyCodeLine{00533\ \textcolor{keyword}{typename}\ CBTreePage<keyType,\ Traits>::Node*\ CBTreePage<keyType,\ Traits>::Traverse(Dual\&\&\ dual,\ LSI\ level,\ Args\&\&...\ args)}
+\DoxyCodeLine{00534\ \{}
+\DoxyCodeLine{00535\ \ \ \ \ \textcolor{keywordflow}{for}\ (LSI\ i\ =\ 0;\ i\ <\ m\_KeyCount;\ i++)}
+\DoxyCodeLine{00536\ \ \ \ \ \{}
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_SubPages[i])}
+\DoxyCodeLine{00538\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \ \ \ \ \ \ Node*\ DD\ =\ m\_SubPages[i]-\/>Traverse(std::forward<Dual>(dual),\ level\ +\ 1,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (DD)\ \{\textcolor{keywordflow}{return}\ DD;\}}
+\DoxyCodeLine{00541\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00542\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (Node*\ DD\ =\ std::invoke(std::forward<Dual>(dual),\ m\_Keys[i],\ level,\ std::forward<Args>(args)...))\ \{\textcolor{keywordflow}{return}\ DD;\}}
+\DoxyCodeLine{00543\ \ \ \ \ \}}
+\DoxyCodeLine{00544\ \ \ \ \ \textcolor{keywordflow}{if}\ (m\_SubPages[m\_KeyCount])}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_SubPages[m\_KeyCount]-\/>Traverse(std::forward<Dual>(dual),\ level\ +\ 1,\ std::forward<Args>(args)...);}
+\DoxyCodeLine{00546\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00547\ \}}
+\DoxyCodeLine{00548\ }
+\DoxyCodeLine{00549\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00550\ bt\_ErrorCode\ CBTreePage<keyType,\ Traits>::Remove(\textcolor{keyword}{const}\ keyType\ \&key,\ \textcolor{keyword}{const}\ ObjIDType\ ObjID)}
+\DoxyCodeLine{00551\ \{}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ bt\_ErrorCode\ error\ =\ bt\_ok;}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ LSI\ pos\ =\ binary\_search(m\_Keys,\ 0,\ m\_KeyCount,\ key);}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ <\ NumberOfKeys()\ \&\&\ key\ ==\ m\_Keys[pos].key\ \textcolor{comment}{/*\&\&\ m\_Keys[pos].m\_ObjID\ ==\ ObjID*/})\ \textcolor{comment}{//\ We\ found\ it\ !}}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ This\ is\ a\ leave:\ First}}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ !m\_SubPages[pos+1]\ )\ \ \textcolor{comment}{//\ This\ is\ a\ leave\ ?\ FIRST\ CASE\ !}}
+\DoxyCodeLine{00558\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ::remove(m\_Keys,\ pos);}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ NumberOfKeys()-\/-\/;}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ Underflow()\ )}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_underflow;}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_ok;}
+\DoxyCodeLine{00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00565\ }
+\DoxyCodeLine{00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ We\ FOUND\ IT\ BUT\ it\ is\ NOT\ a\ leave\ ?\ SECOND\ CASE\ !}}
+\DoxyCodeLine{00567\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Get\ the\ first\ element\ from\ right\ branch}}
+\DoxyCodeLine{00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ \&rFirstFromRight\ =\ m\_SubPages[pos+1]-\/>GetFirstNode();}
+\DoxyCodeLine{00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ change\ with\ a\ leave}}
+\DoxyCodeLine{00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ swap(m\_Keys[pos],\ rFirstFromRight);}
+\DoxyCodeLine{00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Remove\ it\ from\ this\ leave}}
+\DoxyCodeLine{00573\ }
+\DoxyCodeLine{00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//Print(cout);}}
+\DoxyCodeLine{00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ error\ =\ m\_SubPages[++pos]-\/>Remove(key,\ ObjID);}
+\DoxyCodeLine{00576\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00577\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00578\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}(\ pos\ ==\ NumberOfKeys()\ )\ \textcolor{comment}{//\ it\ is\ not\ here,\ go\ by\ the\ last\ branch}}
+\DoxyCodeLine{00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ error\ =\ m\_SubPages[pos]-\/>Remove(key,\ ObjID);}
+\DoxyCodeLine{00580\ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}(\ key\ <=\ m\_Keys[pos].key\ )\{\ \textcolor{comment}{//\ =\ is\ because\ identical\ keys\ are\ inserted\ on\ left\ (see\ Insert)}}
+\DoxyCodeLine{00581\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[pos]\ )}
+\DoxyCodeLine{00582\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ error\ =\ m\_SubPages[pos]-\/>Remove(key,\ ObjID);}
+\DoxyCodeLine{00583\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{else}}
+\DoxyCodeLine{00584\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_nofound;}
+\DoxyCodeLine{00585\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00586\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ error\ ==\ bt\_underflow\ )\{}
+\DoxyCodeLine{00587\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ THIRD\ CASE:\ After\ removing\ the\ element\ we\ have\ an\ underflow}}
+\DoxyCodeLine{00588\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//Print(cout);}}
+\DoxyCodeLine{00589\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ TreatUnderflow(pos)\ )}
+\DoxyCodeLine{00590\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_ok;}
+\DoxyCodeLine{00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ FOURTH\ CASE:\ it\ was\ not\ possible\ to\ redistribute\ -\/>\ Merge}}
+\DoxyCodeLine{00592\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ IsRoot()\ \&\&\ NumberOfKeys()\ ==\ 2\ )}
+\DoxyCodeLine{00593\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ MergeRoot();}
+\DoxyCodeLine{00594\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ Merge(pos);}
+\DoxyCodeLine{00595\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00596\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ error\ ==\ bt\_nofound\ )}
+\DoxyCodeLine{00597\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_nofound;}
+\DoxyCodeLine{00598\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_ok;}
+\DoxyCodeLine{00599\ \}}
+\DoxyCodeLine{00600\ }
+\DoxyCodeLine{00601\ }
+\DoxyCodeLine{00602\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00603\ bt\_ErrorCode\ CBTreePage<keyType,\ Traits>::Merge(LSI\ pos)}
+\DoxyCodeLine{00604\ \{}
+\DoxyCodeLine{00605\ \ \ \ \ \ \ \ assert(\ m\_SubPages[pos-\/1]-\/>NumberOfKeys()\ +}
+\DoxyCodeLine{00606\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[\ pos\ ]-\/>NumberOfKeys()\ +}
+\DoxyCodeLine{00607\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[pos+1]-\/>NumberOfKeys()\ ==}
+\DoxyCodeLine{00608\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3*m\_SubPages[\ pos\ ]-\/>MinNumberOfKeys()\ -\/\ 1);}
+\DoxyCodeLine{00609\ }
+\DoxyCodeLine{00610\ \ \ \ \ \ \ \ \textcolor{comment}{//\ FIRST:\ Put\ all\ the\ elements\ into\ a\ vector}}
+\DoxyCodeLine{00611\ \ \ \ \ \ \ \ vector<Node>\ tmpKeys;}
+\DoxyCodeLine{00612\ \ \ \ \ \ \ \ \textcolor{comment}{//tmpKeys.resize(nKeys);}}
+\DoxyCodeLine{00613\ \ \ \ \ \ \ \ vector<BTPage\ *>\ \ \ tmpSubPages;}
+\DoxyCodeLine{00614\ }
+\DoxyCodeLine{00615\ \ \ \ \ \ \ \ BTPage\ \ *pChild1\ =\ m\_SubPages[pos-\/1],}
+\DoxyCodeLine{00616\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *pChild2\ =\ m\_SubPages[\ pos\ ],}
+\DoxyCodeLine{00617\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ *pChild3\ =\ m\_SubPages[pos+1];}
+\DoxyCodeLine{00618\ \ \ \ \ \ \ \ MovePage(pChild1,\ tmpKeys,\ tmpSubPages);}
+\DoxyCodeLine{00619\ \ \ \ \ \ \ \ tmpKeys\ \ \ \ .push\_back(m\_Keys[pos-\/1]);}
+\DoxyCodeLine{00620\ \ \ \ \ \ \ \ MovePage(pChild2,\ tmpKeys,\ tmpSubPages);}
+\DoxyCodeLine{00621\ \ \ \ \ \ \ \ tmpKeys\ \ \ \ .push\_back(m\_Keys[\ pos\ ]);}
+\DoxyCodeLine{00622\ \ \ \ \ \ \ \ MovePage(pChild3,\ tmpKeys,\ tmpSubPages);}
+\DoxyCodeLine{00623\ \ \ \ \ \ \ \ pChild3-\/>Destroy();;}
+\DoxyCodeLine{00624\ }
+\DoxyCodeLine{00625\ \ \ \ \ \ \ \ \textcolor{comment}{//\ Move\ 1/2\ elements\ to\ pChild1}}
+\DoxyCodeLine{00626\ \ \ \ \ \ \ \ LSI\ nKeys\ =\ pChild1-\/>GetFreeCells();}
+\DoxyCodeLine{00627\ \ \ \ \ \ \ \ LSI\ i\ =\ 0;}
+\DoxyCodeLine{00628\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\ ;\ i\ <\ nKeys\ ;\ i++\ )}
+\DoxyCodeLine{00629\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00630\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1-\/>m\_Keys\ \ \ \ [i]\ =\ tmpKeys\ \ \ \ [i];}
+\DoxyCodeLine{00631\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1-\/>m\_SubPages[i]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00632\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild1-\/>NumberOfKeys()++;}
+\DoxyCodeLine{00633\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00634\ \ \ \ \ \ \ \ pChild1-\/>m\_SubPages[i]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00635\ }
+\DoxyCodeLine{00636\ \ \ \ \ \ \ \ m\_Keys\ \ \ \ [pos-\/1]\ =\ tmpKeys[i];}
+\DoxyCodeLine{00637\ \ \ \ \ \ \ \ m\_SubPages[pos-\/1]\ =\ pChild1;}
+\DoxyCodeLine{00638\ }
+\DoxyCodeLine{00639\ \ \ \ \ \ \ \ ::remove(m\_Keys\ \ \ \ ,\ pos);}
+\DoxyCodeLine{00640\ \ \ \ \ \ \ \ ::remove(m\_SubPages,\ pos);}
+\DoxyCodeLine{00641\ \ \ \ \ \ \ \ NumberOfKeys()-\/-\/;}
+\DoxyCodeLine{00642\ }
+\DoxyCodeLine{00643\ \ \ \ \ \ \ \ nKeys\ =\ pChild2-\/>GetFreeCells();}
+\DoxyCodeLine{00644\ \ \ \ \ \ \ \ LSI\ j\ =\ ++i;}
+\DoxyCodeLine{00645\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(i\ =\ 0\ ;\ i\ <\ nKeys\ ;\ i++,\ j++\ )}
+\DoxyCodeLine{00646\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00647\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2-\/>m\_Keys\ \ \ \ [i]\ =\ tmpKeys\ \ \ \ [j];}
+\DoxyCodeLine{00648\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2-\/>m\_SubPages[i]\ =\ tmpSubPages[j];}
+\DoxyCodeLine{00649\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ pChild2-\/>NumberOfKeys()++;}
+\DoxyCodeLine{00650\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00651\ \ \ \ \ \ \ \ pChild2-\/>m\_SubPages[i]\ =\ tmpSubPages[j];}
+\DoxyCodeLine{00652\ \ \ \ \ \ \ \ m\_SubPages[\ pos\ ]\ \ \ \ \ \ \ \ \ \ =\ pChild2;}
+\DoxyCodeLine{00653\ }
+\DoxyCodeLine{00654\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ Underflow()\ )}
+\DoxyCodeLine{00655\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_underflow;}
+\DoxyCodeLine{00656\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_ok;}
+\DoxyCodeLine{00657\ \}}
+\DoxyCodeLine{00658\ }
+\DoxyCodeLine{00659\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00660\ bt\_ErrorCode\ CBTreePage<keyType,\ Traits>::MergeRoot()}
+\DoxyCodeLine{00661\ \{}
+\DoxyCodeLine{00662\ \ \ \ \ \ \ \ LSI\ pos\ =\ 1;}
+\DoxyCodeLine{00663\ \ \ \ \ \ \ \ assert(\ m\_SubPages[pos-\/1]-\/>NumberOfKeys()\ +}
+\DoxyCodeLine{00664\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[\ pos\ ]-\/>NumberOfKeys()\ +}
+\DoxyCodeLine{00665\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[pos+1]-\/>NumberOfKeys()\ ==}
+\DoxyCodeLine{00666\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 3*m\_SubPages[\ pos\ ]-\/>MinNumberOfKeys()\ -\/\ 1);}
+\DoxyCodeLine{00667\ }
+\DoxyCodeLine{00668\ \ \ \ \ \ \ \ BTPage\ \ *pChild1\ =\ m\_SubPages[pos-\/1],\ *pChild2\ =\ m\_SubPages[\ pos\ ],\ *pChild3\ =\ m\_SubPages[pos+1];}
+\DoxyCodeLine{00669\ \ \ \ \ \ \ \ LSI\ nKeys\ =\ pChild1-\/>NumberOfKeys()\ +\ pChild2-\/>NumberOfKeys()\ +\ pChild3-\/>NumberOfKeys()\ +\ 2;}
+\DoxyCodeLine{00670\ }
+\DoxyCodeLine{00671\ \ \ \ \ \ \ \ \textcolor{comment}{//\ FIRST:\ Put\ all\ the\ elements\ into\ a\ vector}}
+\DoxyCodeLine{00672\ \ \ \ \ \ \ \ vector<Node>\ tmpKeys;}
+\DoxyCodeLine{00673\ \ \ \ \ \ \ \ \textcolor{comment}{//tmpKeys.resize(nKeys);}}
+\DoxyCodeLine{00674\ \ \ \ \ \ \ \ vector<BTPage\ *>\ \ \ tmpSubPages;}
+\DoxyCodeLine{00675\ }
+\DoxyCodeLine{00676\ \ \ \ \ \ \ \ MovePage(pChild1,\ tmpKeys,\ tmpSubPages);}
+\DoxyCodeLine{00677\ \ \ \ \ \ \ \ tmpKeys\ \ \ \ .push\_back(m\_Keys[pos-\/1]);}
+\DoxyCodeLine{00678\ \ \ \ \ \ \ \ MovePage(pChild2,\ tmpKeys,\ tmpSubPages);}
+\DoxyCodeLine{00679\ \ \ \ \ \ \ \ tmpKeys\ \ \ \ .push\_back(m\_Keys[\ pos\ ]);}
+\DoxyCodeLine{00680\ \ \ \ \ \ \ \ MovePage(pChild3,\ tmpKeys,\ tmpSubPages);}
+\DoxyCodeLine{00681\ }
+\DoxyCodeLine{00682\ \ \ \ \ \ \ \ clear();}
+\DoxyCodeLine{00683\ \ \ \ \ \ \ \ LSI\ i\ =\ 0;}
+\DoxyCodeLine{00684\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\ ;\ i\ <\ nKeys\ ;\ i++\ )\{}
+\DoxyCodeLine{00685\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_Keys\ \ \ \ [i]\ =\ tmpKeys\ \ \ \ [i];}
+\DoxyCodeLine{00686\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ m\_SubPages[i]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00687\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ NumberOfKeys()++;}
+\DoxyCodeLine{00688\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00689\ \ \ \ \ \ \ \ m\_SubPages[i]\ =\ tmpSubPages[i];}
+\DoxyCodeLine{00690\ }
+\DoxyCodeLine{00691\ \ \ \ \ \ \ \ \textcolor{comment}{//Print(cout);}}
+\DoxyCodeLine{00692\ \ \ \ \ \ \ \ pChild1-\/>Destroy();}
+\DoxyCodeLine{00693\ \ \ \ \ \ \ \ pChild2-\/>Destroy();}
+\DoxyCodeLine{00694\ \ \ \ \ \ \ \ pChild3-\/>Destroy();}
+\DoxyCodeLine{00695\ }
+\DoxyCodeLine{00696\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ bt\_rootmerged;}
+\DoxyCodeLine{00697\ \}}
+\DoxyCodeLine{00698\ }
+\DoxyCodeLine{00699\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00700\ \textcolor{keyword}{typename}\ CBTreePage<keyType,\ Traits>::Node\ \&}
+\DoxyCodeLine{00701\ CBTreePage<keyType,\ Traits>::GetFirstNode()}
+\DoxyCodeLine{00702\ \{}
+\DoxyCodeLine{00703\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[0]\ )}
+\DoxyCodeLine{00704\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_SubPages[0]-\/>GetFirstNode();}
+\DoxyCodeLine{00705\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_Keys[0];}
+\DoxyCodeLine{00706\ \}}
+\DoxyCodeLine{00707\ }
+\DoxyCodeLine{00708\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00709\ \textcolor{keyword}{typename}\ CBTreePage<keyType,\ Traits>::Node\ \&}
+\DoxyCodeLine{00710\ CBTreePage<keyType,\ Traits>::GetLastNode()}
+\DoxyCodeLine{00711\ \{}
+\DoxyCodeLine{00712\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ m\_SubPages[m\_KeyCount]\ )}
+\DoxyCodeLine{00713\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_SubPages[m\_KeyCount]-\/>GetLastNode();}
+\DoxyCodeLine{00714\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_Keys[m\_KeyCount\ -\/\ 1];}
+\DoxyCodeLine{00715\ \}}
+\DoxyCodeLine{00716\ }
+\DoxyCodeLine{00717\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00718\ \textcolor{keyword}{typename}\ CBTreePage<keyType,\ Traits>::Node*\ CBTreePage<keyType,\ Traits>::Next(Node\ *pNode)}
+\DoxyCodeLine{00719\ \{}
+\DoxyCodeLine{00720\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(LSI\ i\ =\ 0;\ i\ <\ m\_KeyCount;\ i++)}
+\DoxyCodeLine{00721\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00722\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\&m\_Keys[i]\ ==\ pNode)}
+\DoxyCodeLine{00723\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00724\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(m\_SubPages[i+1])\ \{\textcolor{keywordflow}{return}\ \&m\_SubPages[i+1]-\/>GetFirstNode();\}}
+\DoxyCodeLine{00725\ }
+\DoxyCodeLine{00726\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(i\ +\ 1\ <\ m\_KeyCount)\ \{\textcolor{keywordflow}{return}\ \&m\_Keys[i+1];\}}
+\DoxyCodeLine{00727\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00728\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00729\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00730\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(LSI\ i\ =\ 0;\ i\ <=\ m\_KeyCount;\ i++)}
+\DoxyCodeLine{00731\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00732\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(m\_SubPages[i])}
+\DoxyCodeLine{00733\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00734\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ *pRes\ =\ m\_SubPages[i]-\/>Next(pNode);}
+\DoxyCodeLine{00735\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(pRes)\ \{\textcolor{keywordflow}{return}\ pRes;\}}
+\DoxyCodeLine{00736\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(i\ <\ m\_KeyCount)}
+\DoxyCodeLine{00737\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00738\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(m\_SubPages[i]-\/>Contains(pNode))\ \{\textcolor{keywordflow}{return}\ \&m\_Keys[i];\}}
+\DoxyCodeLine{00739\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00740\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00741\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00742\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00743\ \}}
+\DoxyCodeLine{00744\ }
+\DoxyCodeLine{00745\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00746\ \textcolor{keyword}{typename}\ CBTreePage<keyType,\ Traits>::Node*\ CBTreePage<keyType,\ Traits>::Prev(Node\ *pNode)}
+\DoxyCodeLine{00747\ \{}
+\DoxyCodeLine{00748\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(LSI\ i\ =\ 0;\ i\ <\ m\_KeyCount;\ i++)}
+\DoxyCodeLine{00749\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00750\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\&m\_Keys[i]\ ==\ pNode)}
+\DoxyCodeLine{00751\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00752\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(m\_SubPages[i])\ \{\textcolor{keywordflow}{return}\ \&m\_SubPages[i]-\/>GetLastNode();\}}
+\DoxyCodeLine{00753\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(i\ >\ 0)\ \{\textcolor{keywordflow}{return}\ \&m\_Keys[i-\/1];\}}
+\DoxyCodeLine{00754\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00755\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00756\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00757\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(LSI\ i\ =\ 0;\ i\ <=\ m\_KeyCount;\ i++)}
+\DoxyCodeLine{00758\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00759\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(m\_SubPages[i])}
+\DoxyCodeLine{00760\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00761\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Node\ *pRes\ =\ m\_SubPages[i]-\/>Prev(pNode);}
+\DoxyCodeLine{00762\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(pRes)\ \{\textcolor{keywordflow}{return}\ pRes;\}}
+\DoxyCodeLine{00763\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(i\ >\ 0)}
+\DoxyCodeLine{00764\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00765\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(m\_SubPages[i]-\/>Contains(pNode))\ \{\textcolor{keywordflow}{return}\ \&m\_Keys[i-\/1];\}}
+\DoxyCodeLine{00766\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00767\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00768\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00769\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00770\ \}}
+\DoxyCodeLine{00771\ }
+\DoxyCodeLine{00772\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00773\ LSB\ CBTreePage<keyType,\ Traits>::Contains(Node\ *pNode)}
+\DoxyCodeLine{00774\ \{}
+\DoxyCodeLine{00775\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(LSI\ i\ =\ 0;\ i\ <\ m\_KeyCount;\ i++)}
+\DoxyCodeLine{00776\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00777\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\&m\_Keys[i]\ ==\ pNode)\ \{\textcolor{keywordflow}{return}\ \textcolor{keyword}{true};\}}
+\DoxyCodeLine{00778\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00779\ }
+\DoxyCodeLine{00780\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(LSI\ i\ =\ 0;\ i\ <=\ m\_KeyCount;\ i++)}
+\DoxyCodeLine{00781\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00782\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(m\_SubPages[i]\ \&\&\ m\_SubPages[i]-\/>Contains(pNode))\ \{\textcolor{keywordflow}{return}\ \textcolor{keyword}{true};\}}
+\DoxyCodeLine{00783\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00784\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00785\ \}}
+\DoxyCodeLine{00786\ }
+\DoxyCodeLine{00787\ \textcolor{comment}{//\ Deben\ eliminarlo\ e\ imprimir\ con\ un\ ForEach}}
+\DoxyCodeLine{00788\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00789\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::Print(ostream\ \&os)}
+\DoxyCodeLine{00790\ \{}
+\DoxyCodeLine{00791\ \ \ \ \ ForEach([](Node\ \&info,\ LSI\ level,\ ostream\ \&stream)}
+\DoxyCodeLine{00792\ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00793\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}\ (LSI\ i\ =\ 0;\ i\ <\ level;\ i++)}
+\DoxyCodeLine{00794\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ stream\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)t"{}};}
+\DoxyCodeLine{00795\ \ \ \ \ \ \ \ \ \ \ \ \ stream\ <<\ info.key\ <<\ \textcolor{stringliteral}{"{}-\/>"{}}\ <<\ info.ObjID\ <<\ \textcolor{stringliteral}{"{}\(\backslash\)n"{}};\ }
+\DoxyCodeLine{00796\ \ \ \ \ \ \ \ \ \},\ 0,\ os);}
+\DoxyCodeLine{00797\ \}}
+\DoxyCodeLine{00798\ }
+\DoxyCodeLine{00799\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00800\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::Create()}
+\DoxyCodeLine{00801\ \{}
+\DoxyCodeLine{00802\ \ \ \ \ \ \ \ Reset();}
+\DoxyCodeLine{00803\ \ \ \ \ \ \ \ m\_Keys.resize(m\_MaxKeys+1);}
+\DoxyCodeLine{00804\ \ \ \ \ \ \ \ m\_SubPages.resize(m\_MaxKeys+2,\ NULL);}
+\DoxyCodeLine{00805\ \ \ \ \ \ \ \ m\_KeyCount\ =\ 0;}
+\DoxyCodeLine{00806\ \ \ \ \ \ \ \ m\_MinKeys\ \ =\ 2\ *\ m\_MaxKeys/3;}
+\DoxyCodeLine{00807\ \}}
+\DoxyCodeLine{00808\ }
+\DoxyCodeLine{00809\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00810\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::Reset()}
+\DoxyCodeLine{00811\ \{}
+\DoxyCodeLine{00812\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\ LSI\ i\ =\ 0\ ;\ i\ <\ m\_KeyCount\ ;\ i++\ )}
+\DoxyCodeLine{00813\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{delete}\ m\_SubPages[i];}
+\DoxyCodeLine{00814\ \ \ \ \ \ \ \ clear();}
+\DoxyCodeLine{00815\ \}}
+\DoxyCodeLine{00816\ }
+\DoxyCodeLine{00817\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00818\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::clear()}
+\DoxyCodeLine{00819\ \{}
+\DoxyCodeLine{00820\ \ \ \ \ \ \ \ \textcolor{comment}{//m\_Keys.clear();}}
+\DoxyCodeLine{00821\ \ \ \ \ \ \ \ \textcolor{comment}{//m\_SubPages.clear();}}
+\DoxyCodeLine{00822\ \ \ \ \ \ \ \ m\_KeyCount\ =\ 0;}
+\DoxyCodeLine{00823\ \}}
+\DoxyCodeLine{00824\ }
+\DoxyCodeLine{00825\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00826\ \doxymbox{\hyperlink{class_c_b_tree_page}{CBTreePage<keyType,\ Traits>}}\ *\ CreateBTreeNode\ (LSI\ maxKeys,\ LSI\ unique)}
+\DoxyCodeLine{00827\ \{}
+\DoxyCodeLine{00828\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ \doxymbox{\hyperlink{class_c_b_tree_page}{CBTreePage<keyType,\ Traits>}}\ (maxKeys,\ unique);}
+\DoxyCodeLine{00829\ \}}
+\DoxyCodeLine{00830\ }
+\DoxyCodeLine{00831\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00832\ \textcolor{keywordtype}{void}\ CBTreePage<keyType,\ Traits>::MovePage(BTPage\ *pChildPage,\ vector<Node>\ \&tmpKeys,vector<BTPage\ *>\ \&tmpSubPages)}
+\DoxyCodeLine{00833\ \{}
+\DoxyCodeLine{00834\ \ \ \ \ \ \ \ LSI\ nKeys\ =\ pChildPage-\/>GetNumberOfKeys();}
+\DoxyCodeLine{00835\ \ \ \ \ \ \ \ LSI\ i\ =\ 0;}
+\DoxyCodeLine{00836\ \ \ \ \ \ \ \ \textcolor{keywordflow}{for}(\ ;\ i\ <\ nKeys;\ i++\ )}
+\DoxyCodeLine{00837\ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00838\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmpKeys\ \ \ \ .push\_back(pChildPage-\/>m\_Keys[i]);}
+\DoxyCodeLine{00839\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tmpSubPages.push\_back(pChildPage-\/>m\_SubPages[i]);}
+\DoxyCodeLine{00840\ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00841\ \ \ \ \ \ \ \ tmpSubPages.push\_back(pChildPage-\/>m\_SubPages[i]);}
+\DoxyCodeLine{00842\ \ \ \ \ \ \ \ pChildPage-\/>clear();}
+\DoxyCodeLine{00843\ \}}
+\DoxyCodeLine{00844\ }
+\DoxyCodeLine{00845\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00846\ LSI\ CBTreePage<keyType,\ Traits>::GetFreeCellsOnLeft(LSI\ pos)}
+\DoxyCodeLine{00847\ \{}
+\DoxyCodeLine{00848\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ >\ 0\ )\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ there\ is\ some\ page\ on\ left\ ?}}
+\DoxyCodeLine{00849\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_SubPages[pos-\/1]-\/>GetFreeCells();}
+\DoxyCodeLine{00850\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00851\ \}}
+\DoxyCodeLine{00852\ }
+\DoxyCodeLine{00853\ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ keyType,\ \textcolor{keyword}{typename}\ Traits>}
+\DoxyCodeLine{00854\ LSI\ CBTreePage<keyType,\ Traits>::GetFreeCellsOnRight(LSI\ pos)}
+\DoxyCodeLine{00855\ \{}
+\DoxyCodeLine{00856\ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}(\ pos\ <\ GetNumberOfKeys()\ )\ \ \ \textcolor{comment}{//\ there\ is\ some\ page\ on\ right\ ?}}
+\DoxyCodeLine{00857\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ m\_SubPages[pos+1]-\/>GetFreeCells();}
+\DoxyCodeLine{00858\ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ 0;}
+\DoxyCodeLine{00859\ \}}
+\DoxyCodeLine{00860\ }
+\DoxyCodeLine{00861\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

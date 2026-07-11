@@ -11,6 +11,7 @@
 #include <iostream>
 #include <assert.h>
 #include <functional>
+#include <type_traits>
 #include <utility>
 #include "../types.h"
 #include <mutex>
@@ -108,8 +109,8 @@ class CBTreePage
        void ForEach(Func lpfn, LSI level, Args&&... args);
        template <typename Func, typename... Args>
        Node* FirstThat(Func lpfn, LSI level, Args&&... args);
-       template <typename Dual>
-       Node* Traverse(Dual&& dual, LSI level);
+       template <typename Dual, typename... Args>
+       Node* Traverse(Dual&& dual, LSI level, Args&&... args);
 protected:
        LSI  m_MinKeys; // minimum number of keys in a node
        LSI  m_MaxKeys, // maximum number of keys in a node
@@ -517,31 +518,32 @@ template <typename keyType, typename Traits>
 template <typename Func, typename... Args>
 void CBTreePage<keyType, Traits>::ForEach(Func lpfn, LSI level, Args&&... args)
 {
-       Traverse([&](Node& node, LSI lvl) -> Node* {std::invoke(lpfn, node, lvl, std::forward<Args>(args)...); return nullptr;}, level);
+    Traverse([&](Node& node, LSI lvl, Args&&... innerArgs) -> Node* {std::invoke(lpfn, node, lvl, std::forward<Args>(innerArgs)...); return nullptr;}, level, std::forward<Args>(args)...);
 }
 
 template <typename keyType, typename Traits>
 template <typename Func, typename... Args>
 typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::FirstThat(Func lpfn, LSI level, Args&&... args)
 {
-       return Traverse([&](Node& node, LSI lvl) -> Node* {if(std::invoke(lpfn, node, lvl, std::forward<Args>(args)...)) {return &node;} return nullptr;}, level);
+    return Traverse([&](Node& node, LSI lvl, Args&&... innerArgs) -> Node* {if (std::invoke(lpfn, node, lvl, std::forward<Args>(innerArgs)...)) return &node; return nullptr;}, level, std::forward<Args>(args)...);
 }
 
 template <typename keyType, typename Traits>
-template <typename Dual>
-typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Traverse(Dual&& dual, LSI level)
+template <typename Dual, typename... Args>
+typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Traverse(Dual&& dual, LSI level, Args&&... args)
 {
-       for(LSI i = 0; i < m_KeyCount; i++)
-       {
-               if(m_SubPages[i])
-               {
-                       Node* DD = m_SubPages[i]->Traverse(std::forward<Dual>(dual), level + 1);
-                       if(DD) {return DD;}
-               }
-               if(Node* DD = std::invoke(std::forward<Dual>(dual), m_Keys[i], level)) {return DD;}
-       }
-       if(m_SubPages[m_KeyCount]) {return m_SubPages[m_KeyCount]->Traverse(std::forward<Dual>(dual), level + 1);}
-       return nullptr;
+    for (LSI i = 0; i < m_KeyCount; i++)
+    {
+        if (m_SubPages[i])
+        {
+            Node* DD = m_SubPages[i]->Traverse(std::forward<Dual>(dual), level + 1, std::forward<Args>(args)...);
+            if (DD) {return DD;}
+        }
+        if (Node* DD = std::invoke(std::forward<Dual>(dual), m_Keys[i], level, std::forward<Args>(args)...)) {return DD;}
+    }
+    if (m_SubPages[m_KeyCount])
+        return m_SubPages[m_KeyCount]->Traverse(std::forward<Dual>(dual), level + 1, std::forward<Args>(args)...);
+    return nullptr;
 }
 
 template <typename keyType, typename Traits>
