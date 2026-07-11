@@ -107,12 +107,6 @@ class CBTreePage
        bt_ErrorCode    Remove (const keyType &key, const ObjIDType ObjID);
        StatusFlag      Search (const keyType &key, ObjIDType &ObjID);
 
-       template <typename Func, typename... Args>
-       void      ForEach(Func lpfn, TI level, Args&&... args);
-
-       template <typename Func, typename... Args>
-       Node*     FirstThat(Func lpfn, TI level, Args&&... args);
-
 protected:
        TI  m_MinKeys; // minimum number of keys in a node
        TI  m_MaxKeys, // maximum number of keys in a node
@@ -513,44 +507,6 @@ void CBTreePage<keyType, ObjIDType>::ForEachReverse(lpfnForEach2 lpfn, TI level,
                        m_SubPages[i]->ForEach(lpfn, level+1, pExtra1);
        }
 }*/
-
-template <typename Traits>
-template <typename Func, typename... Args>
-void CBTreePage<Traits>::ForEach(Func lpfn, TI level, Args&&... args)
-{
-       for( TI i = 0 ; i < m_KeyCount ; i++)
-       {
-               if( m_SubPages[i] )
-                       m_SubPages[i]->ForEach(lpfn, level+1, std::forward<Args>(args)...);
-               lpfn(m_Keys[i], level, std::forward<Args>(args)...);
-       }
-       if( m_SubPages[m_KeyCount] )
-               m_SubPages[m_KeyCount]->ForEach(lpfn, level+1, std::forward<Args>(args)...);
-}
-
-template <typename Traits>
-template <typename Func, typename... Args>
-typename CBTreePage<Traits>::Node *
-CBTreePage<Traits>::FirstThat(Func lpfn, TI level, Args&&... args)
-{
-       Node *pTmp;
-       for( TI i = 0 ; i < m_KeyCount ; i++)
-       {
-               if( m_SubPages[i] ){
-                        pTmp = m_SubPages[i]->FirstThat(lpfn, level+1, std::forward<Args>(args)...);
-                       if( pTmp )
-                               return pTmp;
-               }
-               if( lpfn(m_Keys[i], level, std::forward<Args>(args)...) )
-                       return &m_Keys[i];
-       }
-       if( m_SubPages[m_KeyCount] ){
-                pTmp = m_SubPages[m_KeyCount]->FirstThat(lpfn, level+1, std::forward<Args>(args)...);
-               if( pTmp )
-                       return pTmp;
-       }
-       return 0;
-}
 
 template <typename Traits>
 bt_ErrorCode CBTreePage<Traits>::Remove(const typename Traits::key_type &key, const typename Traits::ref_type ObjID)
