@@ -24,7 +24,7 @@ TI BTreeDemo()
        bt.Print(cout);
 
         auto res = bt.FirstThat(
-            [](auto& nodo, TI level, TI limite) -> TB {
+            [](auto& nodo, TI limite) -> TB {
                 return nodo.key > limite;
             },
             'A' // Este argumento se envía al parámetro 'limite' del lambda

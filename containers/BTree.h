@@ -7,6 +7,7 @@
 #include <mutex>
 #include "BTreePage.h"
 #include "../types.h"
+#include "../foreach.h"
 #include "general_iterator.h"
 
 #define DEFAULT_BTREE_ORDER 3
@@ -185,8 +186,8 @@ template <typename Traits>
 template <typename Func, typename... Args>
 void BTree<Traits>::ForEach(Func lpfn, Args&&... args)
 {
-        scoped_lock<mutex> lock(m_mutex);
-       m_Root.ForEach(lpfn, 0, std::forward<Args>(args)...);
+    scoped_lock<mutex> lock(m_mutex);
+    ::for_each(begin(), end(), lpfn, std::forward<Args>(args)...);
 }
 
 template <typename Traits>
@@ -194,17 +195,16 @@ template <typename Func, typename... Args>
 typename BTree<Traits>::Node *
 BTree<Traits>::FirstThat(Func lpfn, Args&&... args)
 {
-        scoped_lock<mutex> lock(m_mutex);
-       return m_Root.FirstThat(lpfn, 0, std::forward<Args>(args)...);
+    auto it = ::FirstThat(begin(), end(), lpfn, std::forward<Args>(args)...);
+    if(it != end())
+        return &(*it);
+    return nullptr;
 }
 
 template <typename Traits>
 void BTree<Traits>::Print(ostream &os){
         //scoped_lock<mutex> lock(m_mutex);
-       ForEach([&os](Node &info, TI level){
-              for(TI i = 0; i < level; ++i){
-                     os << "\t";
-              }
+       ForEach([&os](Node &info){
               os << info.key << "->" << info.ObjID << "\n";
        });
 }
