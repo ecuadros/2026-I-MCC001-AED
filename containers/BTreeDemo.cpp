@@ -1,3 +1,12 @@
+/**
+ * @file BTreeDemo.cpp
+ * @brief Archivo de prueba del árbol B.
+ *
+ * En este demo probé las funcionalidades nuevas que fui implementando
+ * en el árbol B: inserción, impresión, ForEach global con iteradores,
+ * iterador forward, iterador backward, FirstThat y Search.
+ */
+
 //#include <iostream.h>
 #include <time.h>
 #include <stdlib.h>
@@ -10,6 +19,14 @@ const char * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv
 const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
 const TI BTreeSize = 3;
+
+/**
+ * @brief Ejecuta una demostración básica del contenedor BTree.
+ *
+ * Este método inserta datos de prueba y luego ejecuta los recorridos
+ * y algoritmos que se pidieron en la tarea para validar que el árbol
+ * ya trabaja con iteradores y con los helpers globales.
+ */
 void BTreeDemo()
 {
        TI i;
@@ -20,7 +37,52 @@ void BTreeDemo()
                bt.Insert(keys1[i], i*i);
                //bt.Print(cout);
        }
+       // Imprecion original
        bt.Print(cout);
+
+       cout << "FOREACH GLOBAL CON ITERADORES" << endl;
+       bt.ForEach([](auto &node){
+                 cout << node.key << "->" << node.ObjID << endl;
+       });
+
+       cout << "ITERADOR FORWARD" << endl;
+       for(auto it = bt.begin(); it != bt.end(); ++it)
+       {
+               cout << it->key << "->" << it->ObjID << endl;
+       }
+
+       cout << "ITERADOR BACKWARD" << endl;
+       for(auto it = bt.rbegin(); it != bt.rend(); ++it)
+       {
+               cout << it->key << "->" << it->ObjID << endl;
+       }
+
+       cout << "FIRSTHAT" << endl;
+       auto pNode = bt.FirstThat([](auto &node){
+                 return node.key >= 'M';
+       });
+
+       if(pNode)
+        {
+                 cout << "FirstThat found: " << pNode->key << "->" << pNode->ObjID << endl;
+        }
+        else
+        {
+                 cout << "FirstThat not found" << endl;
+        }
+
+       cout << "SEARCH" << endl;
+        auto value = bt.Search('M');
+        if(value != -1)
+        {
+                 cout << "Search found: " << value << endl;
+        }
+        else
+        {
+                 cout << "Search not found" << endl;
+        }
+
+
        /*for (i = 0; keys2[i]; i++)
        {
                cout << "Searching " << keys2[i] << " ";

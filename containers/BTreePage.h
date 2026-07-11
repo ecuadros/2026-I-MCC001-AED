@@ -1,3 +1,12 @@
+/**
+ * @file BTreePage.h
+ * @brief Implementación de la página interna del árbol B.
+ *
+ * En este archivo se maneja la lógica interna de cada página del árbol B:
+ * inserción, eliminación, redistribución, merge, split y acceso a nodos
+ * extremos para los iteradores. Esta clase no es el contenedor final,
+ * sino la estructura interna sobre la que se apoya BTree.
+ */
 
 //CBTreePage.h
 
@@ -10,10 +19,17 @@
 #include <vector>
 #include <iostream>
 #include <assert.h>
+#include <mutex>
 #include "../types.h"
 
 // Si no lo encuentra, deberia decirme:
 // cual es la posicion donde deberia estar
+/**
+ * @brief Búsqueda binaria sobre un contenedor indexable.
+ *
+ * Esta función se usa para hallar la posición donde está o debería estar
+ * una clave dentro del vector de keys de una página.
+ */
 template <typename Container, typename ObjType>
 TI binary_search(Container& container, TI first, TI last, ObjType &object)
 {
@@ -34,6 +50,9 @@ TI binary_search(Container& container, TI first, TI last, ObjType &object)
        return last;
 }
 
+/**
+ * @brief Inserta un elemento en una posición desplazando hacia la derecha.
+ */
 template <typename Container, typename ObjType>
 void insert_at(Container& container, const ObjType &object, TI pos)
 {
@@ -43,6 +62,9 @@ void insert_at(Container& container, const ObjType &object, TI pos)
        container[pos] =  object;
 }
 
+/**
+ * @brief Elimina lógicamente una posición desplazando elementos hacia la izquierda.
+ */
 template <typename Container>
 void remove(Container& container, TI pos)
 {
@@ -54,6 +76,11 @@ void remove(Container& container, TI pos)
 template <typename Traits>
 class BTree;
 
+template <typename Container>
+class BTreeForwardIterator;
+
+template <typename Container>
+class BTreeBackwardIterator;
 
 using namespace std;
 enum bt_ErrorCode {bt_ok, bt_overflow, bt_underflow, bt_duplicate, bt_nofound, bt_rootmerged};
@@ -66,6 +93,12 @@ template <typename keyType>
 bool operator<=(const _Node<keyType>& object1, const _Node<keyType>& object2)
 { return object1.key <= object2.key;    }*/
 
+/**
+ * @brief Nodo lógico que almacena la clave y su identificador.
+ *
+ * Este nodo no tiene hijos directos; los hijos se manejan a nivel de página.
+ * Aquí solo se guarda la información de cada entrada del árbol B.
+ */
 template <typename Traits>
 struct tagNode
 {
@@ -84,6 +117,13 @@ struct tagNode
 };
 
 
+/**
+ * @brief Página interna del árbol B.
+ *
+ * Una página agrupa varias claves y varios punteros a subpáginas.
+ * En esta clase se resuelve la lógica estructural del árbol B:
+ * insertar, partir páginas, fusionar páginas y redistribuir elementos.
+ */
 template <typename Traits>
 class CBTreePage 
 // this is the in-memory version of the CBTreePage
@@ -101,17 +141,23 @@ class CBTreePage
        //typedef Node *(*lpfnFirstThat2)(Node &info, TI level, void *pExtra1);
        //typedef Node *(*lpfnFirstThat3)(Node &info, TI level, void *pExtra1, void *pExtra2);
  public:
+       /** @brief Construye una página con una capacidad máxima de claves. */
        CBTreePage(TI maxKeys, TB unique = true);
+       /** @brief Destructor de la página. */
        virtual ~CBTreePage();
 
+       /** @brief Inserta una clave dentro de la página o sus subpáginas. */
        bt_ErrorCode    Insert (const keyType &key, const ObjIDType ObjID);
+       /** @brief Elimina una clave de la página o sus subpáginas. */
        bt_ErrorCode    Remove (const keyType &key, const ObjIDType ObjID);
+       /** @brief Busca una clave y devuelve su ObjID si existe. */
        TB            Search (const keyType &key, ObjIDType &ObjID);
+       /** @brief Imprime la página siguiendo su recorrido interno. */
        void            Print  (ostream &os);
        template <typename Func, typename... Args>
        void      ForEach(Func func, TI level, Args&&... args);
-       template <typename Func, typename... Args>
-       Node*     FirstThat(Func func, TI level, Args&&... args);
+//        template <typename Func, typename... Args>
+//        Node*     FirstThat(Func func, TI level, Args&&... args);
 
 protected:
        TI  m_MinKeys; // minimum number of keys in a node
@@ -122,6 +168,8 @@ protected:
        vector<Node>       m_Keys;
        vector<BTPage *>   m_SubPages;
        TI  m_KeyCount;
+       mutex m_mtx;
+
        void  Create();
        void  Reset ();
        void  Destroy () {   Reset(); delete this;}
@@ -140,6 +188,11 @@ protected:
        void  SplitChild (TI pos);
 
        Node &GetFirstNode();
+       Node &GetLastNode();
+       /** @brief Obtiene el sucesor inorder de un nodo dentro del árbol B. */
+       Node *Next(Node *pNode);
+       /** @brief Obtiene el predecesor inorder de un nodo dentro del árbol B. */
+       Node *Prev(Node *pNode);
 
        TB Overflow()  { return m_KeyCount > m_MaxKeys; }
        TB Underflow() { return m_KeyCount < MinNumberOfKeys(); }
@@ -173,6 +226,7 @@ template <typename Traits>
 CBTreePage<Traits>::CBTreePage(TI maxKeys, TB unique)
                                        : m_MaxKeys(maxKeys), m_Unique(unique), m_KeyCount(0)
 {
+        scoped_lock<mutex> lock(m_mtx);
        Create();
        SetMaxKeysForChilds(m_MaxKeys);
 }
@@ -180,12 +234,14 @@ CBTreePage<Traits>::CBTreePage(TI maxKeys, TB unique)
 template <typename Traits>
 CBTreePage<Traits>::~CBTreePage()
 {
+        scoped_lock<mutex> lock(m_mtx);
        Reset();
 }
 
 template <typename Traits>
 bt_ErrorCode CBTreePage<Traits>::Insert(const keyType& key, const ObjIDType ObjID)
 {
+       scoped_lock<mutex> lock(m_mtx);
        TI pos = binary_search(m_Keys, 0, m_KeyCount, key);
        bt_ErrorCode error = bt_ok;
 
@@ -482,6 +538,7 @@ TB CBTreePage<Traits>::SplitRoot()
 template <typename Traits>
 TB CBTreePage<Traits>::Search(const keyType &key, ObjIDType &ObjID)
 {
+       scoped_lock<mutex> lock(m_mtx);
        TI pos = binary_search(m_Keys, 0, m_KeyCount, key);
        if( pos >= m_KeyCount ){
                if( m_SubPages[pos] )
@@ -518,6 +575,7 @@ template <typename Traits>
 template <typename Func, typename... Args>
 void CBTreePage<Traits>::ForEach(Func lpfn, TI level, Args&&... args)
 {
+       scoped_lock<mutex> lock(m_mtx);
        for( TI i = 0 ; i < m_KeyCount ; i++)
        {
                if( m_SubPages[i] )
@@ -541,30 +599,31 @@ void CBTreePage<Traits>::ForEach(Func lpfn, TI level, Args&&... args)
 //                m_SubPages[m_KeyCount]->ForEach(lpfn, level+1, pExtra1, pExtra2);
 // }
 
-template <typename Traits>
-template <typename Func, typename... Args>
-typename CBTreePage<Traits>::Node *
-CBTreePage<Traits>::FirstThat(Func func,
-                                        TI level, Args&&... args)
-{
-       Node *pTmp;
-       for( TI i = 0 ; i < m_KeyCount ; i++)
-       {
-               if( m_SubPages[i] ){
-                        pTmp = m_SubPages[i]->FirstThat(func, level+1, std::forward<Args>(args)...);
-                       if( pTmp )
-                               return pTmp;
-               }
-               if( func(m_Keys[i], level, std::forward<Args>(args)...) )
-                       return &m_Keys[i];
-       }
-       if( m_SubPages[m_KeyCount] ){
-                pTmp = m_SubPages[m_KeyCount]->FirstThat(func, level+1, std::forward<Args>(args)...);
-               if( pTmp )
-                       return pTmp;
-       }
-       return 0;
-}
+// template <typename Traits>
+// template <typename Func, typename... Args>
+// typename CBTreePage<Traits>::Node *
+// CBTreePage<Traits>::FirstThat(Func func,
+//                                         TI level, Args&&... args)
+// {
+//        scoped_lock<mutex> lock(m_mtx);
+//        Node *pTmp;
+//        for( TI i = 0 ; i < m_KeyCount ; i++)
+//        {
+//                if( m_SubPages[i] ){
+//                         pTmp = m_SubPages[i]->FirstThat(func, level+1, std::forward<Args>(args)...);
+//                        if( pTmp )
+//                                return pTmp;
+//                }
+//                if( func(m_Keys[i], level, std::forward<Args>(args)...) )
+//                        return &m_Keys[i];
+//        }
+//        if( m_SubPages[m_KeyCount] ){
+//                 pTmp = m_SubPages[m_KeyCount]->FirstThat(func, level+1, std::forward<Args>(args)...);
+//                if( pTmp )
+//                        return pTmp;
+//        }
+//        return 0;
+// }
 
 // template <typename Traits>
 // typename CBTreePage<Traits>::Node *
@@ -591,6 +650,7 @@ CBTreePage<Traits>::FirstThat(Func func,
 template <typename Traits>
 bt_ErrorCode CBTreePage<Traits>::Remove(const keyType &key, const ObjIDType ObjID)
 {
+       scoped_lock<mutex> lock(m_mtx);
        bt_ErrorCode error = bt_ok;
        TI pos = binary_search(m_Keys, 0, m_KeyCount, key);
        if( pos < NumberOfKeys() && key == m_Keys[pos].key /*&& m_Keys[pos].m_ObjID == ObjID*/) // We found it !
@@ -742,6 +802,7 @@ template <typename Traits>
 typename CBTreePage<Traits>::Node &
 CBTreePage<Traits>::GetFirstNode()
 {
+       scoped_lock<mutex> lock(m_mtx);
        if( m_SubPages[0] )
                return m_SubPages[0]->GetFirstNode();
        return m_Keys[0];
@@ -824,5 +885,109 @@ TI CBTreePage<Traits>::GetFreeCellsOnRight(TI pos)
                return m_SubPages[pos+1]->GetFreeCells();
        return 0;
 }
+
+// IMPLEMENTACION TAREA
+/**
+ * @brief Devuelve el último nodo del subárbol actual.
+ *
+ * Se usa como apoyo para los iteradores y para poder iniciar
+ * el recorrido backward desde el nodo más a la derecha.
+ */
+template <typename Traits>
+typename CBTreePage<Traits>::Node &CBTreePage<Traits>::GetLastNode()
+{
+       scoped_lock<mutex> lock(m_mtx);
+       if( m_SubPages[m_KeyCount] )
+               return m_SubPages[m_KeyCount]->GetLastNode();
+       return m_Keys[m_KeyCount-1];
+}
+
+/**
+ * @brief Busca el sucesor inorder de un nodo.
+ *
+ * La lógica recorre las subpáginas y usa la variable found para saber
+ * en qué momento ya encontró el nodo actual y así devolver el siguiente.
+ */
+template <typename Traits>
+typename CBTreePage<Traits>::Node *CBTreePage<Traits>::Next(Node *pNode)
+{
+       TB found = false; // variable que indica si se encontro el nodo buscado, para devolver el siguiente
+
+       auto solve = [&](auto &&self, CBTreePage<Traits> *page, Node *target, TB &foundRef) -> Node *
+       {
+               scoped_lock<mutex> lock(page->m_mtx);
+
+               for( TI i = 0; i < page->m_KeyCount; i++ )
+               {
+                       if( page->m_SubPages[i] )
+                       {
+                               Node *pTmp = self(self, page->m_SubPages[i], target, foundRef);
+                               if( pTmp )
+                                       return pTmp;
+                       }
+
+                       if( foundRef )
+                               return &page->m_Keys[i];
+
+                       if( &page->m_Keys[i] == target )
+                               foundRef = true;
+               }
+
+               if( page->m_SubPages[page->m_KeyCount] )
+                       return self(self, page->m_SubPages[page->m_KeyCount], target, foundRef);
+
+               return nullptr;
+       };
+
+       return solve(solve, this, pNode, found);
+}
+
+/**
+ * @brief Busca el predecesor inorder de un nodo.
+ *
+ * En este caso el recorrido se hace de derecha a izquierda, porque se necesita
+ * ubicar el nodo anterior en inorder.
+ */
+template <typename Traits>
+typename CBTreePage<Traits>::Node *CBTreePage<Traits>::Prev(Node *pNode)
+{
+       TB found = false;
+
+       auto solve = [&](auto &&self, CBTreePage<Traits> *page, Node *target, TB &foundRef) -> Node *
+       {
+               scoped_lock<mutex> lock(page->m_mtx);
+
+               if( page->m_SubPages[page->m_KeyCount] )
+               {
+                       Node *pTmp = self(self, page->m_SubPages[page->m_KeyCount], target, foundRef);
+                       if( pTmp )
+                               return pTmp;
+               }
+
+               for( TI i = page->m_KeyCount; i > 0; i-- )
+               {
+                       TI idx = i - 1;
+
+                       if( foundRef )
+                               return &page->m_Keys[idx];
+
+                       if( &page->m_Keys[idx] == target )
+                               foundRef = true;
+
+                       if( page->m_SubPages[idx] )
+                       {
+                               Node *pTmp = self(self, page->m_SubPages[idx], target, foundRef);
+                               if( pTmp )
+                                       return pTmp;
+                       }
+               }
+
+               return nullptr;
+       };
+
+       return solve(solve, this, pNode, found);
+}
+
+
 
 #endif
