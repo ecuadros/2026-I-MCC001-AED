@@ -1,0 +1,119 @@
+diff --git a/main.cpp b/main.cpp
+index 3188b40..07cf4b3 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -11,7 +11,7 @@ int main() {
+     cout << "Hello World MCS-AED 2026-I" << endl;
+     // DemoMacros();
+     
+-    // DemoVector();
++    DemoVector();
+     DemoConcurrentVector();
+     return 0;
+ }
+diff --git a/vector.cpp b/vector.cpp
+index bb1f1b0..2914785 100644
+--- a/vector.cpp
++++ b/vector.cpp
+@@ -5,6 +5,10 @@
+ 
+ using namespace std;
+ 
++using NI = VectorTraits<TI>::Node;
++using ND = VectorTraits<TD>::Node;
++using NS = VectorTraits<TS>::Node;
++
+ template <typename Node>
+ void Print(Node &value, ostream& os){
+     os << value << ",";
+@@ -17,17 +21,17 @@ void AddOne(Node &node){
+     ++node;
+ }
+ 
+-template <typename Node>
++template <typename Node, typename T>
+ void AddX(Node &node, T x){
+     node += x;
+ }
+ 
+-template <typename Node>
++template <typename Node, typename T>
+ bool IsMultipleOf(Node &node, T x){
+     return node.GetDataRef() % x == 0;
+ }
+ 
+-template <typename T>
++template <typename Node, typename T>
+ bool IsGreaterThan(Node &node, T x){
+     return node.GetDataRef() > x;
+ }
+@@ -42,26 +46,26 @@ void DemoVector(){
+     v1.push_back(13, 25);
+ 
+     cout << "Recorrido con iteradores" << endl;
+-    v1.ForEach(Print<TI>, cout);
++    v1.ForEach(Print<NI>, cout);
+     cout << endl;
+-    v1.ForEach(AddOne<TI>);
+-    v1.ForEach(Print<TI>, cout);
++    v1.ForEach(AddOne<NI>);
++    v1.ForEach(Print<NI>, cout);
+     cout << endl;
+     
+-    v1.ForEach(AddX<TI>, 10);
+-    v1.ForEach(Print<TI>, cout);
++    v1.ForEach(AddX<NI, int>, 10);
++    v1.ForEach(Print<NI>, cout);
+     cout << endl;
+     int a = 3;
+-    v1.ForEach([a](VectorNode<TI>& node){   node.GetDataRef() *= a; });
+-    v1.ForEach(Print<TI>, cout);
++    v1.ForEach([a](NI& node){   node.GetDataRef() *= a; });
++    v1.ForEach(Print<NI>, cout);
+     cout << endl << a << endl;
+ 
+     // Vector<TI>::forward_iterator it = v1.FirstThat(IsMultipleOf<TI>, 21);
+-    auto it = v1.FirstThat(IsMultipleOf<TI>, 21);
++    auto it = v1.FirstThat(IsMultipleOf<NI, int>, 21);
+     if (it != v1.end())
+         cout << "Primer multiplo de 21: " << *it << endl;
+     // Vector<TI>::backward_iterator it2 = v1.ReverseFirstThat(IsMultipleOf<TI>, 21);
+-    auto it2 = v1.ReverseFirstThat(IsGreaterThan<TI>, 100);
++    auto it2 = v1.ReverseFirstThat(IsGreaterThan<NI, int>, 100);
+     if (it2 != v1.rend())
+         cout << "Primer mayor a 100   : " << *it2 << endl;
+     cout << "Fin recorrido con iteradores" << endl;
+@@ -89,9 +93,9 @@ void DemoVector(){
+     v3.push_back("AED", 15);
+ 
+     cout << v3.ToString() << endl;
+-    v3.ForEach(AddX<TS>, "-X");
++    v3.ForEach(AddX<NS, std::string>, "-X");
+     cout << v3.ToString() << endl;
+-    v3.ReverseForEach(Print<TS>, cout);
++    v3.ReverseForEach(Print<NS>, cout);
+     cout << endl;
+     cout << "Size: " << v3.size() << endl;
+ }
+@@ -108,7 +112,7 @@ void DemoConcurrentVector(){
+     // Sin sincronizacion → race condition en los contadores
+     auto worker = [&v](int thread_id){
+         for(int i = 0; i < 100000; i++)
+-            v.ForEach(AddOne<TI>);
++            v.ForEach(AddOne<NI>);
+         cout << "Thread " << thread_id << " terminado\n";
+     };
+ 
+diff --git a/vector.h b/vector.h
+index c2f5256..4757bb0 100644
+--- a/vector.h
++++ b/vector.h
+@@ -49,7 +49,7 @@ struct VectorNode{
+ template <typename T>
+ struct VectorTraits{
+     using value_type = T;
+-    using Node       = VectorNode<value_type>;
++    using Node       = VectorNode<VectorTraits<T>>;
+ };
+ 
+ template <typename Traits>

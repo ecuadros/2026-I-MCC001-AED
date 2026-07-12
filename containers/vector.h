@@ -8,6 +8,7 @@
 #include "../types.h"
 #include "../foreach.h"
 #include "basetrait.h"
+#include "basenode.h"
 
 template <typename Container>
 class vector_forward_iterator : public general_iterator<Container, vector_forward_iterator<Container>> {
@@ -28,23 +29,22 @@ public:
 };
 
 template <typename Traits>
-struct VectorNode{
+struct VectorNode : public BaseNode<typename Traits::value_type>{
+    using Parent = BaseNode<typename Traits::value_type>;
     using value_type = typename Traits::value_type;
 
-    value_type   m_data;
-    Ref          m_ref;
-    VectorNode() : m_data(value_type()), m_ref(Ref()) {}
-    VectorNode(value_type data, Ref ref) : m_data(data), m_ref(ref) {}
+    VectorNode() : Parent() {}
+    VectorNode(value_type data, Ref ref) : Parent(data, ref) {}
     string ToString(){
         ostringstream oss;
-        oss << "(" << m_data << "," << m_ref << ")";
+        oss << "(" << this->m_data << "," << this->m_ref << ")";
         return oss.str();
     }
-    value_type   GetData() const { return m_data; }
-    value_type&  GetDataRef()    { return m_data; }
-    Ref GetRef()  const { return m_ref;  }
-    void operator++() { ++m_data; }
-    void operator+=(const value_type& value) { m_data += value; }
+    value_type   GetData() const { return this->m_data; }
+    value_type&  GetDataRef()    { return this->m_data; }
+    Ref GetRef()  const { return this->m_ref;  }
+    void operator++() { ++this->m_data; }
+    void operator+=(const value_type& value) { this->m_data += value; }
 };
 
 template <typename T>
@@ -54,6 +54,11 @@ struct VectorTraits : public BaseContainerTrait<T, VectorNode<T>>{
 template <typename Traits>
 ostream& operator<<(ostream& os, VectorNode<Traits>& vn){
     return os << vn.ToString();
+}
+
+template <typename Traits>
+istream& operator>>(istream& is, VectorNode<Traits>& vn){
+    return vn.fromIstream(is);
 }
 
 template <typename Traits>

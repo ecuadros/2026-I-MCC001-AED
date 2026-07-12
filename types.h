@@ -21,4 +21,12 @@ using TS = string;
 
 using Ref = long;
 
+
+using TINDEX = int;
+using TLENGTH = int;
+using BLBT = bool;
+using TOBT = int;
+
+
+
 #endif // __TYPES_H__

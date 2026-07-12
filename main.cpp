@@ -1,6 +1,7 @@
 #include <iostream>
 #include "macros.h"
 #include "lists.h"
+
 // #include "containers/vector.h"
 
 using namespace std;
@@ -31,6 +32,11 @@ int main() {
     // DemoMacros();
     //DemoVector();
     // DemoConcurrentVector();
-    ListsDemo();
+    //ListsDemo();
+    //HeapDemo();
+    //DDListDemo();
+    //BinaryTreeDemo();
+    //AVLTreeDemo();
+    DemoBTree();
     return 0;
 }

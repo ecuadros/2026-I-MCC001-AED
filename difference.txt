@@ -1,0 +1,71 @@
+DIFERENCIAS: ArbollBinarioMalHecho.cpp vs estructuras del proyecto
+
+ERRORES O DEBILIDADES TECNICAS
+
+1) No sigue el patron Traits usado en el proyecto.
+- El arbol esta fijado a int.
+- No usa value_type, Node ni Comp definidos por traits.
+
+2) No es concurrente.
+- No hay mutex ni scoped_lock en operaciones publicas.
+- Las estructuras del proyecto evolucionaron para soportar concurrencia.
+
+3) Falta regla de 5 para gestion segura de recursos.
+- Tiene destructor, pero no define copy constructor, copy assignment, move constructor, move assignment.
+- Copias por defecto pueden causar doble delete o comportamiento indefinido.
+
+4) Usa punteros crudos y new/delete manual.
+- Mayor riesgo de errores de memoria.
+- El proyecto en otras partes ya encapsula nodos y comportamiento de forma mas controlada.
+
+5) API incompleta para una estructura de datos reutilizable.
+- Tiene insertar y mostrar en orden solamente.
+- No tiene buscar, eliminar, size, empty, clear, toString, ni validaciones.
+
+6) Sin operadores de streams ni parseo estructurado.
+- No implementa operator<< ni operator>> como en Heap y LinkedList.
+- No permite cargar/guardar facilmente desde archivos del proyecto.
+
+7) Mezcla implementacion de estructura con demo ejecutable.
+- El archivo en containers incluye main().
+- En el proyecto, las estructuras viven en headers/sources separados y los demos se invocan aparte.
+
+8) Insercion de duplicados no definida formalmente.
+- Todo valor >= nodoActual va al subarbol derecho.
+- No hay politica documentada para repetidos.
+
+9) Recursion sin proteccion para arbol degenerado.
+- insertarRecursivo, mostrarEnOrdenRecursivo y liberarMemoria son recursivos.
+- Con entradas ordenadas puede degradar a lista y aumentar riesgo de stack overflow.
+
+10) No integra tipos y convenciones del proyecto.
+- No usa Ref ni BaseNode.
+- Nombres y API no son consistentes con el resto de contenedores.
+
+11) No hay validacion de invariante del arbol.
+- Falta metodo tipo validate_bst() para confirmar propiedad de busqueda binaria.
+
+12) El nombre del archivo y clase comunican baja calidad de mantenimiento.
+- "ArbollBinarioMalHecho" sugiere codigo temporal/no productivo.
+
+OBSERVACIONES DE DISENO (COMPARACION)
+
+1) El proyecto usa interfaz de contenedores mas uniforme.
+- Ejemplos: insert, size, empty, clear, toString, ForEach/FirstThat, operadores de stream.
+- Este BT no ofrece interfaz homologable.
+
+2) El proyecto prioriza extensibilidad por genericidad.
+- Heap, LinkedList y Vector son templates.
+- Este BT no es template ni configurable por comparador.
+
+3) El proyecto ya incorporo estrategias de robustez.
+- Heap incluye try_peek_node, try_extract_top, build_from_vector, validate_heap, change_comp.
+- Este BT no tiene equivalentes.
+
+4) Para alinearlo con el proyecto, deberia migrar a:
+- Nodo base comun (BaseNode).
+- Traits para value_type, Node y Comp.
+- API concurrente con mutex.
+- Operadores << y >>.
+- Separar estructura de demo (sin main dentro del modulo).
+- Implementar regla de 5 y validaciones de invariante.
