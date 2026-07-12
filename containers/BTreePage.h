@@ -529,20 +529,26 @@ typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::FirstTh
 }
 
 template <typename keyType, typename Traits>
-template <typename Dual, typename... Args>
-typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Traverse(Dual&& dual, LSI level, Args&&... args)
+template <typename Func, typename... Args>
+typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Traverse(Func&& func, LSI level, Args&&... args)
 {
+    using ReturnType = std::invoke_result_t<Func, Node&, LSI, Args...>;
     for (LSI i = 0; i < m_KeyCount; i++)
     {
         if (m_SubPages[i])
         {
-            Node* DD = m_SubPages[i]->Traverse(std::forward<Dual>(dual), level + 1, std::forward<Args>(args)...);
+        	if constexpr (std::is_void_v<ReturnType>)
+            	std::invoke(std::forward<Func>(func), m_Keys[i], level, std::forward<Args>(args)...);
+            Node* DD = m_SubPages[i]->Traverse(std::forward<Func>(func), level + 1, std::forward<Args>(args)...);
             if (DD) {return DD;}
         }
-        if (Node* DD = std::invoke(std::forward<Dual>(dual), m_Keys[i], level, std::forward<Args>(args)...)) {return DD;}
+		if (Node* DD = std::invoke(std::forward<Func>(func), m_Keys[i], level, std::forward<Args>(args)...)) {return DD;}
     }
     if (m_SubPages[m_KeyCount])
-        return m_SubPages[m_KeyCount]->Traverse(std::forward<Dual>(dual), level + 1, std::forward<Args>(args)...);
+    {
+        Node* DD = m_SubPages[m_KeyCount]->Traverse(std::forward<Func>(func), level + 1, std::forward<Args>(args)...);
+        if (DD) {return DD;}
+    }
     return nullptr;
 }
 
