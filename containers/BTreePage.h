@@ -109,8 +109,8 @@ class CBTreePage
        void ForEach(Func lpfn, LSI level, Args&&... args);
        template <typename Func, typename... Args>
        Node* FirstThat(Func lpfn, LSI level, Args&&... args);
-       template <typename Dual, typename... Args>
-       Node* Traverse(Dual&& dual, LSI level, Args&&... args);
+       template <typename Func, typename... Args>
+       Node* Traverse(Func&& func, LSI level, Args&&... args);
 protected:
        LSI  m_MinKeys; // minimum number of keys in a node
        LSI  m_MaxKeys, // maximum number of keys in a node
@@ -531,12 +531,18 @@ typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::FirstTh
 template <typename keyType, typename Traits>
 template <typename Func, typename... Args>
 typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Traverse(Func&& func, LSI level, Args&&... args)
+<<<<<<< Updated upstream
 {
     using ReturnType = std::invoke_result_t<Func, Node&, LSI, Args...>;
+=======
+{	
+	using ReturnType = std::invoke_result_t<Func, Node&, LSI, Args...>;
+>>>>>>> Stashed changes
     for (LSI i = 0; i < m_KeyCount; i++)
     {
         if (m_SubPages[i])
         {
+<<<<<<< Updated upstream
         	if constexpr (std::is_void_v<ReturnType>)
             	std::invoke(std::forward<Func>(func), m_Keys[i], level, std::forward<Args>(args)...);
             Node* DD = m_SubPages[i]->Traverse(std::forward<Func>(func), level + 1, std::forward<Args>(args)...);
@@ -549,6 +555,17 @@ typename CBTreePage<keyType, Traits>::Node* CBTreePage<keyType, Traits>::Travers
         Node* DD = m_SubPages[m_KeyCount]->Traverse(std::forward<Func>(func), level + 1, std::forward<Args>(args)...);
         if (DD) {return DD;}
     }
+=======
+            if constexpr (std::is_void_v<ReturnType>)
+        		std::invoke(std::forward<Func>(func), m_Keys[i], level, std::forward<Args>(args)...);
+			Node* DD = m_SubPages[i]->Traverse(std::forward<Func>(func), level + 1, std::forward<Args>(args)...);
+            if (DD) {return DD;}
+        }
+        if (Node* DD = std::invoke(std::forward<Func>(func), m_Keys[i], level, std::forward<Args>(args)...)) {return DD;}
+    }
+    if (m_SubPages[m_KeyCount])
+        return m_SubPages[m_KeyCount]->Traverse(std::forward<Func>(func), level + 1, std::forward<Args>(args)...);
+>>>>>>> Stashed changes
     return nullptr;
 }
 
