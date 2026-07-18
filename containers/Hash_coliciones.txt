@@ -1,0 +1,36 @@
+Las colisiones en una tabla hash ocurren cuando dos o más claves diferentes son asignadas al mismo bucket por la función hash. 
+Si una tabla tiene m buckets y se insertan n elementos, asumiendo que la función hash distribuye las claves de forma uniforme, 
+la probabilidad de que una clave caiga en un bucket específico es p = 1/m, y por tanto la probabilidad de que no caiga en el
+bucket es (1-p)=(1-1/m)
+
+Sea X el número de elementos que caen en un bucket. Entonces:
+
+X∼Binomial(n,1/m)
+
+La probabilidad de que exista una colisión en ese bucket (es decir, que tenga dos o más elementos) es
+
+P(colision) = P(X≥2) = 1−P(X=0)−P(X=1)
+
+lo que resulta en
+
+P(colision) = 1−(1−1/m)^n−(n/m)(1−1/m)^(n−1)
+
+Cuando el número de elementos y el número de buckets son grandes, manteniendo constante el factor de carga
+
+λ = n/m
+
+la distribución binomial puede aproximarse mediante una distribución de Poisson:
+
+X∼Poisson(λ)
+
+En este caso,
+
+P(X=k) = (e^(−λ)*λ^k)/(k!)
+
+y la probabilidad de colisión se aproxima por
+
+P(colision) = 1−(1+λ)*e^(−λ)
+
+Esta aproximación es muy utilizada para analizar el rendimiento de las tablas hash, ya que permite estimar la frecuencia de 
+colisiones únicamente a partir del factor de carga λ. Mientras menor sea λ, menor será la probabilidad de colisiones y 
+más eficiente será la tabla hash
