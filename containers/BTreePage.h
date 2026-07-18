@@ -905,87 +905,79 @@ typename CBTreePage<Traits>::Node &CBTreePage<Traits>::GetLastNode()
 /**
  * @brief Busca el sucesor inorder de un nodo.
  *
- * La lógica recorre las subpáginas y usa la variable found para saber
- * en qué momento ya encontró el nodo actual y así devolver el siguiente.
  */
 template <typename Traits>
 typename CBTreePage<Traits>::Node *CBTreePage<Traits>::Next(Node *pNode)
 {
-       TB found = false; // variable que indica si se encontro el nodo buscado, para devolver el siguiente
+       scoped_lock<mutex> lock(m_mtx);
 
-       auto solve = [&](auto &&self, CBTreePage<Traits> *page, Node *target, TB &foundRef) -> Node *
+       // pNode es un puntero a un nodo, y se está accediendo a su miembro key. Esto es útil para buscar la posición de la clave en la página actual del árbol B.
+       keyType key = pNode->key;
+       // Buscar la posición de la clave en la página actual
+       TI pos = binary_search(m_Keys, 0, m_KeyCount, key);
+
+       // Caso 1: La clave esta en esta misma pagina
+       if( pos < m_KeyCount && &m_Keys[pos] == pNode )
        {
-               scoped_lock<mutex> lock(page->m_mtx);
+               // Si tiene subpagina derecha, el sucesor es el menor de ese subarbol
+               if( m_SubPages[pos + 1] ) return &m_SubPages[pos + 1]->GetFirstNode();
 
-               for( TI i = 0; i < page->m_KeyCount; i++ )
-               {
-                       if( page->m_SubPages[i] )
-                       {
-                               Node *pTmp = self(self, page->m_SubPages[i], target, foundRef);
-                               if( pTmp )
-                                       return pTmp;
-                       }
+               // Si no tiene subpagina derecha, el sucesor puede estar en la siguiente key de la pagina
+               if( pos + 1 < m_KeyCount )return &m_Keys[pos + 1];
 
-                       if( foundRef )
-                               return &page->m_Keys[i];
-
-                       if( &page->m_Keys[i] == target )
-                               foundRef = true;
-               }
-
-               if( page->m_SubPages[page->m_KeyCount] )
-                       return self(self, page->m_SubPages[page->m_KeyCount], target, foundRef);
-
+               // Si no hay nada a la derecha en esta pagina, el sucesor lo resolvera el ancestro
                return nullptr;
-       };
+       }
 
-       return solve(solve, this, pNode, found);
+       // Caso 2: la clave no esta en esta pagina, bajar solo por la rama donde deberia estar
+       if( pos<= m_KeyCount && m_SubPages[pos] )
+       {
+               Node *pRes = m_SubPages[pos]->Next(pNode);
+               if( pRes ) return pRes;
+
+               // Si el hijo no encontro sucesor dentro de su subarbol, entonces el sucesor puede ser la key actual del padre
+               if( pos < m_KeyCount ) return &m_Keys[pos];
+       }
+
+       return nullptr;
 }
 
 /**
  * @brief Busca el predecesor inorder de un nodo.
  *
- * En este caso el recorrido se hace de derecha a izquierda, porque se necesita
- * ubicar el nodo anterior en inorder.
  */
 template <typename Traits>
 typename CBTreePage<Traits>::Node *CBTreePage<Traits>::Prev(Node *pNode)
 {
-       TB found = false;
+    scoped_lock<mutex> lock(m_mtx);
 
-       auto solve = [&](auto &&self, CBTreePage<Traits> *page, Node *target, TB &foundRef) -> Node *
-       {
-               scoped_lock<mutex> lock(page->m_mtx);
+    keyType key = pNode->key;
+    TI pos = binary_search(m_Keys, 0, m_KeyCount, key);
 
-               if( page->m_SubPages[page->m_KeyCount] )
-               {
-                       Node *pTmp = self(self, page->m_SubPages[page->m_KeyCount], target, foundRef);
-                       if( pTmp )
-                               return pTmp;
-               }
+    // Caso 1: el nodo esta en esta misma pagina
+    if( pos < m_KeyCount && &m_Keys[pos] == pNode )
+    {
+        // El anterior esta en la subpagina izquierda inmediata
+        if( m_SubPages[pos] ) return &m_SubPages[pos]->GetLastNode();
 
-               for( TI i = page->m_KeyCount; i > 0; i-- )
-               {
-                       TI idx = i - 1;
+        // O puede ser la key anterior de esta misma pagina
+        if( pos > 0 ) return &m_Keys[pos - 1];
 
-                       if( foundRef )
-                               return &page->m_Keys[idx];
+        // No hay predecesor en esta pagina
+        return nullptr;
+    }
 
-                       if( &page->m_Keys[idx] == target )
-                               foundRef = true;
+    // Caso 2: el nodo debe estar dentro de una subpagina
+    if( pos <= m_KeyCount && m_SubPages[pos] )
+    {
+        Node *pRes = m_SubPages[pos]->Prev(pNode);
+        if( pRes ) return pRes;
 
-                       if( page->m_SubPages[idx] )
-                       {
-                               Node *pTmp = self(self, page->m_SubPages[idx], target, foundRef);
-                               if( pTmp )
-                                       return pTmp;
-                       }
-               }
+        // Si ya no encontro mas dentro de esa subpagina, el anterior es la key separadora de la izquierda
+        if( pos > 0 ) return &m_Keys[pos - 1];
+    }
 
-               return nullptr;
-       };
-
-       return solve(solve, this, pNode, found);
+    return nullptr;
 }
 
 
