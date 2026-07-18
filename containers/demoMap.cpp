@@ -55,16 +55,44 @@ int main() {
     std::cout << "==============================" << std::endl;
     std::cout << "Recorrido:" << std::endl;
     std::cout << "Manera 1:" << std::endl;
+    // ojo : para llamar usamos it->first .... it -> second
     for (auto it = m.begin(); it != m.end(); ++it)
-        std::cout << "Posición: " << it->first << ", Dato: " << it->second << std::endl;
+        std::cout << "Posición: " << it->first << ", Dato: " << it->second << std::endl; 
 
     std::cout << "Manera 2:" << std::endl;
     for (const auto& [posicion, data] : m)
         std::cout << "Posición: " << posicion << ", Dato: " << data << std::endl;
+    std::cout << "==============================" << std::endl;
+
+    // Eliminando datos
+    std::cout << "Eliminando datos.... 6" << std::endl;
+    m.erase(6);
+    for (auto it = m.begin(); it != m.end(); ++it)
+        std::cout << "Posición: " << it->first << ", Dato: " << it->second << std::endl; 
 
     std::cout << "==============================" << std::endl;
 
+    std::cout << "Haciendo merge con otro mapa" << std::endl;
+    std::map<TI, TS> m2;
     
+    // Manera 1 de crear valores
+    m2[11] = "juanito"; 
+    m2[12] = "panchito";
+
+    // para unir dos mapas
+    m.merge(m2);
+    for (auto it = m.begin(); it != m.end(); ++it)
+        std::cout << "Posición: " << it->first << ", Dato: " << it->second << std::endl; 
+
+    std::cout << "==============================" << std::endl;
     
+    // limpiando mapa
+    std::cout << "Limpiando mapa" << std::endl;
+    std::cout << "Tamaño incial: " << m.size() << std::endl;
+    m.clear();
+    std::cout << "Tamaño final: " << m.size() << std::endl;
+
+    std::cout << "==============================" << std::endl;
+
     return 0;
 }
