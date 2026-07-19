@@ -2,6 +2,8 @@
 #include "macros.h"
 #include "lists.h"
 #include "containers/BTreeDemo.cpp"
+#include "containers/STLTextAnalyzerDemo.cpp"
+#include "containers/DigitalTrieDemo.cpp"
 // #include "containers/vector.h"
 
 using namespace std;
@@ -33,6 +35,8 @@ int main() {
     //DemoVector();
     // DemoConcurrentVector();
     // ListsDemo();
-    BTreeDemo();
+    //BTreeDemo();
+    //DigitalTrieDemo();
+    STLTextAnalyzerDemo();
     return 0;
 }

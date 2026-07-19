@@ -12,6 +12,7 @@ using TI = int;
 using TD = double;
 using TB = bool;
 using TS = string;
+using TC = char;
 
 // XT must be 32bit integer in Windows and 64bit in Linux
 #if defined(_WIN32) || defined(_WIN64)
