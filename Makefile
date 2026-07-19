@@ -3,8 +3,10 @@ CXXFLAGS = -std=c++2b -Wall -g -pthread # Añadido -pthread
 LDFLAGS = -pthread # Añadido -pthread
 
 TARGET = main
-SRCS = main.cpp \
-	   ListsDemo.cpp
+SRCS = containers/demoMap.cpp containers/digitalTreeDemo.cpp
+#SRCS = main.cpp \
+	   ListsDemo.cpp \
+	   containers/demoMap.cpp
 # 	   DemoVector.cpp
 # macros.cpp vector.cpp
 
