@@ -2,8 +2,8 @@ CXX = g++
 CXXFLAGS = -std=c+2b
 TARGET = main
 #SRC = demoMap.cpp
-#SRC = digitalTreeDemo.cpp
-SRC = demoLinkedListSTL.cpp
+SRC = digitalTreeDemo.cpp
+#SRC = demoLinkedListSTL.cpp
 
 all: $(TARGET)
 $(TARGET): $(SRC)
